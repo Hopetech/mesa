@@ -3668,6 +3668,12 @@ struct gl_constants
    GLboolean NativeIntegers;
 
    /**
+    * Use NIR optimisation passes before assigning varying and uniform
+    * locations during linking and also use NIR varying packing.
+    */
+   bool UseNIROptsAndPacking;
+
+   /**
     * Does VertexID count from zero or from base vertex?
     *
     * \note
