@@ -92,6 +92,26 @@ brw_create_nir(struct brw_context *brw,
 
    nir = brw_preprocess_nir(brw->screen->compiler, nir);
 
+   //TODO: remove from GLSL IR the varyings/uniform that the nir opt
+   // passes removed. This is safe because at this point all we want
+   // from the GLSL IR is to assign locations and do validation on
+   // varyings and uniforms we don't care if we make the IR invalid.
+
+   //TODO: call GLSL assign varying/uniform location/validation passes
+   //   if (!link_varyings(prog, first, last, ctx, mem_ctx))
+  //       return false;
+
+  //    link_and_validate_uniforms(ctx, prog);
+
+   //TODO: now remove from nir any more varyings that GLSL IR removed  
+   // (this is safe because these will just be varyings that are only 
+   //  used in one of the stages) and add locations that were assigned
+   // in GLSL to NIR.
+
+   //TODO: free GLSL IR ?? Maybe let a call to the linker handle this like normal
+
+   //TODO: add a NIR varying packing pass her
+
    if (stage == MESA_SHADER_FRAGMENT) {
       static const struct nir_lower_wpos_ytransform_options wpos_options = {
          .state_tokens = {STATE_INTERNAL, STATE_FB_WPOS_Y_TRANSFORM, 0, 0, 0},

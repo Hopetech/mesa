@@ -4582,10 +4582,17 @@ link_varyings_and_uniforms(unsigned first, unsigned last,
       do_vec_index_to_swizzle(prog->_LinkedShaders[i]->ir);
    }
 
-   if (!link_varyings(prog, first, last, ctx, mem_ctx))
-      return false;
 
-   link_and_validate_uniforms(ctx, prog);
+   if (ctx->Const.UseNIROptsAndPacking) {
+      if (!ctx->Driver.LinkShader(ctx, prog)) {
+         prog->data->LinkStatus = linking_failure;
+      }
+   } else {
+      if (!link_varyings(prog, first, last, ctx, mem_ctx))
+         return false;
+
+      link_and_validate_uniforms(ctx, prog);
+   }
 
    if (!prog->data->LinkStatus)
       return false;
