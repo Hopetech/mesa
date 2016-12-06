@@ -2278,16 +2278,18 @@ assign_varying_locations(struct gl_context *ctx,
                                               ir_var_shader_in);
    }
 
-   if (producer) {
-      lower_packed_varyings(mem_ctx, slots_used, components, ir_var_shader_out,
-                            0, producer, disable_varying_packing,
-                            xfb_enabled);
-   }
+   if (!ctx->Const.UseNIROptsAndPacking) {
+      if (producer) {
+         lower_packed_varyings(mem_ctx, slots_used, components,
+                               ir_var_shader_out, 0, producer,
+                               disable_varying_packing, xfb_enabled);
+      }
 
-   if (consumer) {
-      lower_packed_varyings(mem_ctx, slots_used, components, ir_var_shader_in,
-                            consumer_vertices, consumer,
-                            disable_varying_packing, xfb_enabled);
+      if (consumer) {
+         lower_packed_varyings(mem_ctx, slots_used, components,
+                               ir_var_shader_in, consumer_vertices, consumer,
+                               disable_varying_packing, xfb_enabled);
+      }
    }
 
    return true;
