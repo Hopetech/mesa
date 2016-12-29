@@ -868,130 +868,6 @@ public:
    unsigned shader_shadow_samplers;
 };
 
-static bool
-variable_is_referenced(ir_array_refcount_visitor &v, ir_variable *var)
-{
-   ir_array_refcount_entry *const entry = v.get_variable_entry(var);
-
-   return entry->is_referenced;
-
-}
-
-/**
- * Walks the IR and update the references to uniform blocks in the
- * ir_variables to point at linked shader's list (previously, they
- * would point at the uniform block list in one of the pre-linked
- * shaders).
- */
-static void
-link_update_uniform_buffer_variables(struct gl_linked_shader *shader,
-                                     unsigned stage)
-{
-   ir_array_refcount_visitor v;
-
-   v.run(shader->ir);
-
-   foreach_in_list(ir_instruction, node, shader->ir) {
-      ir_variable *const var = node->as_variable();
-
-      if (var == NULL || !var->is_in_buffer_block())
-         continue;
-
-      assert(var->data.mode == ir_var_uniform ||
-             var->data.mode == ir_var_shader_storage);
-
-      unsigned num_blocks = var->data.mode == ir_var_uniform ?
-         shader->Program->info.num_ubos : shader->Program->info.num_ssbos;
-      struct gl_uniform_block **blks = var->data.mode == ir_var_uniform ?
-         shader->Program->sh.UniformBlocks :
-         shader->Program->sh.ShaderStorageBlocks;
-
-      if (var->is_interface_instance()) {
-         const ir_array_refcount_entry *const entry = v.get_variable_entry(var);
-
-         if (entry->is_referenced) {
-            /* Since this is an interface instance, the instance type will be
-             * same as the array-stripped variable type.  If the variable type
-             * is an array, then the block names will be suffixed with [0]
-             * through [n-1].  Unlike for non-interface instances, there will
-             * not be structure types here, so the only name sentinel that we
-             * have to worry about is [.
-             */
-            assert(var->type->without_array() == var->get_interface_type());
-            const char sentinel = var->type->is_array() ? '[' : '\0';
-
-            const ptrdiff_t len = strlen(var->get_interface_type()->name);
-            for (unsigned i = 0; i < num_blocks; i++) {
-               const char *const begin = blks[i]->Name;
-               const char *const end = strchr(begin, sentinel);
-
-               if (end == NULL)
-                  continue;
-
-               if (len != (end - begin))
-                  continue;
-
-               /* Even when a match is found, do not "break" here.  This could
-                * be an array of instances, and all elements of the array need
-                * to be marked as referenced.
-                */
-               if (strncmp(begin, var->get_interface_type()->name, len) == 0 &&
-                   (!var->type->is_array() ||
-                    entry->is_linearized_index_referenced(blks[i]->linearized_array_index))) {
-                  blks[i]->stageref |= 1U << stage;
-               }
-            }
-         }
-
-         var->data.location = 0;
-         continue;
-      }
-
-      bool found = false;
-      char sentinel = '\0';
-
-      if (var->type->is_record()) {
-         sentinel = '.';
-      } else if (var->type->is_array() && (var->type->fields.array->is_array()
-                 || var->type->without_array()->is_record())) {
-         sentinel = '[';
-      }
-
-      const unsigned l = strlen(var->name);
-      for (unsigned i = 0; i < num_blocks; i++) {
-         for (unsigned j = 0; j < blks[i]->NumUniforms; j++) {
-            if (sentinel) {
-               const char *begin = blks[i]->Uniforms[j].Name;
-               const char *end = strchr(begin, sentinel);
-
-               if (end == NULL)
-                  continue;
-
-               if ((ptrdiff_t) l != (end - begin))
-                  continue;
-
-               found = strncmp(var->name, begin, l) == 0;
-            } else {
-               found = strcmp(var->name, blks[i]->Uniforms[j].Name) == 0;
-            }
-
-            if (found) {
-               var->data.location = j;
-
-               if (variable_is_referenced(v, var))
-                  blks[i]->stageref |= 1U << stage;
-
-               break;
-            }
-         }
-
-         if (found)
-            break;
-      }
-      assert(found);
-   }
-}
-
 /**
  * Combine the hidden uniform hash map with the uniform hash map so that the
  * hidden uniforms will be given indicies at the end of the uniform storage
@@ -1315,8 +1191,6 @@ link_assign_uniform_locations(struct gl_shader_program *prog,
 
       if (sh == NULL)
          continue;
-
-      link_update_uniform_buffer_variables(sh, i);
 
       /* Reset various per-shader target counts.
        */
