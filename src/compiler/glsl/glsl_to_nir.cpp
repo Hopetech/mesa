@@ -394,6 +394,7 @@ nir_visitor::visit(ir_variable *ir)
    var->data.interpolation = ir->data.interpolation;
    var->data.origin_upper_left = ir->data.origin_upper_left;
    var->data.pixel_center_integer = ir->data.pixel_center_integer;
+   var->data.explicit_location = ir->data.explicit_location;
    var->data.is_xfb_only = ir->data.is_xfb_only;
    var->data.location_frac = ir->data.location_frac;
 

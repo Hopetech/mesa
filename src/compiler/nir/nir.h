@@ -210,6 +210,15 @@ typedef struct nir_variable {
       unsigned is_xfb_only:1;
 
       /**
+       * Was the location explicitly set in the shader?
+       *
+       * If the location is explicitly set in the shader, it \b cannot be
+       * changed by the linker or by the API (e.g., calls to \c
+       * glBindAttribLocation have no effect).
+       */
+      unsigned explicit_location:1;
+
+      /**
        * If non-zero, then this variable may be packed along with other variables
        * into a single varying slot, so this offset should be applied when
        * accessing components.  For example, an offset of 1 means that the x
