@@ -4573,6 +4573,13 @@ link_varyings_and_uniforms(unsigned first, unsigned last,
       if (options->LowerBufferInterfaceBlocks)
          lower_ubo_reference(prog->_LinkedShaders[i],
                              options->ClampBlockIndicesToArrayBounds);
+
+      if (i == MESA_SHADER_COMPUTE)
+         lower_shared_reference(prog->_LinkedShaders[i],
+                                &prog->Comp.SharedSize);
+
+      lower_vector_derefs(prog->_LinkedShaders[i]);
+      do_vec_index_to_swizzle(prog->_LinkedShaders[i]->ir);
    }
 
    if (!link_varyings(prog, first, last, ctx, mem_ctx))
@@ -4582,21 +4589,6 @@ link_varyings_and_uniforms(unsigned first, unsigned last,
 
    if (!prog->data->LinkStatus)
       return false;
-
-   for (unsigned i = 0; i < MESA_SHADER_STAGES; i++) {
-      if (prog->_LinkedShaders[i] == NULL)
-         continue;
-
-      const struct gl_shader_compiler_options *options =
-         &ctx->Const.ShaderCompilerOptions[i];
-
-      if (i == MESA_SHADER_COMPUTE)
-         lower_shared_reference(prog->_LinkedShaders[i],
-                                &prog->Comp.SharedSize);
-
-      lower_vector_derefs(prog->_LinkedShaders[i]);
-      do_vec_index_to_swizzle(prog->_LinkedShaders[i]->ir);
-   }
 
    return true;
 }
