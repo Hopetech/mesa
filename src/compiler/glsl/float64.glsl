@@ -49,3 +49,43 @@ fneg64(uvec2 a)
    a.x ^= (1u<<31);
    return a;
 }
+
+/* Returns the fraction bits of the double-precision floating-point value `a'.*/
+uvec2
+extractFloat64Frac(uvec2 a)
+{
+   return uvec2(a.x & 0x000FFFFFu, a.y);
+}
+
+/* Returns the exponent bits of the double-precision floating-point value `a'.*/
+uint
+extractFloat64Exp(uvec2 a)
+{
+   return (a.x>>20) & 0x7FFu;
+}
+
+/* Returns true if the double-precision floating-point value `a' is equal to the
+ * corresponding value `b', and false otherwise.  The comparison is performed
+ * according to the IEEE Standard for Floating-Point Arithmetic.
+ */
+bool
+feq64(uvec2 a, uvec2 b)
+{
+   uvec2 aFrac;
+   uvec2 bFrac;
+   bool isaNaN;
+   bool isbNaN;
+
+   aFrac = extractFloat64Frac(a);
+   bFrac = extractFloat64Frac(b);
+   isaNaN = (extractFloat64Exp(a) == 0x7FFu) &&
+      ((aFrac.x | aFrac.y) != 0u);
+   isbNaN = (extractFloat64Exp(b) == 0x7FFu) &&
+      ((bFrac.x | bFrac.y) != 0u);
+
+   if (isaNaN || isbNaN)
+      return false;
+
+   return (a.y == b.y) &&
+      ((a.x == b.x) || ((a.y == 0u) && (((a.x | b.x)<<1) == 0u)));
+}
