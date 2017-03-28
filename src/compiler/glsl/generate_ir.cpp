@@ -29,5 +29,6 @@ using namespace ir_builder;
 namespace generate_ir {
 
 #include "builtin_int64.h"
+#include "builtin_float64.h"
 
 }
