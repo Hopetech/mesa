@@ -1080,3 +1080,66 @@ fdiv64(uvec2 a, uvec2 b)
    shift64ExtraRightJamming(zFrac0, zFrac1, 0u, 11, zFrac0, zFrac1, zFrac2);
    return roundAndPackFloat64(zSign, zExp, zFrac0, zFrac1, zFrac2);
 }
+
+/* Normalizes the subnormal single-precision floating-point value represented
+ * by the denormalized significand `aFrac'.  The normalized exponent and
+ * significand are stored at the locations pointed to by `zExpPtr' and
+ * `zFracPtr', respectively.
+ */
+void
+normalizeFloat32Subnormal(uint aFrac,
+                          inout uint zExpPtr,
+                          inout uint zFracPtr)
+{
+   uint shiftCount = countLeadingZeros32(aFrac) - 8u;
+   zFracPtr = aFrac<<shiftCount;
+   zExpPtr = 1u - shiftCount;
+}
+
+/* Returns the fraction bits of the single-precision floating-point value `a'.*/
+uint
+extractFloat32Frac(uint a)
+{
+   return a & 0x007FFFFFu;
+}
+
+/* Returns the exponent bits of the single-precision floating-point value `a'.*/
+uint
+extractFloat32Exp(uint a)
+{
+   return (a>>23) & 0xFFu;
+}
+
+/* Returns the sign bit of the single-precision floating-point value `a'.*/
+uint
+extractFloat32Sign(uint a)
+{
+   return a>>31;
+}
+
+/* Returns the result of converting the single-precision floating-point value
+ * `a' to the double-precision floating-point format.
+ */
+uvec2
+fp32_to_fp64(uint a)
+{
+   uint aFrac = extractFloat32Frac(a);
+   uint aExp = extractFloat32Exp(a);
+   uint aSign = extractFloat32Sign(a);
+
+   if (aExp == 0xFFu) {
+      if (aFrac != 0u)
+         return uvec2(((aSign<<31) | 0x7FF00000u | (aFrac>>3)), (aFrac<<29));
+      return packFloat64(aSign, 0x7FFu, 0u, 0u);
+    }
+
+   if (aExp == 0u) {
+      if (aFrac != 0u) {
+         normalizeFloat32Subnormal(aFrac, aExp, aFrac);
+         --aExp;
+      }
+      return packFloat64(aSign, 0u, 0u, 0u);
+   }
+
+   return packFloat64(aSign, aExp + 0x380u, aFrac>>3, aFrac<<29);
+}
