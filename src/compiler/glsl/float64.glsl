@@ -856,3 +856,227 @@ fmul64(uvec2 a, uvec2 b)
    }
    return roundAndPackFloat64(zSign, zExp, zFrac0, zFrac1, zFrac2);
 }
+
+/* Adds the 96-bit value formed by concatenating `a0', `a1', and `a2' to the
+ * 96-bit value formed by concatenating `b0', `b1', and `b2'.  Addition is
+ * modulo 2^96, so any carry out is lost.  The result is broken into three
+ * 32-bit pieces which are stored at the locations pointed to by `z0Ptr',
+ * `z1Ptr', and `z2Ptr'.
+ */
+void
+add96(uint a0, uint a1, uint a2,
+      uint b0, uint b1, uint b2,
+      inout uint z0Ptr,
+      inout uint z1Ptr,
+      inout uint z2Ptr)
+{
+   uint z2 = a2 + b2;
+   uint carry1 = uint(z2 < a2);
+   uint z1 = a1 + b1;
+   uint carry0 = uint(z1 < a1);
+   uint z0 = a0 + b0;
+   z1 += carry1;
+   z0 += uint(z1 < carry1);
+   z0 += carry0;
+   z2Ptr = z2;
+   z1Ptr = z1;
+   z0Ptr = z0;
+}
+
+/* Subtracts the 96-bit value formed by concatenating `b0', `b1', and `b2' from
+ * the 96-bit value formed by concatenating `a0', `a1', and `a2'.  Subtraction
+ * is modulo 2^96, so any borrow out (carry out) is lost.  The result is broken
+ * into three 32-bit pieces which are stored at the locations pointed to by
+ * `z0Ptr', `z1Ptr', and `z2Ptr'.
+ */
+void
+sub96(uint a0, uint a1, uint a2,
+      uint b0, uint b1, uint b2,
+      inout uint z0Ptr,
+      inout uint z1Ptr,
+      inout uint z2Ptr)
+{
+   uint z2 = a2 - b2;
+   uint borrow1 = uint(a2 < b2);
+   uint z1 = a1 - b1;
+   uint borrow0 = uint(a1 < b1);
+   uint z0 = a0 - b0;
+   z0 -= uint(z1 < borrow1);
+   z1 -= borrow1;
+   z0 -= borrow0;
+   z2Ptr = z2;
+   z1Ptr = z1;
+   z0Ptr = z0;
+}
+
+/* Shifts the 64-bit value formed by concatenating `a0' and `a1' right by the
+ * number of bits given in `count'.  Any bits shifted off are lost.  The value
+ * of `count' can be arbitrarily large; in particular, if `count' is greater
+ * than 64, the result will be 0.  The result is broken into two 32-bit pieces
+ * which are stored at the locations pointed to by `z0Ptr' and `z1Ptr'.
+ */
+void
+shift64Right(uint a0, uint a1,
+             int count,
+             inout uint z0Ptr,
+             inout uint z1Ptr)
+{
+   uint z0;
+   uint z1;
+   int negCount = (-count) & 31;
+
+   if (count == 0) {
+      z1 = a1;
+      z0 = a0;
+   } else if (count < 32) {
+      z1 = (a0<<negCount) | (a1>>count);
+      z0 = a0>>count;
+   } else {
+      z1 = (count < 64) ? (a0>>(count & 31)) : 0u;
+      z0 = 0u;
+   }
+   z1Ptr = z1;
+   z0Ptr = z0;
+}
+
+/* Returns an approximation to the 32-bit integer quotient obtained by dividing
+ * `b' into the 64-bit value formed by concatenating `a0' and `a1'.  The
+ * divisor `b' must be at least 2^31.  If q is the exact quotient truncated
+ * toward zero, the approximation returned lies between q and q + 2 inclusive.
+ * If the exact quotient q is larger than 32 bits, the maximum positive 32-bit
+ * unsigned integer is returned.
+ */
+uint
+estimateDiv64To32(uint a0, uint a1, uint b)
+{
+   uint b0;
+   uint b1;
+   uint rem0 = 0u;
+   uint rem1 = 0u;
+   uint term0 = 0u;
+   uint term1 = 0u;
+   uint z;
+
+   if (b <= a0)
+      return 0xFFFFFFFFu;
+   b0 = b>>16;
+   z = (b0<<16 <= a0) ? 0xFFFF0000u : (a0 / b0)<<16;
+   mul32To64(b, z, term0, term1);
+   sub64(a0, a1, term0, term1, rem0, rem1);
+   while (rem0 < 0u) {
+      z -= 0x10000u;
+      b1 = b<<16;
+      add64(rem0, rem1, b0, b1, rem0, rem1);
+   }
+   rem0 = (rem0<<16) | (rem1>>16);
+   z |= (b0<<16 <= rem0) ? 0xFFFFu : rem0 / b0;
+   return z;
+}
+
+/* Multiplies the 64-bit value formed by concatenating `a0' and `a1' by `b'
+ * to obtain a 96-bit product.  The product is broken into three 32-bit pieces
+ * which are stored at the locations pointed to by `z0Ptr', `z1Ptr', and
+ * `z2Ptr'.
+ */
+void
+mul64By32To96(uint a0, uint a1,
+              uint b,
+              inout uint z0Ptr,
+              inout uint z1Ptr,
+              inout uint z2Ptr)
+{
+   uint z0 = 0u;
+   uint z1 = 0u;
+   uint z2 = 0u;
+   uint more1 = 0u;
+
+   mul32To64(a1, b, z1, z2);
+   mul32To64(a0, b, z0, more1);
+   add64(z0, more1, 0u, z1, z0, z1);
+   z2Ptr = z2;
+   z1Ptr = z1;
+   z0Ptr = z0;
+}
+
+/* Returns the result of dividing the double-precision floating-point value
+ * `a' by the corresponding value `b'. The operation is performed according to
+ * the IEEE Standard for Floating-Point Arithmetic.
+ */
+uvec2
+fdiv64(uvec2 a, uvec2 b)
+{
+   uint zExp;
+   uint zFrac0 = 0u;
+   uint zFrac1 = 0u;
+   uint zFrac2 = 0u;
+   uint rem0 = 0u;
+   uint rem1 = 0u;
+   uint rem2 = 0u;
+   uint rem3 = 0u;
+   uint term0 = 0u;
+   uint term1 = 0u;
+   uint term2 = 0u;
+   uint term3 = 0u;
+
+   uvec2 aFrac = extractFloat64Frac(a);
+   uint aExp = extractFloat64Exp(a);
+   uint aSign = extractFloat64Sign(a);
+   uvec2 bFrac = extractFloat64Frac(b);
+   uint bExp = extractFloat64Exp(b);
+   uint bSign = extractFloat64Sign(b);
+   uint zSign = aSign ^ bSign;
+   if (aExp == 0x7FFu) {
+      if ((aFrac.x | aFrac.y) != 0u)
+         return propagateFloat64NaN(a, b);
+      if (bExp == 0x7FFu) {
+         if ((bFrac.x | bFrac.y) != 0u)
+            return propagateFloat64NaN(a, b);
+         return uvec2(0xFFFFFFFFu, 0xFFFFFFFFu);
+      }
+      return packFloat64(zSign, 0x7FFu, 0u, 0u);
+   }
+   if (bExp == 0x7FFu) {
+      if ((bFrac.x | bFrac.y) != 0u)
+         return propagateFloat64NaN(a, b);
+      return packFloat64(zSign, 0u, 0u, 0u);
+   }
+   if (bExp == 0u) {
+      if ((bFrac.x | bFrac.y) == 0u) {
+         if ((aExp | aFrac.x | aFrac.y) == 0u)
+            return uvec2(0xFFFFFFFFu, 0xFFFFFFFFu);
+         return packFloat64(zSign, 0x7FFu, 0u, 0u);
+      }
+      normalizeFloat64Subnormal(bFrac.x, bFrac.y, bExp, bFrac.x, bFrac.y);
+   }
+   if (aExp == 0u) {
+      if ((aFrac.x | aFrac.y) == 0u)
+         return packFloat64(zSign, 0u, 0u, 0u);
+      normalizeFloat64Subnormal(aFrac.x, aFrac.y, aExp, aFrac.x, aFrac.y);
+   }
+   zExp = aExp - bExp + 0x3FDu;
+   shortShift64Left(aFrac.x | 0x00100000u, aFrac.y, 11, aFrac.x, aFrac.y);
+   shortShift64Left(bFrac.x | 0x00100000u, bFrac.y, 11, bFrac.x, bFrac.y);
+   if (le64(bFrac.x, bFrac.y, aFrac.x, aFrac.y)) {
+      shift64Right(aFrac.x, aFrac.y, 1, aFrac.x, aFrac.y);
+      ++zExp;
+   }
+   zFrac0 = estimateDiv64To32(aFrac.x, aFrac.y, bFrac.x);
+   mul64By32To96(bFrac.x, bFrac.y, zFrac0, term0, term1, term2);
+   sub96(aFrac.x, aFrac.y, 0u, term0, term1, term2, rem0, rem1, rem2);
+   while (rem0 < 0u) {
+      --zFrac0;
+      add96(rem0, rem1, rem2, 0u, bFrac.x, bFrac.y, rem0, rem1, rem2);
+   }
+   zFrac1 = estimateDiv64To32(rem1, rem2, bFrac.x);
+   if ((zFrac1 & 0x3FFu) <= 4u) {
+      mul64By32To96(bFrac.x, bFrac.y, zFrac1, term1, term2, term3);
+      sub96(rem1, rem2, 0u, term1, term2, term3, rem1, rem2, rem3);
+      while (rem1 < 0u) {
+         --zFrac1;
+         add96(rem1, rem2, rem3, 0u, bFrac.x, bFrac.y, rem1, rem2, rem3);
+      }
+      zFrac1 |= uint(((rem1 | rem2 | rem3) != 0u));
+   }
+   shift64ExtraRightJamming(zFrac0, zFrac1, 0u, 11, zFrac0, zFrac1, zFrac2);
+   return roundAndPackFloat64(zSign, zExp, zFrac0, zFrac1, zFrac2);
+}
