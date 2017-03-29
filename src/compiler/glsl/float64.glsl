@@ -1143,3 +1143,128 @@ fp32_to_fp64(uint a)
 
    return packFloat64(aSign, aExp + 0x380u, aFrac>>3, aFrac<<29);
 }
+
+/* Packs the sign `zSign', exponent `zExp', and significand `zFrac' into a
+ * single-precision floating-point value, returning the result.  After being
+ * shifted into the proper positions, the three fields are simply added
+ * together to form the result.  This means that any integer portion of `zSig'
+ * will be added into the exponent.  Since a properly normalized significand
+ * will have an integer portion equal to 1, the `zExp' input should be 1 less
+ * than the desired result exponent whenever `zFrac' is a complete, normalized
+ * significand.
+ */
+uint
+packFloat32(uint zSign, uint zExp, uint zFrac)
+{
+   return (zSign<<31) + (zExp<<23) + zFrac;
+}
+
+/* Shifts `a' right by the number of bits given in `count'.  If any nonzero
+ * bits are shifted off, they are "jammed" into the least significant bit of
+ * the result by setting the least significant bit to 1.  The value of `count'
+ * can be arbitrarily large; in particular, if `count' is greater than 32, the
+ * result will be either 0 or 1, depending on whether `a' is zero or nonzero.
+ * The result is stored in the location pointed to by `zPtr'.
+ */
+void
+shift32RightJamming(uint a, int count, inout uint zPtr)
+{
+   uint z;
+
+   if(count == 0) {
+      z = a;
+   } else if (count < 32) {
+      z = (a>>count) | uint((a<<((-count) & 31)) != 0u);
+   } else {
+      z = uint(a != 0u);
+   }
+   zPtr = z;
+}
+
+/* Takes an abstract floating-point value having sign `zSign', exponent `zExp',
+ * and significand `zFrac', and returns the proper single-precision floating-
+ * point value corresponding to the abstract input.  Ordinarily, the abstract
+ * value is simply rounded and packed into the single-precision format, with
+ * the inexact exception raised if the abstract input cannot be represented
+ * exactly.  However, if the abstract value is too large, the overflow and
+ * inexact exceptions are raised and an infinity or maximal finite value is
+ * returned.  If the abstract value is too small, the input value is rounded to
+ * a subnormal number, and the underflow and inexact exceptions are raised if
+ * the abstract input cannot be represented exactly as a subnormal single-
+ * precision floating-point number.
+ *     The input significand `zFrac' has its binary point between bits 30
+ * and 29, which is 7 bits to the left of the usual location.  This shifted
+ * significand must be normalized or smaller.  If `zFrac' is not normalized,
+ * `zExp' must be 0; in that case, the result returned is a subnormal number,
+ * and it must not require rounding.  In the usual case that `zFrac' is
+ * normalized, `zExp' must be 1 less than the "true" floating-point exponent.
+ * The handling of underflow and overflow follows the IEEE Standard for
+ * Floating-Point Arithmetic.
+ */
+uint
+roundAndPackFloat32(uint zSign, uint zExp, uint zFrac)
+{
+   uint roundNearestEven;
+   uint roundIncrement;
+   uint roundBits;
+
+   roundNearestEven = uint(FLOAT_ROUNDING_MODE == FLOAT_ROUND_NEAREST_EVEN);
+   roundIncrement = 0x40u;
+   if (roundNearestEven == 0u) {
+      if (FLOAT_ROUNDING_MODE == FLOAT_ROUND_TO_ZERO) {
+         roundIncrement = 0u;
+      } else {
+         roundIncrement = 0x7Fu;
+         if (zSign != 0u) {
+            if (FLOAT_ROUNDING_MODE == FLOAT_ROUND_UP)
+               roundIncrement = 0u;
+         } else {
+            if (FLOAT_ROUNDING_MODE == FLOAT_ROUND_DOWN)
+               roundIncrement = 0u;
+         }
+      }
+   }
+   roundBits = zFrac & 0x7Fu;
+   if (0xFDu <= zExp) {
+      if ((0xFDu < zExp) || ((zExp == 0xFDu) && ((zFrac + roundIncrement) < 0u)))
+            return packFloat32(zSign, 0xFFu, 0u) - uint(roundIncrement == 0u);
+      if (zExp < 0u) {
+         shift32RightJamming(zFrac, -int(zExp), zFrac);
+         zExp = 0u;
+         roundBits = zFrac & 0x7Fu;
+      }
+   }
+   zFrac = (zFrac + roundIncrement)>>7;
+   zFrac &= ~(uint((roundBits ^ 0x40u) == 0u) & roundNearestEven);
+   if (zFrac == 0u)
+      zExp = 0u;
+
+   return packFloat32(zSign, zExp, zFrac);
+}
+
+/* Returns the result of converting the double-precision floating-point value
+ * `a' to the single-precision floating-point format.  The conversion is
+ * performed according to the IEEE Standard for Floating-Point Arithmetic.
+ */
+uint
+fp64_to_fp32(uvec2 a)
+{
+   uint zFrac = 0u;
+   uint allZero = 0u;
+
+   uvec2 aFrac = extractFloat64Frac(a);
+   uint aExp = extractFloat64Exp(a);
+   uint aSign = extractFloat64Sign(a);
+   if (aExp == 0x7FFu) {
+      if ((aFrac.x | aFrac.y) != 0u) {
+         return (aSign<<31) | 0x7FC00000u |
+            ((aFrac.x & 0x000FFFFFu)<<3) | (aFrac.y>>29);
+      }
+      return packFloat32(aSign, 0xFFu, 0u);
+   }
+   shift64RightJamming(aFrac, 22, allZero, zFrac);
+   if (aExp != 0u)
+      zFrac |= 0x40000000u;
+
+   return roundAndPackFloat32(aSign, aExp - 0x381u, zFrac);
+}
