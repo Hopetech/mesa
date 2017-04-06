@@ -60,6 +60,7 @@
 #define SIGN64                    (1U << 1)
 #define DIV64                     (1U << 2)
 #define MOD64                     (1U << 3)
+#define ABS64                     (1U << 4)
 
 /**
  * \see class lower_packing_builtins_visitor

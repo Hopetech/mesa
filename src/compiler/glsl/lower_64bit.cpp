@@ -22,7 +22,7 @@
  */
 
 /**
- * \file lower_int64.cpp
+ * \file lower_64bit.cpp
  *
  * Lower 64-bit operations to 32-bit operations.  Each 64-bit value is lowered
  * to a uvec2.  For each operation that can be lowered, there is a function
@@ -134,6 +134,12 @@ is_integer_64(const glsl_type *t)
    return t->base_type == GLSL_TYPE_UINT64 || t->base_type == GLSL_TYPE_INT64;
 }
 
+static bool
+is_float_64(const glsl_type *t)
+{
+   return t->base_type == GLSL_TYPE_DOUBLE;
+}
+
 /**
  * Determine if a particular type of lowering should occur
  */
@@ -209,18 +215,21 @@ lower_64bit::expand_source(ir_factory &body,
                            ir_variable **expanded_src)
 {
    assert(val->type->base_type == GLSL_TYPE_UINT64 ||
-          val->type->base_type == GLSL_TYPE_INT64);
+          val->type->base_type == GLSL_TYPE_INT64 ||
+          val->type->base_type == GLSL_TYPE_DOUBLE);
 
    ir_variable *const temp = body.make_temp(val->type, "tmp");
 
    body.emit(assign(temp, val));
 
    const ir_expression_operation unpack_opcode =
-      val->type->base_type == GLSL_TYPE_UINT64
+      (val->type->base_type == GLSL_TYPE_UINT64 ||
+         val->type->base_type == GLSL_TYPE_DOUBLE)
       ? ir_unop_unpack_uint_2x32 : ir_unop_unpack_int_2x32;
 
    const glsl_type *const type =
-      val->type->base_type == GLSL_TYPE_UINT64
+      (val->type->base_type == GLSL_TYPE_UINT64 ||
+         val->type->base_type == GLSL_TYPE_DOUBLE)
       ? glsl_type::uvec2_type : glsl_type::ivec2_type;
 
    unsigned i;
@@ -244,7 +253,8 @@ lower_64bit::compact_destination(ir_factory &body,
                                  ir_variable *result[4])
 {
    const ir_expression_operation pack_opcode =
-      type->base_type == GLSL_TYPE_UINT64
+      (type->base_type == GLSL_TYPE_UINT64 ||
+         type->base_type == GLSL_TYPE_DOUBLE)
       ? ir_unop_pack_uint_2x32 : ir_unop_pack_int_2x32;
 
    ir_variable *const compacted_result =
@@ -272,7 +282,8 @@ lower_64bit::lower_op_to_function_call(ir_instruction *base_ir,
    exec_list instructions;
    unsigned source_components = 0;
    const glsl_type *const result_type =
-      ir->type->base_type == GLSL_TYPE_UINT64
+      (ir->type->base_type == GLSL_TYPE_UINT64 ||
+         ir->type->base_type == GLSL_TYPE_DOUBLE)
       ? glsl_type::uvec2_type : glsl_type::ivec2_type;
 
    ir_factory body(&instructions, mem_ctx);
@@ -327,7 +338,8 @@ lower_64bit_visitor::handle_op(ir_expression *ir,
                                function_generator generator)
 {
    for (unsigned i = 0; i < ir->get_num_operands(); i++)
-      if (!is_integer_64(ir->operands[i]->type))
+      if (!is_integer_64(ir->operands[i]->type) ||
+          !is_float_64(ir->operands[i]->type))
          return ir;
 
    /* Get a handle to the correct ir_function_signature for the core
@@ -361,6 +373,15 @@ lower_64bit_visitor::handle_rvalue(ir_rvalue **rvalue)
    assert(ir != NULL);
 
    switch (ir->operation) {
+   case ir_unop_abs:
+      if (lowering(ABS64)) {
+         if (ir->type->base_type == GLSL_TYPE_DOUBLE) {
+            *rvalue = handle_op(ir, "__builtin_fabs64", generate_ir::fabs64);
+         }
+         this->progress = true;
+      }
+      break;
+
    case ir_unop_sign:
       if (lowering(SIGN64)) {
          *rvalue = handle_op(ir, "__builtin_sign64", generate_ir::sign64);
