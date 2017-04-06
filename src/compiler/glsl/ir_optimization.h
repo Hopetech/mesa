@@ -66,6 +66,7 @@
 #define LE64                      (1U << 7)
 #define LT64                      (1U << 8)
 #define ADD64                     (1U << 9)
+#define F2D                       (1U << 10)
 
 /**
  * \see class lower_packing_builtins_visitor
