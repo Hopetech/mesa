@@ -55,7 +55,9 @@
 #define DIV_TO_MUL_RCP            (FDIV_TO_MUL_RCP | DDIV_TO_MUL_RCP)
 #define SQRT_TO_ABS_SQRT          0x200000
 
-/* Opertaions for lower_64bit_integer_instructions() */
+/* Opertaions for lower_64bit_integer_instructions()
+ * and lower_64bit_double_instructions()
+ */
 #define MUL64                     (1U << 0)
 #define SIGN64                    (1U << 1)
 #define DIV64                     (1U << 2)
@@ -185,4 +187,6 @@ compare_index_block(exec_list *instructions, ir_variable *index,
 bool lower_64bit_integer_instructions(exec_list *instructions,
                                       unsigned what_to_lower);
 
+bool lower_64bit_double_instructions(exec_list *instructions,
+                                      unsigned what_to_lower);
 #endif /* GLSL_IR_OPTIMIZATION_H */

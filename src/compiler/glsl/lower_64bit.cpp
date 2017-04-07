@@ -146,7 +146,7 @@ is_float_64(const glsl_type *t)
 #define lowering(x) (this->lower & x)
 
 bool
-lower_64bit_integer_instructions(exec_list *instructions,
+lower_64bit_instructions(exec_list *instructions,
                                  unsigned what_to_lower)
 {
    if (instructions->is_empty())
@@ -177,6 +177,19 @@ lower_64bit_integer_instructions(exec_list *instructions,
    return v.progress;
 }
 
+bool
+lower_64bit_integer_instructions(exec_list *instructions,
+                                 unsigned what_to_lower)
+{
+   return lower_64bit_instructions(instructions, what_to_lower);
+}
+
+bool
+lower_64bit_double_instructions(exec_list *instructions,
+                                 unsigned what_to_lower)
+{
+   return lower_64bit_instructions(instructions, what_to_lower);
+}
 
 /**
  * Expand individual 64-bit values to uvec2 values
