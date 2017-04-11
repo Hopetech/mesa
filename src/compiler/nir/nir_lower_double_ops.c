@@ -456,6 +456,16 @@ lower_mod(nir_builder *b, nir_ssa_def *src0, nir_ssa_def *src1)
                     nir_imm_double(b, 0.0));
 }
 
+static nir_ssa_def *
+lower_fabs64(nir_builder *b, nir_ssa_def *src)
+{
+   nir_ssa_def *src_lo = nir_unpack_64_2x32_split_x(b, src);
+   nir_ssa_def *src_hi = nir_unpack_64_2x32_split_y(b, src);
+   /* Clear the sign bit */
+   nir_ssa_def *new_src_hi = nir_iand(b, src_hi, nir_imm_int(b, 0x7FFFFFFF));
+   return nir_pack_64_2x32_split(b, src_lo, new_src_hi);
+}
+
 static bool
 lower_doubles_instr(nir_alu_instr *instr, nir_lower_doubles_options options)
 {
@@ -509,6 +519,11 @@ lower_doubles_instr(nir_alu_instr *instr, nir_lower_doubles_options options)
          return false;
       break;
 
+   case nir_op_fabs:
+      if (!(options & nir_lower_dabs))
+         return false;
+      break;
+
    default:
       return false;
    }
@@ -554,6 +569,11 @@ lower_doubles_instr(nir_alu_instr *instr, nir_lower_doubles_options options)
       result = lower_mod(&bld, src, src1);
    }
       break;
+
+   case nir_op_fabs:
+      result = lower_fabs64(&bld, src);
+      break;
+
    default:
       unreachable("unhandled opcode");
    }
