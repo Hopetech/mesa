@@ -36,6 +36,16 @@
  * - 32-bit integer and floating point arithmetic
  */
 
+static nir_ssa_def *
+get_sign(nir_builder *b, nir_ssa_def *src)
+{
+   /* get bits 32-63 */
+   nir_ssa_def *hi = nir_unpack_64_2x32_split_y(b, src);
+
+   /* extract bit 32 of the high word */
+   return nir_ubitfield_extract(b, hi, nir_imm_int(b, 31), nir_imm_int(b, 1));
+}
+
 /* Creates a double with the exponent bits set to a given integer value */
 static nir_ssa_def *
 set_exponent(nir_builder *b, nir_ssa_def *src, nir_ssa_def *exp)
@@ -125,6 +135,18 @@ fix_inv_result(nir_builder *b, nir_ssa_def *res, nir_ssa_def *src,
 
    return res;
 
+}
+
+static nir_ssa_def *
+lt64(nir_builder *b, nir_ssa_def *x_hi, nir_ssa_def *x_lo,
+                     nir_ssa_def *y_hi, nir_ssa_def *y_lo)
+{
+   nir_ssa_def *lt_hi = nir_ult(b, x_hi, y_hi);
+   nir_ssa_def *eq_hi = nir_ieq(b, x_hi, y_hi);
+   nir_ssa_def *lt_lo = nir_ult(b, x_lo, y_lo);
+
+   /* return (x_hi < y_hi) || ((x_hi == y_hi) && (x_lo < y_lo)); */
+   return nir_ior(b, lt_hi, nir_iand(b, eq_hi, lt_lo));
 }
 
 static nir_ssa_def *
@@ -558,6 +580,40 @@ lower_feq64(nir_builder *b, nir_ssa_def *x, nir_ssa_def *y)
                                            nir_iand(b, eq_x_lo, eq_xy_hi))));
 }
 
+static nir_ssa_def *
+lower_flt64(nir_builder *b, nir_ssa_def *x, nir_ssa_def *y)
+{
+   nir_ssa_def *x_si = get_sign(b, x);
+   nir_ssa_def *x_lo = nir_unpack_64_2x32_split_x(b, x);
+   nir_ssa_def *x_hi = nir_unpack_64_2x32_split_y(b, x);
+   nir_ssa_def *y_si = get_sign(b, y);
+   nir_ssa_def *y_lo = nir_unpack_64_2x32_split_x(b, y);
+   nir_ssa_def *y_hi = nir_unpack_64_2x32_split_y(b, y);
+
+   nir_ssa_def *xy_lo = nir_ior(b, x_lo, y_lo);
+   nir_ssa_def *xy_hi = nir_ior(b, x_hi, y_hi);
+   nir_ssa_def *shl_xy_hi = nir_ishl(b, xy_hi, nir_imm_int(b, 1));
+   nir_ssa_def *xy_hi_lo_si = nir_ior(b, shl_xy_hi, xy_lo);
+   nir_ssa_def *ne_xy = nir_ine(b, xy_hi_lo_si, nir_imm_int(b, 0));
+
+   /* if x or y is a nan
+    *    return false;
+    * if (x_si != y_si)
+    *    return x_si && (((((x_hi | y_hi)<<1)) | x_lo | y_lo) != 0);
+    * return
+    *      x_si ? lt64(y_hi, y_lo, x_hi, x_lo) : lt64(x_hi, x_lo, y_hi, y_lo);
+    */
+   return nir_bcsel(b,
+                    nir_ior(b, is_nan(b, x), is_nan(b, y)),
+                    nir_imm_int(b, NIR_FALSE),
+                    nir_bcsel(b,
+                              nir_ine(b, x_si, y_si),
+                              nir_iand(b, x_si, ne_xy),
+                              nir_bcsel(b, x_si,
+                                           lt64(b, y_hi, y_lo, x_hi, x_lo),
+                                           lt64(b, x_hi, x_lo, y_hi, y_lo))));
+}
+
 static bool
 lower_doubles_instr(nir_alu_instr *instr, nir_lower_doubles_options options)
 {
@@ -631,6 +687,11 @@ lower_doubles_instr(nir_alu_instr *instr, nir_lower_doubles_options options)
          return false;
       break;
 
+   case nir_op_flt:
+      if (!(options & nir_lower_dlt))
+         return false;
+      break;
+
    default:
       return false;
    }
@@ -693,6 +754,13 @@ lower_doubles_instr(nir_alu_instr *instr, nir_lower_doubles_options options)
       nir_ssa_def *src1 = nir_fmov_alu(&bld, instr->src[1],
                                       instr->dest.dest.ssa.num_components);
       result = lower_feq64(&bld, src, src1);
+   }
+      break;
+
+   case nir_op_flt: {
+      nir_ssa_def *src1 = nir_fmov_alu(&bld, instr->src[1],
+                                      instr->dest.dest.ssa.num_components);
+      result = lower_flt64(&bld, src, src1);
    }
       break;
 
