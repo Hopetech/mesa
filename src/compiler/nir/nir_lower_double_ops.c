@@ -504,6 +504,31 @@ lower_fneg64(nir_builder *b, nir_ssa_def *src)
                        nir_pack_64_2x32_split(b, src_lo, src_hi));
 }
 
+static nir_ssa_def *
+lower_fsign64(nir_builder *b, nir_ssa_def *src)
+{
+   nir_ssa_def *src_lo = nir_unpack_64_2x32_split_x(b, src);
+   nir_ssa_def *src_hi = nir_unpack_64_2x32_split_y(b, src);
+
+   nir_ssa_def *is_zero = nir_ieq(b,
+                                  nir_ior(b,
+                                          nir_ishl(b, src_hi,
+                                                      nir_imm_int(b, 1)),
+                                          src_lo),
+                                  nir_imm_int(b, 0));
+
+   nir_ssa_def *sign = nir_iand(b, src_hi, nir_imm_int(b, 0x80000000));
+   /* High part of the number one in double precision */
+   nir_ssa_def *one = nir_imm_int(b, 0x3FF00000);
+
+   return nir_bcsel(b,
+                    is_zero,
+                    nir_imm_double(b, 0),
+                    nir_pack_64_2x32_split(b,
+                                           nir_imm_int(b, 0),
+                                           nir_ior(b, sign, one)));
+}
+
 static bool
 lower_doubles_instr(nir_alu_instr *instr, nir_lower_doubles_options options)
 {
@@ -567,6 +592,11 @@ lower_doubles_instr(nir_alu_instr *instr, nir_lower_doubles_options options)
          return false;
       break;
 
+   case nir_op_fsign:
+      if (!(options & nir_lower_dsign))
+         return false;
+      break;
+
    default:
       return false;
    }
@@ -619,6 +649,10 @@ lower_doubles_instr(nir_alu_instr *instr, nir_lower_doubles_options options)
 
    case nir_op_fneg:
       result = lower_fneg64(&bld, src);
+      break;
+
+   case nir_op_fsign:
+      result = lower_fsign64(&bld, src);
       break;
 
    default:
