@@ -62,6 +62,26 @@ get_exponent(nir_builder *b, nir_ssa_def *src)
    return nir_ubitfield_extract(b, hi, nir_imm_int(b, 20), nir_imm_int(b, 11));
 }
 
+static nir_ssa_def *
+is_nan(nir_builder *b, nir_ssa_def *src)
+{
+   nir_ssa_def *src_lo = nir_unpack_64_2x32_split_x(b, src);
+   nir_ssa_def *src_hi = nir_unpack_64_2x32_split_y(b, src);
+
+   /* return (0xFFE00000 <= (src_hi<<1)) &&
+    *    (src_lo || (src_hi & 0x000FFFFF));
+    */
+   return nir_iand(b,
+                   nir_uge(b,
+                           nir_ishl(b, src_hi, nir_imm_int(b, 1)),
+                           nir_imm_int(b, 0xFFE00000)),
+                   nir_ior(b, nir_i2b(b, src_lo),
+                              nir_i2b(b,
+                                      nir_iand(b,
+                                               src_hi,
+                                               nir_imm_int(b, 0x000FFFFF)))));
+}
+
 /* Return infinity with the sign of the given source which is +/-0 */
 
 static nir_ssa_def *
@@ -466,6 +486,24 @@ lower_fabs64(nir_builder *b, nir_ssa_def *src)
    return nir_pack_64_2x32_split(b, src_lo, new_src_hi);
 }
 
+static nir_ssa_def *
+lower_fneg64(nir_builder *b, nir_ssa_def *src)
+{
+   nir_ssa_def *src_lo = nir_unpack_64_2x32_split_x(b, src);
+   nir_ssa_def *src_hi = nir_unpack_64_2x32_split_y(b, src);
+   src_hi = nir_ixor(b, src_hi,
+                        nir_ishl(b,
+                                 nir_imm_int(b, 1),
+                                 nir_imm_int(b, 31)));
+
+   /* Return the negate value of the src.
+    * If the src is not a number (NaN), return the src.
+    */
+   return nir_bcsel(b, is_nan(b, src),
+                       src,
+                       nir_pack_64_2x32_split(b, src_lo, src_hi));
+}
+
 static bool
 lower_doubles_instr(nir_alu_instr *instr, nir_lower_doubles_options options)
 {
@@ -524,6 +562,11 @@ lower_doubles_instr(nir_alu_instr *instr, nir_lower_doubles_options options)
          return false;
       break;
 
+   case nir_op_fneg:
+      if (!(options & nir_lower_dneg))
+         return false;
+      break;
+
    default:
       return false;
    }
@@ -572,6 +615,10 @@ lower_doubles_instr(nir_alu_instr *instr, nir_lower_doubles_options options)
 
    case nir_op_fabs:
       result = lower_fabs64(&bld, src);
+      break;
+
+   case nir_op_fneg:
+      result = lower_fneg64(&bld, src);
       break;
 
    default:
