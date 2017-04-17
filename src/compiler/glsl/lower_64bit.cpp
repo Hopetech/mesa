@@ -351,7 +351,7 @@ lower_64bit_visitor::handle_op(ir_expression *ir,
                                function_generator generator)
 {
    for (unsigned i = 0; i < ir->get_num_operands(); i++)
-      if (!is_integer_64(ir->operands[i]->type) ||
+      if (!is_integer_64(ir->operands[i]->type) &&
           !is_float_64(ir->operands[i]->type))
          return ir;
 
