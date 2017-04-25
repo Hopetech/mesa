@@ -10,7 +10,7 @@ fabs64(void *mem_ctx, builtin_available_predicate avail)
 
    ir_variable *const r000B = new(mem_ctx) ir_variable(glsl_type::uvec2_type, "a", ir_var_function_in);
    sig_parameters.push_tail(r000B);
-   body.emit(assign(r000B, bit_and(swizzle_x(r000B), body.constant(2147483647u)), 0x01));
+   body.emit(assign(r000B, bit_and(swizzle_y(r000B), body.constant(2147483647u)), 0x02));
 
    body.emit(ret(r000B));
 
@@ -29,10 +29,10 @@ is_nan(void *mem_ctx, builtin_available_predicate avail)
 
    ir_variable *const r000C = new(mem_ctx) ir_variable(glsl_type::uvec2_type, "a", ir_var_function_in);
    sig_parameters.push_tail(r000C);
-   ir_expression *const r000D = lshift(swizzle_y(r000C), body.constant(int(1)));
+   ir_expression *const r000D = lshift(swizzle_x(r000C), body.constant(int(1)));
    ir_expression *const r000E = lequal(body.constant(4292870144u), r000D);
-   ir_expression *const r000F = nequal(swizzle_x(r000C), body.constant(0u));
-   ir_expression *const r0010 = bit_and(swizzle_y(r000C), body.constant(1048575u));
+   ir_expression *const r000F = nequal(swizzle_y(r000C), body.constant(0u));
+   ir_expression *const r0010 = bit_and(swizzle_x(r000C), body.constant(1048575u));
    ir_expression *const r0011 = nequal(r0010, body.constant(0u));
    ir_expression *const r0012 = logic_or(r000F, r0011);
    ir_expression *const r0013 = logic_and(r000E, r0012);
@@ -55,10 +55,10 @@ fneg64(void *mem_ctx, builtin_available_predicate avail)
    sig_parameters.push_tail(r0014);
    ir_variable *const r0015 = body.make_temp(glsl_type::uvec2_type, "return_value");
    /* IF CONDITION */
-   ir_expression *const r0017 = lshift(swizzle_y(r0014), body.constant(int(1)));
+   ir_expression *const r0017 = lshift(swizzle_x(r0014), body.constant(int(1)));
    ir_expression *const r0018 = lequal(body.constant(4292870144u), r0017);
-   ir_expression *const r0019 = nequal(swizzle_x(r0014), body.constant(0u));
-   ir_expression *const r001A = bit_and(swizzle_y(r0014), body.constant(1048575u));
+   ir_expression *const r0019 = nequal(swizzle_y(r0014), body.constant(0u));
+   ir_expression *const r001A = bit_and(swizzle_x(r0014), body.constant(1048575u));
    ir_expression *const r001B = nequal(r001A, body.constant(0u));
    ir_expression *const r001C = logic_or(r0019, r001B);
    ir_expression *const r001D = logic_and(r0018, r001C);
@@ -74,7 +74,7 @@ fneg64(void *mem_ctx, builtin_available_predicate avail)
       /* ELSE INSTRUCTIONS */
       body.instructions = &f0016->else_instructions;
 
-      body.emit(assign(r0014, bit_xor(swizzle_x(r0014), body.constant(2147483648u)), 0x01));
+      body.emit(assign(r0014, bit_xor(swizzle_y(r0014), body.constant(2147483648u)), 0x02));
 
       body.emit(assign(r0015, r0014, 0x03));
 
@@ -102,9 +102,9 @@ extractFloat64Frac(void *mem_ctx, builtin_available_predicate avail)
    ir_variable *const r001E = new(mem_ctx) ir_variable(glsl_type::uvec2_type, "a", ir_var_function_in);
    sig_parameters.push_tail(r001E);
    ir_variable *const r001F = body.make_temp(glsl_type::uvec2_type, "vec_ctor");
-   body.emit(assign(r001F, bit_and(swizzle_x(r001E), body.constant(1048575u)), 0x01));
+   body.emit(assign(r001F, bit_and(swizzle_y(r001E), body.constant(1048575u)), 0x01));
 
-   body.emit(assign(r001F, swizzle_y(r001E), 0x02));
+   body.emit(assign(r001F, swizzle_x(r001E), 0x02));
 
    body.emit(ret(r001F));
 
@@ -123,7 +123,7 @@ extractFloat64Exp(void *mem_ctx, builtin_available_predicate avail)
 
    ir_variable *const r0020 = new(mem_ctx) ir_variable(glsl_type::uvec2_type, "a", ir_var_function_in);
    sig_parameters.push_tail(r0020);
-   ir_expression *const r0021 = rshift(swizzle_x(r0020), body.constant(int(20)));
+   ir_expression *const r0021 = rshift(swizzle_y(r0020), body.constant(int(20)));
    ir_expression *const r0022 = bit_and(r0021, body.constant(2047u));
    body.emit(ret(r0022));
 
@@ -150,26 +150,26 @@ feq64(void *mem_ctx, builtin_available_predicate avail)
    ir_variable *const r0027 = new(mem_ctx) ir_variable(glsl_type::bool_type, "isaNaN", ir_var_auto);
    body.emit(r0027);
    ir_variable *const r0028 = body.make_temp(glsl_type::uvec2_type, "vec_ctor");
-   body.emit(assign(r0028, bit_and(swizzle_x(r0023), body.constant(1048575u)), 0x01));
+   body.emit(assign(r0028, bit_and(swizzle_y(r0023), body.constant(1048575u)), 0x01));
 
-   body.emit(assign(r0028, swizzle_y(r0023), 0x02));
+   body.emit(assign(r0028, swizzle_x(r0023), 0x02));
 
    ir_variable *const r0029 = body.make_temp(glsl_type::uvec2_type, "vec_ctor");
-   body.emit(assign(r0029, bit_and(swizzle_x(r0024), body.constant(1048575u)), 0x01));
+   body.emit(assign(r0029, bit_and(swizzle_y(r0024), body.constant(1048575u)), 0x01));
 
-   body.emit(assign(r0029, swizzle_y(r0024), 0x02));
+   body.emit(assign(r0029, swizzle_x(r0024), 0x02));
 
-   ir_expression *const r002A = rshift(swizzle_x(r0023), body.constant(int(20)));
+   ir_expression *const r002A = rshift(swizzle_y(r0023), body.constant(int(20)));
    ir_expression *const r002B = bit_and(r002A, body.constant(2047u));
    ir_expression *const r002C = equal(r002B, body.constant(2047u));
-   ir_expression *const r002D = bit_or(swizzle_x(r0028), swizzle_y(r0023));
+   ir_expression *const r002D = bit_or(swizzle_x(r0023), swizzle_x(r0028));
    ir_expression *const r002E = nequal(r002D, body.constant(0u));
    body.emit(assign(r0027, logic_and(r002C, r002E), 0x01));
 
-   ir_expression *const r002F = rshift(swizzle_x(r0024), body.constant(int(20)));
+   ir_expression *const r002F = rshift(swizzle_y(r0024), body.constant(int(20)));
    ir_expression *const r0030 = bit_and(r002F, body.constant(2047u));
    ir_expression *const r0031 = equal(r0030, body.constant(2047u));
-   ir_expression *const r0032 = bit_or(swizzle_x(r0029), swizzle_y(r0024));
+   ir_expression *const r0032 = bit_or(swizzle_x(r0024), swizzle_x(r0029));
    ir_expression *const r0033 = nequal(r0032, body.constant(0u));
    body.emit(assign(r0026, logic_and(r0031, r0033), 0x01));
 
@@ -187,10 +187,10 @@ feq64(void *mem_ctx, builtin_available_predicate avail)
       /* ELSE INSTRUCTIONS */
       body.instructions = &f0034->else_instructions;
 
-      ir_expression *const r0036 = equal(swizzle_y(r0023), swizzle_y(r0024));
-      ir_expression *const r0037 = equal(swizzle_x(r0023), swizzle_x(r0024));
-      ir_expression *const r0038 = equal(swizzle_y(r0023), body.constant(0u));
-      ir_expression *const r0039 = bit_or(swizzle_x(r0023), swizzle_x(r0024));
+      ir_expression *const r0036 = equal(swizzle_x(r0023), swizzle_x(r0024));
+      ir_expression *const r0037 = equal(swizzle_y(r0023), swizzle_y(r0024));
+      ir_expression *const r0038 = equal(swizzle_x(r0023), body.constant(0u));
+      ir_expression *const r0039 = bit_or(swizzle_y(r0023), swizzle_y(r0024));
       ir_expression *const r003A = lshift(r0039, body.constant(int(1)));
       ir_expression *const r003B = equal(r003A, body.constant(0u));
       ir_expression *const r003C = logic_and(r0038, r003B);
@@ -220,7 +220,7 @@ extractFloat64Sign(void *mem_ctx, builtin_available_predicate avail)
 
    ir_variable *const r003E = new(mem_ctx) ir_variable(glsl_type::uvec2_type, "a", ir_var_function_in);
    sig_parameters.push_tail(r003E);
-   ir_expression *const r003F = rshift(swizzle_x(r003E), body.constant(int(31)));
+   ir_expression *const r003F = rshift(swizzle_y(r003E), body.constant(int(31)));
    body.emit(ret(r003F));
 
    sig->replace_parameters(&sig_parameters);
@@ -274,26 +274,26 @@ fle64(void *mem_ctx, builtin_available_predicate avail)
    ir_variable *const r004D = new(mem_ctx) ir_variable(glsl_type::bool_type, "isaNaN", ir_var_auto);
    body.emit(r004D);
    ir_variable *const r004E = body.make_temp(glsl_type::uvec2_type, "vec_ctor");
-   body.emit(assign(r004E, bit_and(swizzle_x(r0049), body.constant(1048575u)), 0x01));
+   body.emit(assign(r004E, bit_and(swizzle_y(r0049), body.constant(1048575u)), 0x01));
 
-   body.emit(assign(r004E, swizzle_y(r0049), 0x02));
+   body.emit(assign(r004E, swizzle_x(r0049), 0x02));
 
    ir_variable *const r004F = body.make_temp(glsl_type::uvec2_type, "vec_ctor");
-   body.emit(assign(r004F, bit_and(swizzle_x(r004A), body.constant(1048575u)), 0x01));
+   body.emit(assign(r004F, bit_and(swizzle_y(r004A), body.constant(1048575u)), 0x01));
 
-   body.emit(assign(r004F, swizzle_y(r004A), 0x02));
+   body.emit(assign(r004F, swizzle_x(r004A), 0x02));
 
-   ir_expression *const r0050 = rshift(swizzle_x(r0049), body.constant(int(20)));
+   ir_expression *const r0050 = rshift(swizzle_y(r0049), body.constant(int(20)));
    ir_expression *const r0051 = bit_and(r0050, body.constant(2047u));
    ir_expression *const r0052 = equal(r0051, body.constant(2047u));
-   ir_expression *const r0053 = bit_or(swizzle_x(r004E), swizzle_y(r0049));
+   ir_expression *const r0053 = bit_or(swizzle_x(r0049), swizzle_x(r004E));
    ir_expression *const r0054 = nequal(r0053, body.constant(0u));
    body.emit(assign(r004D, logic_and(r0052, r0054), 0x01));
 
-   ir_expression *const r0055 = rshift(swizzle_x(r004A), body.constant(int(20)));
+   ir_expression *const r0055 = rshift(swizzle_y(r004A), body.constant(int(20)));
    ir_expression *const r0056 = bit_and(r0055, body.constant(2047u));
    ir_expression *const r0057 = equal(r0056, body.constant(2047u));
-   ir_expression *const r0058 = bit_or(swizzle_x(r004F), swizzle_y(r004A));
+   ir_expression *const r0058 = bit_or(swizzle_x(r004A), swizzle_x(r004F));
    ir_expression *const r0059 = nequal(r0058, body.constant(0u));
    body.emit(assign(r004C, logic_and(r0057, r0059), 0x01));
 
@@ -312,10 +312,10 @@ fle64(void *mem_ctx, builtin_available_predicate avail)
       body.instructions = &f005A->else_instructions;
 
       ir_variable *const r005C = body.make_temp(glsl_type::uint_type, "extractFloat64Sign_retval");
-      body.emit(assign(r005C, rshift(swizzle_x(r0049), body.constant(int(31))), 0x01));
+      body.emit(assign(r005C, rshift(swizzle_y(r0049), body.constant(int(31))), 0x01));
 
       ir_variable *const r005D = body.make_temp(glsl_type::uint_type, "extractFloat64Sign_retval");
-      body.emit(assign(r005D, rshift(swizzle_x(r004A), body.constant(int(31))), 0x01));
+      body.emit(assign(r005D, rshift(swizzle_y(r004A), body.constant(int(31))), 0x01));
 
       /* IF CONDITION */
       ir_expression *const r005F = nequal(r005C, r005D);
@@ -326,10 +326,10 @@ fle64(void *mem_ctx, builtin_available_predicate avail)
          body.instructions = &f005E->then_instructions;
 
          ir_expression *const r0060 = nequal(r005C, body.constant(0u));
-         ir_expression *const r0061 = bit_or(swizzle_x(r0049), swizzle_x(r004A));
+         ir_expression *const r0061 = bit_or(swizzle_y(r0049), swizzle_y(r004A));
          ir_expression *const r0062 = lshift(r0061, body.constant(int(1)));
-         ir_expression *const r0063 = bit_or(r0062, swizzle_y(r0049));
-         ir_expression *const r0064 = bit_or(r0063, swizzle_y(r004A));
+         ir_expression *const r0063 = bit_or(r0062, swizzle_x(r0049));
+         ir_expression *const r0064 = bit_or(r0063, swizzle_x(r004A));
          ir_expression *const r0065 = equal(r0064, body.constant(0u));
          body.emit(assign(r004B, logic_or(r0060, r0065), 0x01));
 
@@ -346,9 +346,9 @@ fle64(void *mem_ctx, builtin_available_predicate avail)
             /* THEN INSTRUCTIONS */
             body.instructions = &f0067->then_instructions;
 
-            ir_expression *const r0069 = less(swizzle_x(r004A), swizzle_x(r0049));
-            ir_expression *const r006A = equal(swizzle_x(r004A), swizzle_x(r0049));
-            ir_expression *const r006B = lequal(swizzle_y(r004A), swizzle_y(r0049));
+            ir_expression *const r0069 = less(swizzle_y(r004A), swizzle_y(r0049));
+            ir_expression *const r006A = equal(swizzle_y(r004A), swizzle_y(r0049));
+            ir_expression *const r006B = lequal(swizzle_x(r004A), swizzle_x(r0049));
             ir_expression *const r006C = logic_and(r006A, r006B);
             body.emit(assign(r0066, logic_or(r0069, r006C), 0x01));
 
@@ -356,9 +356,9 @@ fle64(void *mem_ctx, builtin_available_predicate avail)
             /* ELSE INSTRUCTIONS */
             body.instructions = &f0067->else_instructions;
 
-            ir_expression *const r006D = less(swizzle_x(r0049), swizzle_x(r004A));
-            ir_expression *const r006E = equal(swizzle_x(r0049), swizzle_x(r004A));
-            ir_expression *const r006F = lequal(swizzle_y(r0049), swizzle_y(r004A));
+            ir_expression *const r006D = less(swizzle_y(r0049), swizzle_y(r004A));
+            ir_expression *const r006E = equal(swizzle_y(r0049), swizzle_y(r004A));
+            ir_expression *const r006F = lequal(swizzle_x(r0049), swizzle_x(r004A));
             ir_expression *const r0070 = logic_and(r006E, r006F);
             body.emit(assign(r0066, logic_or(r006D, r0070), 0x01));
 
@@ -435,26 +435,26 @@ flt64(void *mem_ctx, builtin_available_predicate avail)
    ir_variable *const r007E = new(mem_ctx) ir_variable(glsl_type::bool_type, "isaNaN", ir_var_auto);
    body.emit(r007E);
    ir_variable *const r007F = body.make_temp(glsl_type::uvec2_type, "vec_ctor");
-   body.emit(assign(r007F, bit_and(swizzle_x(r007A), body.constant(1048575u)), 0x01));
+   body.emit(assign(r007F, bit_and(swizzle_y(r007A), body.constant(1048575u)), 0x01));
 
-   body.emit(assign(r007F, swizzle_y(r007A), 0x02));
+   body.emit(assign(r007F, swizzle_x(r007A), 0x02));
 
    ir_variable *const r0080 = body.make_temp(glsl_type::uvec2_type, "vec_ctor");
-   body.emit(assign(r0080, bit_and(swizzle_x(r007B), body.constant(1048575u)), 0x01));
+   body.emit(assign(r0080, bit_and(swizzle_y(r007B), body.constant(1048575u)), 0x01));
 
-   body.emit(assign(r0080, swizzle_y(r007B), 0x02));
+   body.emit(assign(r0080, swizzle_x(r007B), 0x02));
 
-   ir_expression *const r0081 = rshift(swizzle_x(r007A), body.constant(int(20)));
+   ir_expression *const r0081 = rshift(swizzle_y(r007A), body.constant(int(20)));
    ir_expression *const r0082 = bit_and(r0081, body.constant(2047u));
    ir_expression *const r0083 = equal(r0082, body.constant(2047u));
-   ir_expression *const r0084 = bit_or(swizzle_x(r007F), swizzle_y(r007A));
+   ir_expression *const r0084 = bit_or(swizzle_x(r007A), swizzle_x(r007F));
    ir_expression *const r0085 = nequal(r0084, body.constant(0u));
    body.emit(assign(r007E, logic_and(r0083, r0085), 0x01));
 
-   ir_expression *const r0086 = rshift(swizzle_x(r007B), body.constant(int(20)));
+   ir_expression *const r0086 = rshift(swizzle_y(r007B), body.constant(int(20)));
    ir_expression *const r0087 = bit_and(r0086, body.constant(2047u));
    ir_expression *const r0088 = equal(r0087, body.constant(2047u));
-   ir_expression *const r0089 = bit_or(swizzle_x(r0080), swizzle_y(r007B));
+   ir_expression *const r0089 = bit_or(swizzle_x(r007B), swizzle_x(r0080));
    ir_expression *const r008A = nequal(r0089, body.constant(0u));
    body.emit(assign(r007D, logic_and(r0088, r008A), 0x01));
 
@@ -473,10 +473,10 @@ flt64(void *mem_ctx, builtin_available_predicate avail)
       body.instructions = &f008B->else_instructions;
 
       ir_variable *const r008D = body.make_temp(glsl_type::uint_type, "extractFloat64Sign_retval");
-      body.emit(assign(r008D, rshift(swizzle_x(r007A), body.constant(int(31))), 0x01));
+      body.emit(assign(r008D, rshift(swizzle_y(r007A), body.constant(int(31))), 0x01));
 
       ir_variable *const r008E = body.make_temp(glsl_type::uint_type, "extractFloat64Sign_retval");
-      body.emit(assign(r008E, rshift(swizzle_x(r007B), body.constant(int(31))), 0x01));
+      body.emit(assign(r008E, rshift(swizzle_y(r007B), body.constant(int(31))), 0x01));
 
       /* IF CONDITION */
       ir_expression *const r0090 = nequal(r008D, r008E);
@@ -487,10 +487,10 @@ flt64(void *mem_ctx, builtin_available_predicate avail)
          body.instructions = &f008F->then_instructions;
 
          ir_expression *const r0091 = nequal(r008D, body.constant(0u));
-         ir_expression *const r0092 = bit_or(swizzle_x(r007A), swizzle_x(r007B));
+         ir_expression *const r0092 = bit_or(swizzle_y(r007A), swizzle_y(r007B));
          ir_expression *const r0093 = lshift(r0092, body.constant(int(1)));
-         ir_expression *const r0094 = bit_or(r0093, swizzle_y(r007A));
-         ir_expression *const r0095 = bit_or(r0094, swizzle_y(r007B));
+         ir_expression *const r0094 = bit_or(r0093, swizzle_x(r007A));
+         ir_expression *const r0095 = bit_or(r0094, swizzle_x(r007B));
          ir_expression *const r0096 = nequal(r0095, body.constant(0u));
          body.emit(assign(r007C, logic_and(r0091, r0096), 0x01));
 
@@ -507,9 +507,9 @@ flt64(void *mem_ctx, builtin_available_predicate avail)
             /* THEN INSTRUCTIONS */
             body.instructions = &f0098->then_instructions;
 
-            ir_expression *const r009A = less(swizzle_x(r007B), swizzle_x(r007A));
-            ir_expression *const r009B = equal(swizzle_x(r007B), swizzle_x(r007A));
-            ir_expression *const r009C = less(swizzle_y(r007B), swizzle_y(r007A));
+            ir_expression *const r009A = less(swizzle_y(r007B), swizzle_y(r007A));
+            ir_expression *const r009B = equal(swizzle_y(r007B), swizzle_y(r007A));
+            ir_expression *const r009C = less(swizzle_x(r007B), swizzle_x(r007A));
             ir_expression *const r009D = logic_and(r009B, r009C);
             body.emit(assign(r0097, logic_or(r009A, r009D), 0x01));
 
@@ -517,9 +517,9 @@ flt64(void *mem_ctx, builtin_available_predicate avail)
             /* ELSE INSTRUCTIONS */
             body.instructions = &f0098->else_instructions;
 
-            ir_expression *const r009E = less(swizzle_x(r007A), swizzle_x(r007B));
-            ir_expression *const r009F = equal(swizzle_x(r007A), swizzle_x(r007B));
-            ir_expression *const r00A0 = less(swizzle_y(r007A), swizzle_y(r007B));
+            ir_expression *const r009E = less(swizzle_y(r007A), swizzle_y(r007B));
+            ir_expression *const r009F = equal(swizzle_y(r007A), swizzle_y(r007B));
+            ir_expression *const r00A0 = less(swizzle_x(r007A), swizzle_x(r007B));
             ir_expression *const r00A1 = logic_and(r009F, r00A0);
             body.emit(assign(r0097, logic_or(r009E, r00A1), 0x01));
 
@@ -655,11 +655,11 @@ float64_is_signaling_nan(void *mem_ctx, builtin_available_predicate avail)
 
    ir_variable *const r00BE = new(mem_ctx) ir_variable(glsl_type::uvec2_type, "a", ir_var_function_in);
    sig_parameters.push_tail(r00BE);
-   ir_expression *const r00BF = rshift(swizzle_y(r00BE), body.constant(int(19)));
+   ir_expression *const r00BF = rshift(swizzle_x(r00BE), body.constant(int(19)));
    ir_expression *const r00C0 = bit_and(r00BF, body.constant(4095u));
    ir_expression *const r00C1 = equal(r00C0, body.constant(4094u));
-   ir_expression *const r00C2 = nequal(swizzle_x(r00BE), body.constant(0u));
-   ir_expression *const r00C3 = bit_and(swizzle_y(r00BE), body.constant(524287u));
+   ir_expression *const r00C2 = nequal(swizzle_y(r00BE), body.constant(0u));
+   ir_expression *const r00C3 = bit_and(swizzle_x(r00BE), body.constant(524287u));
    ir_expression *const r00C4 = nequal(r00C3, body.constant(0u));
    ir_expression *const r00C5 = logic_or(r00C2, r00C4);
    ir_expression *const r00C6 = logic_and(r00C1, r00C5);
@@ -702,9 +702,9 @@ shift64RightJamming(void *mem_ctx, builtin_available_predicate avail)
       /* THEN INSTRUCTIONS */
       body.instructions = &f00CF->then_instructions;
 
-      body.emit(assign(r00CB, swizzle_y(r00C7), 0x01));
+      body.emit(assign(r00CB, swizzle_x(r00C7), 0x01));
 
-      body.emit(assign(r00CC, swizzle_x(r00C7), 0x01));
+      body.emit(assign(r00CC, swizzle_y(r00C7), 0x01));
 
 
       /* ELSE INSTRUCTIONS */
@@ -718,16 +718,16 @@ shift64RightJamming(void *mem_ctx, builtin_available_predicate avail)
          /* THEN INSTRUCTIONS */
          body.instructions = &f00D1->then_instructions;
 
-         ir_expression *const r00D3 = lshift(swizzle_x(r00C7), r00CD);
-         ir_expression *const r00D4 = rshift(swizzle_y(r00C7), r00C8);
+         ir_expression *const r00D3 = lshift(swizzle_y(r00C7), r00CD);
+         ir_expression *const r00D4 = rshift(swizzle_x(r00C7), r00C8);
          ir_expression *const r00D5 = bit_or(r00D3, r00D4);
-         ir_expression *const r00D6 = lshift(swizzle_y(r00C7), r00CD);
+         ir_expression *const r00D6 = lshift(swizzle_x(r00C7), r00CD);
          ir_expression *const r00D7 = nequal(r00D6, body.constant(0u));
          ir_expression *const r00D8 = expr(ir_unop_b2i, r00D7);
          ir_expression *const r00D9 = expr(ir_unop_i2u, r00D8);
          body.emit(assign(r00CB, bit_or(r00D5, r00D9), 0x01));
 
-         body.emit(assign(r00CC, rshift(swizzle_x(r00C7), r00C8), 0x01));
+         body.emit(assign(r00CC, rshift(swizzle_y(r00C7), r00C8), 0x01));
 
 
          /* ELSE INSTRUCTIONS */
@@ -741,10 +741,10 @@ shift64RightJamming(void *mem_ctx, builtin_available_predicate avail)
             /* THEN INSTRUCTIONS */
             body.instructions = &f00DA->then_instructions;
 
-            ir_expression *const r00DC = nequal(swizzle_y(r00C7), body.constant(0u));
+            ir_expression *const r00DC = nequal(swizzle_x(r00C7), body.constant(0u));
             ir_expression *const r00DD = expr(ir_unop_b2i, r00DC);
             ir_expression *const r00DE = expr(ir_unop_i2u, r00DD);
-            body.emit(assign(r00CB, bit_or(swizzle_x(r00C7), r00DE), 0x01));
+            body.emit(assign(r00CB, bit_or(swizzle_y(r00C7), r00DE), 0x01));
 
 
             /* ELSE INSTRUCTIONS */
@@ -759,9 +759,9 @@ shift64RightJamming(void *mem_ctx, builtin_available_predicate avail)
                body.instructions = &f00DF->then_instructions;
 
                ir_expression *const r00E1 = bit_and(r00C8, body.constant(int(31)));
-               ir_expression *const r00E2 = rshift(swizzle_x(r00C7), r00E1);
-               ir_expression *const r00E3 = lshift(swizzle_x(r00C7), r00CD);
-               ir_expression *const r00E4 = bit_or(r00E3, swizzle_y(r00C7));
+               ir_expression *const r00E2 = rshift(swizzle_y(r00C7), r00E1);
+               ir_expression *const r00E3 = lshift(swizzle_y(r00C7), r00CD);
+               ir_expression *const r00E4 = bit_or(r00E3, swizzle_x(r00C7));
                ir_expression *const r00E5 = nequal(r00E4, body.constant(0u));
                ir_expression *const r00E6 = expr(ir_unop_b2i, r00E5);
                ir_expression *const r00E7 = expr(ir_unop_i2u, r00E6);
@@ -771,7 +771,7 @@ shift64RightJamming(void *mem_ctx, builtin_available_predicate avail)
                /* ELSE INSTRUCTIONS */
                body.instructions = &f00DF->else_instructions;
 
-               ir_expression *const r00E8 = bit_or(swizzle_x(r00C7), swizzle_y(r00C7));
+               ir_expression *const r00E8 = bit_or(swizzle_y(r00C7), swizzle_x(r00C7));
                ir_expression *const r00E9 = nequal(r00E8, body.constant(0u));
                ir_expression *const r00EA = expr(ir_unop_b2i, r00E9);
                body.emit(assign(r00CB, expr(ir_unop_i2u, r00EA), 0x01));
@@ -1062,9 +1062,9 @@ packFloat64(void *mem_ctx, builtin_available_predicate avail)
    ir_expression *const r011B = lshift(r0116, body.constant(int(31)));
    ir_expression *const r011C = lshift(r0117, body.constant(int(20)));
    ir_expression *const r011D = add(r011B, r011C);
-   body.emit(assign(r011A, add(r011D, r0118), 0x01));
+   body.emit(assign(r011A, add(r011D, r0118), 0x02));
 
-   body.emit(assign(r011A, r0119, 0x02));
+   body.emit(assign(r011A, r0119, 0x01));
 
    body.emit(ret(r011A));
 
@@ -1168,9 +1168,9 @@ roundAndPackFloat64(void *mem_ctx, builtin_available_predicate avail)
          ir_variable *const r0134 = new(mem_ctx) ir_variable(glsl_type::uvec2_type, "z", ir_var_auto);
          body.emit(r0134);
          ir_expression *const r0135 = lshift(r011E, body.constant(int(31)));
-         body.emit(assign(r0134, add(r0135, body.constant(2146435072u)), 0x01));
+         body.emit(assign(r0134, add(r0135, body.constant(2146435072u)), 0x02));
 
-         body.emit(assign(r0134, body.constant(0u), 0x02));
+         body.emit(assign(r0134, body.constant(0u), 0x01));
 
          body.emit(assign(r0124, r0134, 0x03));
 
@@ -1431,9 +1431,9 @@ roundAndPackFloat64(void *mem_ctx, builtin_available_predicate avail)
       ir_expression *const r0166 = lshift(r011E, body.constant(int(31)));
       ir_expression *const r0167 = lshift(r011F, body.constant(int(20)));
       ir_expression *const r0168 = add(r0166, r0167);
-      body.emit(assign(r0165, add(r0168, r0120), 0x01));
+      body.emit(assign(r0165, add(r0168, r0120), 0x02));
 
-      body.emit(assign(r0165, r0121, 0x02));
+      body.emit(assign(r0165, r0121, 0x01));
 
       body.emit(assign(r0124, r0165, 0x03));
 
@@ -2056,9 +2056,9 @@ normalizeRoundAndPackFloat64(void *mem_ctx, builtin_available_predicate avail)
          ir_variable *const r01D4 = new(mem_ctx) ir_variable(glsl_type::uvec2_type, "z", ir_var_auto);
          body.emit(r01D4);
          ir_expression *const r01D5 = lshift(r017D, body.constant(int(31)));
-         body.emit(assign(r01D4, add(r01D5, body.constant(2146435072u)), 0x01));
+         body.emit(assign(r01D4, add(r01D5, body.constant(2146435072u)), 0x02));
 
-         body.emit(assign(r01D4, body.constant(0u), 0x02));
+         body.emit(assign(r01D4, body.constant(0u), 0x01));
 
          body.emit(assign(r01C4, r01D4, 0x03));
 
@@ -2319,9 +2319,9 @@ normalizeRoundAndPackFloat64(void *mem_ctx, builtin_available_predicate avail)
       ir_expression *const r0206 = lshift(r017D, body.constant(int(31)));
       ir_expression *const r0207 = lshift(r01BF, body.constant(int(20)));
       ir_expression *const r0208 = add(r0206, r0207);
-      body.emit(assign(r0205, add(r0208, r01C0), 0x01));
+      body.emit(assign(r0205, add(r0208, r01C0), 0x02));
 
-      body.emit(assign(r0205, r01C1, 0x02));
+      body.emit(assign(r0205, r01C1, 0x01));
 
       body.emit(assign(r01C4, r0205, 0x03));
 
@@ -2354,36 +2354,36 @@ propagateFloat64NaN(void *mem_ctx, builtin_available_predicate avail)
    sig_parameters.push_tail(r020A);
    ir_variable *const r020B = body.make_temp(glsl_type::uvec2_type, "return_value");
    ir_variable *const r020C = body.make_temp(glsl_type::bool_type, "is_nan_retval");
-   ir_expression *const r020D = lshift(swizzle_y(r0209), body.constant(int(1)));
+   ir_expression *const r020D = lshift(swizzle_x(r0209), body.constant(int(1)));
    ir_expression *const r020E = lequal(body.constant(4292870144u), r020D);
-   ir_expression *const r020F = nequal(swizzle_x(r0209), body.constant(0u));
-   ir_expression *const r0210 = bit_and(swizzle_y(r0209), body.constant(1048575u));
+   ir_expression *const r020F = nequal(swizzle_y(r0209), body.constant(0u));
+   ir_expression *const r0210 = bit_and(swizzle_x(r0209), body.constant(1048575u));
    ir_expression *const r0211 = nequal(r0210, body.constant(0u));
    ir_expression *const r0212 = logic_or(r020F, r0211);
    body.emit(assign(r020C, logic_and(r020E, r0212), 0x01));
 
    ir_variable *const r0213 = body.make_temp(glsl_type::bool_type, "float64_is_signaling_nan_retval");
-   ir_expression *const r0214 = rshift(swizzle_y(r0209), body.constant(int(19)));
+   ir_expression *const r0214 = rshift(swizzle_x(r0209), body.constant(int(19)));
    ir_expression *const r0215 = bit_and(r0214, body.constant(4095u));
    ir_expression *const r0216 = equal(r0215, body.constant(4094u));
-   ir_expression *const r0217 = nequal(swizzle_x(r0209), body.constant(0u));
-   ir_expression *const r0218 = bit_and(swizzle_y(r0209), body.constant(524287u));
+   ir_expression *const r0217 = nequal(swizzle_y(r0209), body.constant(0u));
+   ir_expression *const r0218 = bit_and(swizzle_x(r0209), body.constant(524287u));
    ir_expression *const r0219 = nequal(r0218, body.constant(0u));
    ir_expression *const r021A = logic_or(r0217, r0219);
    body.emit(assign(r0213, logic_and(r0216, r021A), 0x01));
 
    ir_variable *const r021B = body.make_temp(glsl_type::bool_type, "is_nan_retval");
-   ir_expression *const r021C = lshift(swizzle_y(r020A), body.constant(int(1)));
+   ir_expression *const r021C = lshift(swizzle_x(r020A), body.constant(int(1)));
    ir_expression *const r021D = lequal(body.constant(4292870144u), r021C);
-   ir_expression *const r021E = nequal(swizzle_x(r020A), body.constant(0u));
-   ir_expression *const r021F = bit_and(swizzle_y(r020A), body.constant(1048575u));
+   ir_expression *const r021E = nequal(swizzle_y(r020A), body.constant(0u));
+   ir_expression *const r021F = bit_and(swizzle_x(r020A), body.constant(1048575u));
    ir_expression *const r0220 = nequal(r021F, body.constant(0u));
    ir_expression *const r0221 = logic_or(r021E, r0220);
    body.emit(assign(r021B, logic_and(r021D, r0221), 0x01));
 
-   body.emit(assign(r0209, bit_or(swizzle_y(r0209), body.constant(524288u)), 0x02));
+   body.emit(assign(r0209, bit_or(swizzle_x(r0209), body.constant(524288u)), 0x01));
 
-   body.emit(assign(r020A, bit_or(swizzle_y(r020A), body.constant(524288u)), 0x02));
+   body.emit(assign(r020A, bit_or(swizzle_x(r020A), body.constant(524288u)), 0x01));
 
    /* IF CONDITION */
    ir_if *f0222 = new(mem_ctx) ir_if(operand(r020C).val);
@@ -2471,25 +2471,25 @@ addFloat64Fracs(void *mem_ctx, builtin_available_predicate avail)
    body.emit(assign(r022F, body.constant(0u), 0x01));
 
    ir_variable *const r0231 = body.make_temp(glsl_type::uvec2_type, "vec_ctor");
-   body.emit(assign(r0231, bit_and(swizzle_x(r0226), body.constant(1048575u)), 0x01));
+   body.emit(assign(r0231, bit_and(swizzle_y(r0226), body.constant(1048575u)), 0x01));
 
-   body.emit(assign(r0231, swizzle_y(r0226), 0x02));
+   body.emit(assign(r0231, swizzle_x(r0226), 0x02));
 
    body.emit(assign(r022D, r0231, 0x03));
 
    ir_variable *const r0232 = body.make_temp(glsl_type::uint_type, "extractFloat64Exp_retval");
-   ir_expression *const r0233 = rshift(swizzle_x(r0226), body.constant(int(20)));
+   ir_expression *const r0233 = rshift(swizzle_y(r0226), body.constant(int(20)));
    body.emit(assign(r0232, bit_and(r0233, body.constant(2047u)), 0x01));
 
    ir_variable *const r0234 = body.make_temp(glsl_type::uvec2_type, "vec_ctor");
-   body.emit(assign(r0234, bit_and(swizzle_x(r0227), body.constant(1048575u)), 0x01));
+   body.emit(assign(r0234, bit_and(swizzle_y(r0227), body.constant(1048575u)), 0x01));
 
-   body.emit(assign(r0234, swizzle_y(r0227), 0x02));
+   body.emit(assign(r0234, swizzle_x(r0227), 0x02));
 
    body.emit(assign(r022C, r0234, 0x03));
 
    ir_variable *const r0235 = body.make_temp(glsl_type::uint_type, "extractFloat64Exp_retval");
-   ir_expression *const r0236 = rshift(swizzle_x(r0227), body.constant(int(20)));
+   ir_expression *const r0236 = rshift(swizzle_y(r0227), body.constant(int(20)));
    body.emit(assign(r0235, bit_and(r0236, body.constant(2047u)), 0x01));
 
    ir_variable *const r0237 = body.make_temp(glsl_type::int_type, "assignment_tmp");
@@ -2516,7 +2516,7 @@ addFloat64Fracs(void *mem_ctx, builtin_available_predicate avail)
          body.instructions = &f023C->then_instructions;
 
          /* IF CONDITION */
-         ir_expression *const r023F = bit_or(swizzle_x(r0231), swizzle_y(r0226));
+         ir_expression *const r023F = bit_or(swizzle_x(r0226), swizzle_x(r0231));
          ir_expression *const r0240 = nequal(r023F, body.constant(0u));
          ir_if *f023E = new(mem_ctx) ir_if(operand(r0240).val);
          exec_list *const f023E_parent_instructions = body.instructions;
@@ -2525,40 +2525,40 @@ addFloat64Fracs(void *mem_ctx, builtin_available_predicate avail)
             body.instructions = &f023E->then_instructions;
 
             ir_variable *const r0241 = body.make_temp(glsl_type::uvec2_type, "a");
-            body.emit(assign(r0241, swizzle_x(r0226), 0x01));
+            body.emit(assign(r0241, swizzle_y(r0226), 0x02));
 
             ir_variable *const r0242 = body.make_temp(glsl_type::uvec2_type, "b");
-            body.emit(assign(r0242, swizzle_x(r0227), 0x01));
+            body.emit(assign(r0242, swizzle_y(r0227), 0x02));
 
             ir_variable *const r0243 = body.make_temp(glsl_type::uvec2_type, "return_value");
             ir_variable *const r0244 = body.make_temp(glsl_type::bool_type, "float64_is_signaling_nan_retval");
-            ir_expression *const r0245 = rshift(swizzle_y(r0226), body.constant(int(19)));
+            ir_expression *const r0245 = rshift(swizzle_x(r0226), body.constant(int(19)));
             ir_expression *const r0246 = bit_and(r0245, body.constant(4095u));
             ir_expression *const r0247 = equal(r0246, body.constant(4094u));
-            ir_expression *const r0248 = nequal(swizzle_x(r0226), body.constant(0u));
-            ir_expression *const r0249 = bit_and(swizzle_y(r0226), body.constant(524287u));
+            ir_expression *const r0248 = nequal(swizzle_y(r0226), body.constant(0u));
+            ir_expression *const r0249 = bit_and(swizzle_x(r0226), body.constant(524287u));
             ir_expression *const r024A = nequal(r0249, body.constant(0u));
             ir_expression *const r024B = logic_or(r0248, r024A);
             body.emit(assign(r0244, logic_and(r0247, r024B), 0x01));
 
             ir_variable *const r024C = body.make_temp(glsl_type::bool_type, "is_nan_retval");
-            ir_expression *const r024D = lshift(swizzle_y(r0227), body.constant(int(1)));
+            ir_expression *const r024D = lshift(swizzle_x(r0227), body.constant(int(1)));
             ir_expression *const r024E = lequal(body.constant(4292870144u), r024D);
-            ir_expression *const r024F = nequal(swizzle_x(r0227), body.constant(0u));
-            ir_expression *const r0250 = bit_and(swizzle_y(r0227), body.constant(1048575u));
+            ir_expression *const r024F = nequal(swizzle_y(r0227), body.constant(0u));
+            ir_expression *const r0250 = bit_and(swizzle_x(r0227), body.constant(1048575u));
             ir_expression *const r0251 = nequal(r0250, body.constant(0u));
             ir_expression *const r0252 = logic_or(r024F, r0251);
             body.emit(assign(r024C, logic_and(r024E, r0252), 0x01));
 
-            body.emit(assign(r0241, bit_or(swizzle_y(r0226), body.constant(524288u)), 0x02));
+            body.emit(assign(r0241, bit_or(swizzle_x(r0226), body.constant(524288u)), 0x01));
 
-            body.emit(assign(r0242, bit_or(swizzle_y(r0227), body.constant(524288u)), 0x02));
+            body.emit(assign(r0242, bit_or(swizzle_x(r0227), body.constant(524288u)), 0x01));
 
             /* IF CONDITION */
-            ir_expression *const r0254 = lshift(swizzle_y(r0226), body.constant(int(1)));
+            ir_expression *const r0254 = lshift(swizzle_x(r0226), body.constant(int(1)));
             ir_expression *const r0255 = lequal(body.constant(4292870144u), r0254);
-            ir_expression *const r0256 = nequal(swizzle_x(r0226), body.constant(0u));
-            ir_expression *const r0257 = bit_and(swizzle_y(r0226), body.constant(1048575u));
+            ir_expression *const r0256 = nequal(swizzle_y(r0226), body.constant(0u));
+            ir_expression *const r0257 = bit_and(swizzle_x(r0226), body.constant(1048575u));
             ir_expression *const r0258 = nequal(r0257, body.constant(0u));
             ir_expression *const r0259 = logic_or(r0256, r0258);
             ir_expression *const r025A = logic_and(r0255, r0259);
@@ -2641,7 +2641,7 @@ addFloat64Fracs(void *mem_ctx, builtin_available_predicate avail)
             /* ELSE INSTRUCTIONS */
             body.instructions = &f025E->else_instructions;
 
-            body.emit(assign(r022C, bit_or(swizzle_x(r0234), body.constant(1048576u)), 0x01));
+            body.emit(assign(r022C, bit_or(swizzle_x(r0227), body.constant(1048576u)), 0x02));
 
 
          body.instructions = f025E_parent_instructions;
@@ -2650,10 +2650,10 @@ addFloat64Fracs(void *mem_ctx, builtin_available_predicate avail)
          /* END IF */
 
          ir_variable *const r0260 = body.make_temp(glsl_type::uint_type, "a0");
-         body.emit(assign(r0260, swizzle_x(r022C), 0x01));
+         body.emit(assign(r0260, swizzle_y(r022C), 0x01));
 
          ir_variable *const r0261 = body.make_temp(glsl_type::uint_type, "a1");
-         body.emit(assign(r0261, swizzle_y(r022C), 0x01));
+         body.emit(assign(r0261, swizzle_x(r022C), 0x01));
 
          ir_variable *const r0262 = body.make_temp(glsl_type::uint_type, "a2");
          body.emit(assign(r0262, body.constant(0u), 0x01));
@@ -2694,13 +2694,13 @@ addFloat64Fracs(void *mem_ctx, builtin_available_predicate avail)
                /* THEN INSTRUCTIONS */
                body.instructions = &f026A->then_instructions;
 
-               body.emit(assign(r0263, lshift(swizzle_y(r0234), r0266), 0x01));
+               body.emit(assign(r0263, lshift(swizzle_x(r0234), r0266), 0x01));
 
-               ir_expression *const r026C = lshift(swizzle_x(r022C), r0266);
-               ir_expression *const r026D = rshift(swizzle_y(r0234), r022B);
+               ir_expression *const r026C = lshift(swizzle_y(r022C), r0266);
+               ir_expression *const r026D = rshift(swizzle_x(r0234), r022B);
                body.emit(assign(r0264, bit_or(r026C, r026D), 0x01));
 
-               body.emit(assign(r0265, rshift(swizzle_x(r022C), r022B), 0x01));
+               body.emit(assign(r0265, rshift(swizzle_y(r022C), r022B), 0x01));
 
 
                /* ELSE INSTRUCTIONS */
@@ -2722,7 +2722,7 @@ addFloat64Fracs(void *mem_ctx, builtin_available_predicate avail)
                   /* ELSE INSTRUCTIONS */
                   body.instructions = &f026E->else_instructions;
 
-                  body.emit(assign(r0262, bit_or(body.constant(0u), swizzle_y(r0234)), 0x01));
+                  body.emit(assign(r0262, bit_or(body.constant(0u), swizzle_x(r0234)), 0x01));
 
                   /* IF CONDITION */
                   ir_expression *const r0271 = less(r022B, body.constant(int(64)));
@@ -2732,10 +2732,10 @@ addFloat64Fracs(void *mem_ctx, builtin_available_predicate avail)
                      /* THEN INSTRUCTIONS */
                      body.instructions = &f0270->then_instructions;
 
-                     body.emit(assign(r0263, lshift(swizzle_x(r022C), r0266), 0x01));
+                     body.emit(assign(r0263, lshift(swizzle_y(r022C), r0266), 0x01));
 
                      ir_expression *const r0272 = bit_and(r022B, body.constant(int(31)));
-                     body.emit(assign(r0264, rshift(swizzle_x(r022C), r0272), 0x01));
+                     body.emit(assign(r0264, rshift(swizzle_y(r022C), r0272), 0x01));
 
 
                      /* ELSE INSTRUCTIONS */
@@ -2756,7 +2756,7 @@ addFloat64Fracs(void *mem_ctx, builtin_available_predicate avail)
                         /* ELSE INSTRUCTIONS */
                         body.instructions = &f0274->else_instructions;
 
-                        ir_expression *const r0276 = nequal(swizzle_x(r022C), body.constant(0u));
+                        ir_expression *const r0276 = nequal(swizzle_y(r022C), body.constant(0u));
                         ir_expression *const r0277 = expr(ir_unop_b2i, r0276);
                         body.emit(assign(r0273, expr(ir_unop_i2u, r0277), 0x01));
 
@@ -2801,9 +2801,9 @@ addFloat64Fracs(void *mem_ctx, builtin_available_predicate avail)
 
          /* END IF */
 
-         body.emit(assign(r022C, r0265, 0x01));
+         body.emit(assign(r022C, r0265, 0x02));
 
-         body.emit(assign(r022C, r0264, 0x02));
+         body.emit(assign(r022C, r0264, 0x01));
 
          body.emit(assign(r022F, r0263, 0x01));
 
@@ -2836,7 +2836,7 @@ addFloat64Fracs(void *mem_ctx, builtin_available_predicate avail)
             body.instructions = &f027D->then_instructions;
 
             /* IF CONDITION */
-            ir_expression *const r0280 = bit_or(swizzle_x(r022C), swizzle_y(r022C));
+            ir_expression *const r0280 = bit_or(swizzle_y(r022C), swizzle_x(r022C));
             ir_expression *const r0281 = nequal(r0280, body.constant(0u));
             ir_if *f027F = new(mem_ctx) ir_if(operand(r0281).val);
             exec_list *const f027F_parent_instructions = body.instructions;
@@ -2845,40 +2845,40 @@ addFloat64Fracs(void *mem_ctx, builtin_available_predicate avail)
                body.instructions = &f027F->then_instructions;
 
                ir_variable *const r0282 = body.make_temp(glsl_type::uvec2_type, "a");
-               body.emit(assign(r0282, swizzle_x(r0226), 0x01));
+               body.emit(assign(r0282, swizzle_y(r0226), 0x02));
 
                ir_variable *const r0283 = body.make_temp(glsl_type::uvec2_type, "b");
-               body.emit(assign(r0283, swizzle_x(r0227), 0x01));
+               body.emit(assign(r0283, swizzle_y(r0227), 0x02));
 
                ir_variable *const r0284 = body.make_temp(glsl_type::uvec2_type, "return_value");
                ir_variable *const r0285 = body.make_temp(glsl_type::bool_type, "float64_is_signaling_nan_retval");
-               ir_expression *const r0286 = rshift(swizzle_y(r0226), body.constant(int(19)));
+               ir_expression *const r0286 = rshift(swizzle_x(r0226), body.constant(int(19)));
                ir_expression *const r0287 = bit_and(r0286, body.constant(4095u));
                ir_expression *const r0288 = equal(r0287, body.constant(4094u));
-               ir_expression *const r0289 = nequal(swizzle_x(r0226), body.constant(0u));
-               ir_expression *const r028A = bit_and(swizzle_y(r0226), body.constant(524287u));
+               ir_expression *const r0289 = nequal(swizzle_y(r0226), body.constant(0u));
+               ir_expression *const r028A = bit_and(swizzle_x(r0226), body.constant(524287u));
                ir_expression *const r028B = nequal(r028A, body.constant(0u));
                ir_expression *const r028C = logic_or(r0289, r028B);
                body.emit(assign(r0285, logic_and(r0288, r028C), 0x01));
 
                ir_variable *const r028D = body.make_temp(glsl_type::bool_type, "is_nan_retval");
-               ir_expression *const r028E = lshift(swizzle_y(r0227), body.constant(int(1)));
+               ir_expression *const r028E = lshift(swizzle_x(r0227), body.constant(int(1)));
                ir_expression *const r028F = lequal(body.constant(4292870144u), r028E);
-               ir_expression *const r0290 = nequal(swizzle_x(r0227), body.constant(0u));
-               ir_expression *const r0291 = bit_and(swizzle_y(r0227), body.constant(1048575u));
+               ir_expression *const r0290 = nequal(swizzle_y(r0227), body.constant(0u));
+               ir_expression *const r0291 = bit_and(swizzle_x(r0227), body.constant(1048575u));
                ir_expression *const r0292 = nequal(r0291, body.constant(0u));
                ir_expression *const r0293 = logic_or(r0290, r0292);
                body.emit(assign(r028D, logic_and(r028F, r0293), 0x01));
 
-               body.emit(assign(r0282, bit_or(swizzle_y(r0226), body.constant(524288u)), 0x02));
+               body.emit(assign(r0282, bit_or(swizzle_x(r0226), body.constant(524288u)), 0x01));
 
-               body.emit(assign(r0283, bit_or(swizzle_y(r0227), body.constant(524288u)), 0x02));
+               body.emit(assign(r0283, bit_or(swizzle_x(r0227), body.constant(524288u)), 0x01));
 
                /* IF CONDITION */
-               ir_expression *const r0295 = lshift(swizzle_y(r0226), body.constant(int(1)));
+               ir_expression *const r0295 = lshift(swizzle_x(r0226), body.constant(int(1)));
                ir_expression *const r0296 = lequal(body.constant(4292870144u), r0295);
-               ir_expression *const r0297 = nequal(swizzle_x(r0226), body.constant(0u));
-               ir_expression *const r0298 = bit_and(swizzle_y(r0226), body.constant(1048575u));
+               ir_expression *const r0297 = nequal(swizzle_y(r0226), body.constant(0u));
+               ir_expression *const r0298 = bit_and(swizzle_x(r0226), body.constant(1048575u));
                ir_expression *const r0299 = nequal(r0298, body.constant(0u));
                ir_expression *const r029A = logic_or(r0297, r0299);
                ir_expression *const r029B = logic_and(r0296, r029A);
@@ -2936,9 +2936,9 @@ addFloat64Fracs(void *mem_ctx, builtin_available_predicate avail)
                ir_variable *const r029F = new(mem_ctx) ir_variable(glsl_type::uvec2_type, "z", ir_var_auto);
                body.emit(r029F);
                ir_expression *const r02A0 = lshift(r0228, body.constant(int(31)));
-               body.emit(assign(r029F, add(r02A0, body.constant(2146435072u)), 0x01));
+               body.emit(assign(r029F, add(r02A0, body.constant(2146435072u)), 0x02));
 
-               body.emit(assign(r029F, body.constant(0u), 0x02));
+               body.emit(assign(r029F, body.constant(0u), 0x01));
 
                body.emit(assign(r022A, r029F, 0x03));
 
@@ -2968,7 +2968,7 @@ addFloat64Fracs(void *mem_ctx, builtin_available_predicate avail)
                /* ELSE INSTRUCTIONS */
                body.instructions = &f02A1->else_instructions;
 
-               body.emit(assign(r022D, bit_or(swizzle_x(r0231), body.constant(1048576u)), 0x01));
+               body.emit(assign(r022D, bit_or(swizzle_x(r0226), body.constant(1048576u)), 0x02));
 
 
             body.instructions = f02A1_parent_instructions;
@@ -2977,10 +2977,10 @@ addFloat64Fracs(void *mem_ctx, builtin_available_predicate avail)
             /* END IF */
 
             ir_variable *const r02A3 = body.make_temp(glsl_type::uint_type, "a0");
-            body.emit(assign(r02A3, swizzle_x(r022D), 0x01));
+            body.emit(assign(r02A3, swizzle_y(r022D), 0x01));
 
             ir_variable *const r02A4 = body.make_temp(glsl_type::uint_type, "a1");
-            body.emit(assign(r02A4, swizzle_y(r022D), 0x01));
+            body.emit(assign(r02A4, swizzle_x(r022D), 0x01));
 
             ir_variable *const r02A5 = body.make_temp(glsl_type::uint_type, "a2");
             body.emit(assign(r02A5, body.constant(0u), 0x01));
@@ -3024,13 +3024,13 @@ addFloat64Fracs(void *mem_ctx, builtin_available_predicate avail)
                   /* THEN INSTRUCTIONS */
                   body.instructions = &f02AE->then_instructions;
 
-                  body.emit(assign(r02A7, lshift(swizzle_y(r0231), r02AA), 0x01));
+                  body.emit(assign(r02A7, lshift(swizzle_x(r0231), r02AA), 0x01));
 
-                  ir_expression *const r02B0 = lshift(swizzle_x(r022D), r02AA);
-                  ir_expression *const r02B1 = rshift(swizzle_y(r0231), r02A6);
+                  ir_expression *const r02B0 = lshift(swizzle_y(r022D), r02AA);
+                  ir_expression *const r02B1 = rshift(swizzle_x(r0231), r02A6);
                   body.emit(assign(r02A8, bit_or(r02B0, r02B1), 0x01));
 
-                  body.emit(assign(r02A9, rshift(swizzle_x(r022D), r02A6), 0x01));
+                  body.emit(assign(r02A9, rshift(swizzle_y(r022D), r02A6), 0x01));
 
 
                   /* ELSE INSTRUCTIONS */
@@ -3052,7 +3052,7 @@ addFloat64Fracs(void *mem_ctx, builtin_available_predicate avail)
                      /* ELSE INSTRUCTIONS */
                      body.instructions = &f02B2->else_instructions;
 
-                     body.emit(assign(r02A5, bit_or(body.constant(0u), swizzle_y(r0231)), 0x01));
+                     body.emit(assign(r02A5, bit_or(body.constant(0u), swizzle_x(r0231)), 0x01));
 
                      /* IF CONDITION */
                      ir_expression *const r02B5 = less(r02A6, body.constant(int(64)));
@@ -3062,10 +3062,10 @@ addFloat64Fracs(void *mem_ctx, builtin_available_predicate avail)
                         /* THEN INSTRUCTIONS */
                         body.instructions = &f02B4->then_instructions;
 
-                        body.emit(assign(r02A7, lshift(swizzle_x(r022D), r02AA), 0x01));
+                        body.emit(assign(r02A7, lshift(swizzle_y(r022D), r02AA), 0x01));
 
                         ir_expression *const r02B6 = bit_and(r02A6, body.constant(int(31)));
-                        body.emit(assign(r02A8, rshift(swizzle_x(r022D), r02B6), 0x01));
+                        body.emit(assign(r02A8, rshift(swizzle_y(r022D), r02B6), 0x01));
 
 
                         /* ELSE INSTRUCTIONS */
@@ -3086,7 +3086,7 @@ addFloat64Fracs(void *mem_ctx, builtin_available_predicate avail)
                            /* ELSE INSTRUCTIONS */
                            body.instructions = &f02B8->else_instructions;
 
-                           ir_expression *const r02BA = nequal(swizzle_x(r022D), body.constant(0u));
+                           ir_expression *const r02BA = nequal(swizzle_y(r022D), body.constant(0u));
                            ir_expression *const r02BB = expr(ir_unop_b2i, r02BA);
                            body.emit(assign(r02B7, expr(ir_unop_i2u, r02BB), 0x01));
 
@@ -3131,9 +3131,9 @@ addFloat64Fracs(void *mem_ctx, builtin_available_predicate avail)
 
             /* END IF */
 
-            body.emit(assign(r022D, r02A9, 0x01));
+            body.emit(assign(r022D, r02A9, 0x02));
 
-            body.emit(assign(r022D, r02A8, 0x02));
+            body.emit(assign(r022D, r02A8, 0x01));
 
             body.emit(assign(r022F, r02A7, 0x01));
 
@@ -3158,8 +3158,8 @@ addFloat64Fracs(void *mem_ctx, builtin_available_predicate avail)
             body.instructions = &f02BF->then_instructions;
 
             /* IF CONDITION */
-            ir_expression *const r02C2 = bit_or(swizzle_x(r022D), swizzle_y(r022D));
-            ir_expression *const r02C3 = bit_or(swizzle_x(r022C), swizzle_y(r022C));
+            ir_expression *const r02C2 = bit_or(swizzle_y(r022D), swizzle_x(r022D));
+            ir_expression *const r02C3 = bit_or(swizzle_y(r022C), swizzle_x(r022C));
             ir_expression *const r02C4 = bit_or(r02C2, r02C3);
             ir_expression *const r02C5 = nequal(r02C4, body.constant(0u));
             ir_if *f02C1 = new(mem_ctx) ir_if(operand(r02C5).val);
@@ -3169,40 +3169,40 @@ addFloat64Fracs(void *mem_ctx, builtin_available_predicate avail)
                body.instructions = &f02C1->then_instructions;
 
                ir_variable *const r02C6 = body.make_temp(glsl_type::uvec2_type, "a");
-               body.emit(assign(r02C6, swizzle_x(r0226), 0x01));
+               body.emit(assign(r02C6, swizzle_y(r0226), 0x02));
 
                ir_variable *const r02C7 = body.make_temp(glsl_type::uvec2_type, "b");
-               body.emit(assign(r02C7, swizzle_x(r0227), 0x01));
+               body.emit(assign(r02C7, swizzle_y(r0227), 0x02));
 
                ir_variable *const r02C8 = body.make_temp(glsl_type::uvec2_type, "return_value");
                ir_variable *const r02C9 = body.make_temp(glsl_type::bool_type, "float64_is_signaling_nan_retval");
-               ir_expression *const r02CA = rshift(swizzle_y(r0226), body.constant(int(19)));
+               ir_expression *const r02CA = rshift(swizzle_x(r0226), body.constant(int(19)));
                ir_expression *const r02CB = bit_and(r02CA, body.constant(4095u));
                ir_expression *const r02CC = equal(r02CB, body.constant(4094u));
-               ir_expression *const r02CD = nequal(swizzle_x(r0226), body.constant(0u));
-               ir_expression *const r02CE = bit_and(swizzle_y(r0226), body.constant(524287u));
+               ir_expression *const r02CD = nequal(swizzle_y(r0226), body.constant(0u));
+               ir_expression *const r02CE = bit_and(swizzle_x(r0226), body.constant(524287u));
                ir_expression *const r02CF = nequal(r02CE, body.constant(0u));
                ir_expression *const r02D0 = logic_or(r02CD, r02CF);
                body.emit(assign(r02C9, logic_and(r02CC, r02D0), 0x01));
 
                ir_variable *const r02D1 = body.make_temp(glsl_type::bool_type, "is_nan_retval");
-               ir_expression *const r02D2 = lshift(swizzle_y(r0227), body.constant(int(1)));
+               ir_expression *const r02D2 = lshift(swizzle_x(r0227), body.constant(int(1)));
                ir_expression *const r02D3 = lequal(body.constant(4292870144u), r02D2);
-               ir_expression *const r02D4 = nequal(swizzle_x(r0227), body.constant(0u));
-               ir_expression *const r02D5 = bit_and(swizzle_y(r0227), body.constant(1048575u));
+               ir_expression *const r02D4 = nequal(swizzle_y(r0227), body.constant(0u));
+               ir_expression *const r02D5 = bit_and(swizzle_x(r0227), body.constant(1048575u));
                ir_expression *const r02D6 = nequal(r02D5, body.constant(0u));
                ir_expression *const r02D7 = logic_or(r02D4, r02D6);
                body.emit(assign(r02D1, logic_and(r02D3, r02D7), 0x01));
 
-               body.emit(assign(r02C6, bit_or(swizzle_y(r0226), body.constant(524288u)), 0x02));
+               body.emit(assign(r02C6, bit_or(swizzle_x(r0226), body.constant(524288u)), 0x01));
 
-               body.emit(assign(r02C7, bit_or(swizzle_y(r0227), body.constant(524288u)), 0x02));
+               body.emit(assign(r02C7, bit_or(swizzle_x(r0227), body.constant(524288u)), 0x01));
 
                /* IF CONDITION */
-               ir_expression *const r02D9 = lshift(swizzle_y(r0226), body.constant(int(1)));
+               ir_expression *const r02D9 = lshift(swizzle_x(r0226), body.constant(int(1)));
                ir_expression *const r02DA = lequal(body.constant(4292870144u), r02D9);
-               ir_expression *const r02DB = nequal(swizzle_x(r0226), body.constant(0u));
-               ir_expression *const r02DC = bit_and(swizzle_y(r0226), body.constant(1048575u));
+               ir_expression *const r02DB = nequal(swizzle_y(r0226), body.constant(0u));
+               ir_expression *const r02DC = bit_and(swizzle_x(r0226), body.constant(1048575u));
                ir_expression *const r02DD = nequal(r02DC, body.constant(0u));
                ir_expression *const r02DE = logic_or(r02DB, r02DD);
                ir_expression *const r02DF = logic_and(r02DA, r02DE);
@@ -3273,10 +3273,10 @@ addFloat64Fracs(void *mem_ctx, builtin_available_predicate avail)
 
             ir_variable *const r02E3 = body.make_temp(glsl_type::uint_type, "z0Ptr");
             ir_variable *const r02E4 = body.make_temp(glsl_type::uint_type, "assignment_tmp");
-            body.emit(assign(r02E4, add(swizzle_y(r022D), swizzle_y(r022C)), 0x01));
+            body.emit(assign(r02E4, add(swizzle_x(r022D), swizzle_x(r022C)), 0x01));
 
-            ir_expression *const r02E5 = add(swizzle_x(r022D), swizzle_x(r022C));
-            ir_expression *const r02E6 = less(r02E4, swizzle_y(r022D));
+            ir_expression *const r02E5 = add(swizzle_y(r022D), swizzle_y(r022C));
+            ir_expression *const r02E6 = less(r02E4, swizzle_x(r022D));
             ir_expression *const r02E7 = expr(ir_unop_b2i, r02E6);
             ir_expression *const r02E8 = expr(ir_unop_i2u, r02E7);
             body.emit(assign(r02E3, add(r02E5, r02E8), 0x01));
@@ -3294,9 +3294,9 @@ addFloat64Fracs(void *mem_ctx, builtin_available_predicate avail)
                ir_variable *const r02EB = new(mem_ctx) ir_variable(glsl_type::uvec2_type, "z", ir_var_auto);
                body.emit(r02EB);
                ir_expression *const r02EC = lshift(r0228, body.constant(int(31)));
-               body.emit(assign(r02EB, add(r02EC, r02E3), 0x01));
+               body.emit(assign(r02EB, add(r02EC, r02E3), 0x02));
 
-               body.emit(assign(r02EB, r02E4, 0x02));
+               body.emit(assign(r02EB, r02E4, 0x01));
 
                body.emit(assign(r022A, r02EB, 0x03));
 
@@ -3419,9 +3419,9 @@ addFloat64Fracs(void *mem_ctx, builtin_available_predicate avail)
                      ir_variable *const r0307 = new(mem_ctx) ir_variable(glsl_type::uvec2_type, "z", ir_var_auto);
                      body.emit(r0307);
                      ir_expression *const r0308 = lshift(r0228, body.constant(int(31)));
-                     body.emit(assign(r0307, add(r0308, body.constant(2146435072u)), 0x01));
+                     body.emit(assign(r0307, add(r0308, body.constant(2146435072u)), 0x02));
 
-                     body.emit(assign(r0307, body.constant(0u), 0x02));
+                     body.emit(assign(r0307, body.constant(0u), 0x01));
 
                      body.emit(assign(r02F7, r0307, 0x03));
 
@@ -3682,9 +3682,9 @@ addFloat64Fracs(void *mem_ctx, builtin_available_predicate avail)
                   ir_expression *const r0339 = lshift(r0228, body.constant(int(31)));
                   ir_expression *const r033A = lshift(r02F2, body.constant(int(20)));
                   ir_expression *const r033B = add(r0339, r033A);
-                  body.emit(assign(r0338, add(r033B, r02F3), 0x01));
+                  body.emit(assign(r0338, add(r033B, r02F3), 0x02));
 
-                  body.emit(assign(r0338, r02F4, 0x02));
+                  body.emit(assign(r0338, r02F4, 0x01));
 
                   body.emit(assign(r02F7, r0338, 0x03));
 
@@ -3731,14 +3731,14 @@ addFloat64Fracs(void *mem_ctx, builtin_available_predicate avail)
       /* THEN INSTRUCTIONS */
       body.instructions = &f033C->then_instructions;
 
-      body.emit(assign(r022D, bit_or(swizzle_x(r022D), body.constant(1048576u)), 0x01));
+      body.emit(assign(r022D, bit_or(swizzle_y(r022D), body.constant(1048576u)), 0x02));
 
       ir_variable *const r033D = body.make_temp(glsl_type::uint_type, "z0Ptr");
       ir_variable *const r033E = body.make_temp(glsl_type::uint_type, "assignment_tmp");
-      body.emit(assign(r033E, add(swizzle_y(r022D), swizzle_y(r022C)), 0x01));
+      body.emit(assign(r033E, add(swizzle_x(r022D), swizzle_x(r022C)), 0x01));
 
-      ir_expression *const r033F = add(swizzle_x(r022D), swizzle_x(r022C));
-      ir_expression *const r0340 = less(r033E, swizzle_y(r022D));
+      ir_expression *const r033F = add(swizzle_y(r022D), swizzle_y(r022C));
+      ir_expression *const r0340 = less(r033E, swizzle_x(r022D));
       ir_expression *const r0341 = expr(ir_unop_b2i, r0340);
       ir_expression *const r0342 = expr(ir_unop_i2u, r0341);
       body.emit(assign(r033D, add(r033F, r0342), 0x01));
@@ -3844,9 +3844,9 @@ addFloat64Fracs(void *mem_ctx, builtin_available_predicate avail)
                ir_variable *const r035A = new(mem_ctx) ir_variable(glsl_type::uvec2_type, "z", ir_var_auto);
                body.emit(r035A);
                ir_expression *const r035B = lshift(r0228, body.constant(int(31)));
-               body.emit(assign(r035A, add(r035B, body.constant(2146435072u)), 0x01));
+               body.emit(assign(r035A, add(r035B, body.constant(2146435072u)), 0x02));
 
-               body.emit(assign(r035A, body.constant(0u), 0x02));
+               body.emit(assign(r035A, body.constant(0u), 0x01));
 
                body.emit(assign(r034A, r035A, 0x03));
 
@@ -4107,9 +4107,9 @@ addFloat64Fracs(void *mem_ctx, builtin_available_predicate avail)
             ir_expression *const r038C = lshift(r0228, body.constant(int(31)));
             ir_expression *const r038D = lshift(r0345, body.constant(int(20)));
             ir_expression *const r038E = add(r038C, r038D);
-            body.emit(assign(r038B, add(r038E, r0346), 0x01));
+            body.emit(assign(r038B, add(r038E, r0346), 0x02));
 
-            body.emit(assign(r038B, r0347, 0x02));
+            body.emit(assign(r038B, r0347, 0x01));
 
             body.emit(assign(r034A, r038B, 0x03));
 
@@ -4243,9 +4243,9 @@ addFloat64Fracs(void *mem_ctx, builtin_available_predicate avail)
                ir_variable *const r03AC = new(mem_ctx) ir_variable(glsl_type::uvec2_type, "z", ir_var_auto);
                body.emit(r03AC);
                ir_expression *const r03AD = lshift(r0228, body.constant(int(31)));
-               body.emit(assign(r03AC, add(r03AD, body.constant(2146435072u)), 0x01));
+               body.emit(assign(r03AC, add(r03AD, body.constant(2146435072u)), 0x02));
 
-               body.emit(assign(r03AC, body.constant(0u), 0x02));
+               body.emit(assign(r03AC, body.constant(0u), 0x01));
 
                body.emit(assign(r039C, r03AC, 0x03));
 
@@ -4506,9 +4506,9 @@ addFloat64Fracs(void *mem_ctx, builtin_available_predicate avail)
             ir_expression *const r03DE = lshift(r0228, body.constant(int(31)));
             ir_expression *const r03DF = lshift(r0397, body.constant(int(20)));
             ir_expression *const r03E0 = add(r03DE, r03DF);
-            body.emit(assign(r03DD, add(r03E0, r0398), 0x01));
+            body.emit(assign(r03DD, add(r03E0, r0398), 0x02));
 
-            body.emit(assign(r03DD, r0399, 0x02));
+            body.emit(assign(r03DD, r0399, 0x01));
 
             body.emit(assign(r039C, r03DD, 0x03));
 
@@ -4571,23 +4571,23 @@ subFloat64Fracs(void *mem_ctx, builtin_available_predicate avail)
    ir_variable *const r03EA = new(mem_ctx) ir_variable(glsl_type::uint_type, "zExp", ir_var_auto);
    body.emit(r03EA);
    ir_variable *const r03EB = body.make_temp(glsl_type::uvec2_type, "vec_ctor");
-   body.emit(assign(r03EB, bit_and(swizzle_x(r03E1), body.constant(1048575u)), 0x01));
+   body.emit(assign(r03EB, bit_and(swizzle_y(r03E1), body.constant(1048575u)), 0x01));
 
-   body.emit(assign(r03EB, swizzle_y(r03E1), 0x02));
+   body.emit(assign(r03EB, swizzle_x(r03E1), 0x02));
 
    ir_variable *const r03EC = body.make_temp(glsl_type::uint_type, "extractFloat64Exp_retval");
-   ir_expression *const r03ED = rshift(swizzle_x(r03E1), body.constant(int(20)));
+   ir_expression *const r03ED = rshift(swizzle_y(r03E1), body.constant(int(20)));
    body.emit(assign(r03EC, bit_and(r03ED, body.constant(2047u)), 0x01));
 
    body.emit(assign(r03E8, r03EC, 0x01));
 
    ir_variable *const r03EE = body.make_temp(glsl_type::uvec2_type, "vec_ctor");
-   body.emit(assign(r03EE, bit_and(swizzle_x(r03E2), body.constant(1048575u)), 0x01));
+   body.emit(assign(r03EE, bit_and(swizzle_y(r03E2), body.constant(1048575u)), 0x01));
 
-   body.emit(assign(r03EE, swizzle_y(r03E2), 0x02));
+   body.emit(assign(r03EE, swizzle_x(r03E2), 0x02));
 
    ir_variable *const r03EF = body.make_temp(glsl_type::uint_type, "extractFloat64Exp_retval");
-   ir_expression *const r03F0 = rshift(swizzle_x(r03E2), body.constant(int(20)));
+   ir_expression *const r03F0 = rshift(swizzle_y(r03E2), body.constant(int(20)));
    body.emit(assign(r03EF, bit_and(r03F0, body.constant(2047u)), 0x01));
 
    body.emit(assign(r03E6, r03EF, 0x01));
@@ -4597,28 +4597,28 @@ subFloat64Fracs(void *mem_ctx, builtin_available_predicate avail)
    body.emit(assign(r03E5, sub(r03F1, r03F2), 0x01));
 
    ir_variable *const r03F3 = body.make_temp(glsl_type::uint_type, "z1Ptr");
-   body.emit(assign(r03F3, lshift(swizzle_y(r03E1), body.constant(int(10))), 0x01));
+   body.emit(assign(r03F3, lshift(swizzle_x(r03EB), body.constant(int(10))), 0x01));
 
    ir_variable *const r03F4 = body.make_temp(glsl_type::uint_type, "conditional_tmp");
-   ir_expression *const r03F5 = lshift(swizzle_x(r03EB), body.constant(int(10)));
-   ir_expression *const r03F6 = rshift(swizzle_y(r03E1), body.constant(int(22)));
+   ir_expression *const r03F5 = lshift(swizzle_x(r03E1), body.constant(int(10)));
+   ir_expression *const r03F6 = rshift(swizzle_x(r03EB), body.constant(int(22)));
    body.emit(assign(r03F4, bit_or(r03F5, r03F6), 0x01));
 
-   body.emit(assign(r03E9, r03F4, 0x01));
+   body.emit(assign(r03E9, r03F4, 0x02));
 
-   body.emit(assign(r03E9, r03F3, 0x02));
+   body.emit(assign(r03E9, r03F3, 0x01));
 
    ir_variable *const r03F7 = body.make_temp(glsl_type::uint_type, "z1Ptr");
-   body.emit(assign(r03F7, lshift(swizzle_y(r03E2), body.constant(int(10))), 0x01));
+   body.emit(assign(r03F7, lshift(swizzle_x(r03EE), body.constant(int(10))), 0x01));
 
    ir_variable *const r03F8 = body.make_temp(glsl_type::uint_type, "conditional_tmp");
-   ir_expression *const r03F9 = lshift(swizzle_x(r03EE), body.constant(int(10)));
-   ir_expression *const r03FA = rshift(swizzle_y(r03E2), body.constant(int(22)));
+   ir_expression *const r03F9 = lshift(swizzle_x(r03E2), body.constant(int(10)));
+   ir_expression *const r03FA = rshift(swizzle_x(r03EE), body.constant(int(22)));
    body.emit(assign(r03F8, bit_or(r03F9, r03FA), 0x01));
 
-   body.emit(assign(r03E7, r03F8, 0x01));
+   body.emit(assign(r03E7, r03F8, 0x02));
 
-   body.emit(assign(r03E7, r03F7, 0x02));
+   body.emit(assign(r03E7, r03F7, 0x01));
 
    /* IF CONDITION */
    ir_expression *const r03FC = less(body.constant(int(0)), r03E5);
@@ -4646,40 +4646,40 @@ subFloat64Fracs(void *mem_ctx, builtin_available_predicate avail)
             body.instructions = &f03FF->then_instructions;
 
             ir_variable *const r0402 = body.make_temp(glsl_type::uvec2_type, "a");
-            body.emit(assign(r0402, swizzle_x(r03E1), 0x01));
+            body.emit(assign(r0402, swizzle_y(r03E1), 0x02));
 
             ir_variable *const r0403 = body.make_temp(glsl_type::uvec2_type, "b");
-            body.emit(assign(r0403, swizzle_x(r03E2), 0x01));
+            body.emit(assign(r0403, swizzle_y(r03E2), 0x02));
 
             ir_variable *const r0404 = body.make_temp(glsl_type::uvec2_type, "return_value");
             ir_variable *const r0405 = body.make_temp(glsl_type::bool_type, "float64_is_signaling_nan_retval");
-            ir_expression *const r0406 = rshift(swizzle_y(r03E1), body.constant(int(19)));
+            ir_expression *const r0406 = rshift(swizzle_x(r03E1), body.constant(int(19)));
             ir_expression *const r0407 = bit_and(r0406, body.constant(4095u));
             ir_expression *const r0408 = equal(r0407, body.constant(4094u));
-            ir_expression *const r0409 = nequal(swizzle_x(r03E1), body.constant(0u));
-            ir_expression *const r040A = bit_and(swizzle_y(r03E1), body.constant(524287u));
+            ir_expression *const r0409 = nequal(swizzle_y(r03E1), body.constant(0u));
+            ir_expression *const r040A = bit_and(swizzle_x(r03E1), body.constant(524287u));
             ir_expression *const r040B = nequal(r040A, body.constant(0u));
             ir_expression *const r040C = logic_or(r0409, r040B);
             body.emit(assign(r0405, logic_and(r0408, r040C), 0x01));
 
             ir_variable *const r040D = body.make_temp(glsl_type::bool_type, "is_nan_retval");
-            ir_expression *const r040E = lshift(swizzle_y(r03E2), body.constant(int(1)));
+            ir_expression *const r040E = lshift(swizzle_x(r03E2), body.constant(int(1)));
             ir_expression *const r040F = lequal(body.constant(4292870144u), r040E);
-            ir_expression *const r0410 = nequal(swizzle_x(r03E2), body.constant(0u));
-            ir_expression *const r0411 = bit_and(swizzle_y(r03E2), body.constant(1048575u));
+            ir_expression *const r0410 = nequal(swizzle_y(r03E2), body.constant(0u));
+            ir_expression *const r0411 = bit_and(swizzle_x(r03E2), body.constant(1048575u));
             ir_expression *const r0412 = nequal(r0411, body.constant(0u));
             ir_expression *const r0413 = logic_or(r0410, r0412);
             body.emit(assign(r040D, logic_and(r040F, r0413), 0x01));
 
-            body.emit(assign(r0402, bit_or(swizzle_y(r03E1), body.constant(524288u)), 0x02));
+            body.emit(assign(r0402, bit_or(swizzle_x(r03E1), body.constant(524288u)), 0x01));
 
-            body.emit(assign(r0403, bit_or(swizzle_y(r03E2), body.constant(524288u)), 0x02));
+            body.emit(assign(r0403, bit_or(swizzle_x(r03E2), body.constant(524288u)), 0x01));
 
             /* IF CONDITION */
-            ir_expression *const r0415 = lshift(swizzle_y(r03E1), body.constant(int(1)));
+            ir_expression *const r0415 = lshift(swizzle_x(r03E1), body.constant(int(1)));
             ir_expression *const r0416 = lequal(body.constant(4292870144u), r0415);
-            ir_expression *const r0417 = nequal(swizzle_x(r03E1), body.constant(0u));
-            ir_expression *const r0418 = bit_and(swizzle_y(r03E1), body.constant(1048575u));
+            ir_expression *const r0417 = nequal(swizzle_y(r03E1), body.constant(0u));
+            ir_expression *const r0418 = bit_and(swizzle_x(r03E1), body.constant(1048575u));
             ir_expression *const r0419 = nequal(r0418, body.constant(0u));
             ir_expression *const r041A = logic_or(r0417, r0419);
             ir_expression *const r041B = logic_and(r0416, r041A);
@@ -4758,7 +4758,7 @@ subFloat64Fracs(void *mem_ctx, builtin_available_predicate avail)
             /* ELSE INSTRUCTIONS */
             body.instructions = &f041F->else_instructions;
 
-            body.emit(assign(r03E7, bit_or(r03F8, body.constant(1073741824u)), 0x01));
+            body.emit(assign(r03E7, bit_or(r03F8, body.constant(1073741824u)), 0x02));
 
 
          body.instructions = f041F_parent_instructions;
@@ -4782,9 +4782,9 @@ subFloat64Fracs(void *mem_ctx, builtin_available_predicate avail)
             /* THEN INSTRUCTIONS */
             body.instructions = &f0425->then_instructions;
 
-            body.emit(assign(r0421, swizzle_y(r03E7), 0x01));
+            body.emit(assign(r0421, swizzle_x(r03E7), 0x01));
 
-            body.emit(assign(r0422, swizzle_x(r03E7), 0x01));
+            body.emit(assign(r0422, swizzle_y(r03E7), 0x01));
 
 
             /* ELSE INSTRUCTIONS */
@@ -4798,7 +4798,7 @@ subFloat64Fracs(void *mem_ctx, builtin_available_predicate avail)
                /* THEN INSTRUCTIONS */
                body.instructions = &f0427->then_instructions;
 
-               ir_expression *const r0429 = lshift(swizzle_x(r03E7), r0423);
+               ir_expression *const r0429 = lshift(swizzle_y(r03E7), r0423);
                ir_expression *const r042A = rshift(r03F7, r03E5);
                ir_expression *const r042B = bit_or(r0429, r042A);
                ir_expression *const r042C = lshift(r03F7, r0423);
@@ -4807,7 +4807,7 @@ subFloat64Fracs(void *mem_ctx, builtin_available_predicate avail)
                ir_expression *const r042F = expr(ir_unop_i2u, r042E);
                body.emit(assign(r0421, bit_or(r042B, r042F), 0x01));
 
-               body.emit(assign(r0422, rshift(swizzle_x(r03E7), r03E5), 0x01));
+               body.emit(assign(r0422, rshift(swizzle_y(r03E7), r03E5), 0x01));
 
 
                /* ELSE INSTRUCTIONS */
@@ -4824,7 +4824,7 @@ subFloat64Fracs(void *mem_ctx, builtin_available_predicate avail)
                   ir_expression *const r0432 = nequal(r03F7, body.constant(0u));
                   ir_expression *const r0433 = expr(ir_unop_b2i, r0432);
                   ir_expression *const r0434 = expr(ir_unop_i2u, r0433);
-                  body.emit(assign(r0421, bit_or(swizzle_x(r03E7), r0434), 0x01));
+                  body.emit(assign(r0421, bit_or(swizzle_y(r03E7), r0434), 0x01));
 
 
                   /* ELSE INSTRUCTIONS */
@@ -4839,8 +4839,8 @@ subFloat64Fracs(void *mem_ctx, builtin_available_predicate avail)
                      body.instructions = &f0435->then_instructions;
 
                      ir_expression *const r0437 = bit_and(r03E5, body.constant(int(31)));
-                     ir_expression *const r0438 = rshift(swizzle_x(r03E7), r0437);
-                     ir_expression *const r0439 = lshift(swizzle_x(r03E7), r0423);
+                     ir_expression *const r0438 = rshift(swizzle_y(r03E7), r0437);
+                     ir_expression *const r0439 = lshift(swizzle_y(r03E7), r0423);
                      ir_expression *const r043A = bit_or(r0439, r03F7);
                      ir_expression *const r043B = nequal(r043A, body.constant(0u));
                      ir_expression *const r043C = expr(ir_unop_b2i, r043B);
@@ -4851,7 +4851,7 @@ subFloat64Fracs(void *mem_ctx, builtin_available_predicate avail)
                      /* ELSE INSTRUCTIONS */
                      body.instructions = &f0435->else_instructions;
 
-                     ir_expression *const r043E = bit_or(swizzle_x(r03E7), r03F7);
+                     ir_expression *const r043E = bit_or(swizzle_y(r03E7), r03F7);
                      ir_expression *const r043F = nequal(r043E, body.constant(0u));
                      ir_expression *const r0440 = expr(ir_unop_b2i, r043F);
                      body.emit(assign(r0421, expr(ir_unop_i2u, r0440), 0x01));
@@ -4882,17 +4882,17 @@ subFloat64Fracs(void *mem_ctx, builtin_available_predicate avail)
 
          /* END IF */
 
-         body.emit(assign(r03E7, r0422, 0x01));
+         body.emit(assign(r03E7, r0422, 0x02));
 
-         body.emit(assign(r03E7, r0421, 0x02));
+         body.emit(assign(r03E7, r0421, 0x01));
 
-         body.emit(assign(r03E9, bit_or(r03F4, body.constant(1073741824u)), 0x01));
+         body.emit(assign(r03E9, bit_or(r03F4, body.constant(1073741824u)), 0x02));
 
          ir_variable *const r0441 = body.make_temp(glsl_type::uint_type, "z0Ptr");
          ir_variable *const r0442 = body.make_temp(glsl_type::uint_type, "z1Ptr");
          body.emit(assign(r0442, sub(r03F3, r0421), 0x01));
 
-         ir_expression *const r0443 = sub(swizzle_x(r03E9), r0422);
+         ir_expression *const r0443 = sub(swizzle_y(r03E9), r0422);
          ir_expression *const r0444 = less(r03F3, r0421);
          ir_expression *const r0445 = expr(ir_unop_b2i, r0444);
          ir_expression *const r0446 = expr(ir_unop_i2u, r0445);
@@ -5360,9 +5360,9 @@ subFloat64Fracs(void *mem_ctx, builtin_available_predicate avail)
                ir_variable *const r049D = new(mem_ctx) ir_variable(glsl_type::uvec2_type, "z", ir_var_auto);
                body.emit(r049D);
                ir_expression *const r049E = lshift(r03E3, body.constant(int(31)));
-               body.emit(assign(r049D, add(r049E, body.constant(2146435072u)), 0x01));
+               body.emit(assign(r049D, add(r049E, body.constant(2146435072u)), 0x02));
 
-               body.emit(assign(r049D, body.constant(0u), 0x02));
+               body.emit(assign(r049D, body.constant(0u), 0x01));
 
                body.emit(assign(r048D, r049D, 0x03));
 
@@ -5623,9 +5623,9 @@ subFloat64Fracs(void *mem_ctx, builtin_available_predicate avail)
             ir_expression *const r04CF = lshift(r03E3, body.constant(int(31)));
             ir_expression *const r04D0 = lshift(r0488, body.constant(int(20)));
             ir_expression *const r04D1 = add(r04CF, r04D0);
-            body.emit(assign(r04CE, add(r04D1, r0489), 0x01));
+            body.emit(assign(r04CE, add(r04D1, r0489), 0x02));
 
-            body.emit(assign(r04CE, r048A, 0x02));
+            body.emit(assign(r04CE, r048A, 0x01));
 
             body.emit(assign(r048D, r04CE, 0x03));
 
@@ -5666,7 +5666,7 @@ subFloat64Fracs(void *mem_ctx, builtin_available_predicate avail)
             body.instructions = &f04D4->then_instructions;
 
             /* IF CONDITION */
-            ir_expression *const r04D7 = bit_or(swizzle_x(r03E7), swizzle_y(r03E7));
+            ir_expression *const r04D7 = bit_or(swizzle_y(r03E7), swizzle_x(r03E7));
             ir_expression *const r04D8 = nequal(r04D7, body.constant(0u));
             ir_if *f04D6 = new(mem_ctx) ir_if(operand(r04D8).val);
             exec_list *const f04D6_parent_instructions = body.instructions;
@@ -5675,40 +5675,40 @@ subFloat64Fracs(void *mem_ctx, builtin_available_predicate avail)
                body.instructions = &f04D6->then_instructions;
 
                ir_variable *const r04D9 = body.make_temp(glsl_type::uvec2_type, "a");
-               body.emit(assign(r04D9, swizzle_x(r03E1), 0x01));
+               body.emit(assign(r04D9, swizzle_y(r03E1), 0x02));
 
                ir_variable *const r04DA = body.make_temp(glsl_type::uvec2_type, "b");
-               body.emit(assign(r04DA, swizzle_x(r03E2), 0x01));
+               body.emit(assign(r04DA, swizzle_y(r03E2), 0x02));
 
                ir_variable *const r04DB = body.make_temp(glsl_type::uvec2_type, "return_value");
                ir_variable *const r04DC = body.make_temp(glsl_type::bool_type, "float64_is_signaling_nan_retval");
-               ir_expression *const r04DD = rshift(swizzle_y(r03E1), body.constant(int(19)));
+               ir_expression *const r04DD = rshift(swizzle_x(r03E1), body.constant(int(19)));
                ir_expression *const r04DE = bit_and(r04DD, body.constant(4095u));
                ir_expression *const r04DF = equal(r04DE, body.constant(4094u));
-               ir_expression *const r04E0 = nequal(swizzle_x(r03E1), body.constant(0u));
-               ir_expression *const r04E1 = bit_and(swizzle_y(r03E1), body.constant(524287u));
+               ir_expression *const r04E0 = nequal(swizzle_y(r03E1), body.constant(0u));
+               ir_expression *const r04E1 = bit_and(swizzle_x(r03E1), body.constant(524287u));
                ir_expression *const r04E2 = nequal(r04E1, body.constant(0u));
                ir_expression *const r04E3 = logic_or(r04E0, r04E2);
                body.emit(assign(r04DC, logic_and(r04DF, r04E3), 0x01));
 
                ir_variable *const r04E4 = body.make_temp(glsl_type::bool_type, "is_nan_retval");
-               ir_expression *const r04E5 = lshift(swizzle_y(r03E2), body.constant(int(1)));
+               ir_expression *const r04E5 = lshift(swizzle_x(r03E2), body.constant(int(1)));
                ir_expression *const r04E6 = lequal(body.constant(4292870144u), r04E5);
-               ir_expression *const r04E7 = nequal(swizzle_x(r03E2), body.constant(0u));
-               ir_expression *const r04E8 = bit_and(swizzle_y(r03E2), body.constant(1048575u));
+               ir_expression *const r04E7 = nequal(swizzle_y(r03E2), body.constant(0u));
+               ir_expression *const r04E8 = bit_and(swizzle_x(r03E2), body.constant(1048575u));
                ir_expression *const r04E9 = nequal(r04E8, body.constant(0u));
                ir_expression *const r04EA = logic_or(r04E7, r04E9);
                body.emit(assign(r04E4, logic_and(r04E6, r04EA), 0x01));
 
-               body.emit(assign(r04D9, bit_or(swizzle_y(r03E1), body.constant(524288u)), 0x02));
+               body.emit(assign(r04D9, bit_or(swizzle_x(r03E1), body.constant(524288u)), 0x01));
 
-               body.emit(assign(r04DA, bit_or(swizzle_y(r03E2), body.constant(524288u)), 0x02));
+               body.emit(assign(r04DA, bit_or(swizzle_x(r03E2), body.constant(524288u)), 0x01));
 
                /* IF CONDITION */
-               ir_expression *const r04EC = lshift(swizzle_y(r03E1), body.constant(int(1)));
+               ir_expression *const r04EC = lshift(swizzle_x(r03E1), body.constant(int(1)));
                ir_expression *const r04ED = lequal(body.constant(4292870144u), r04EC);
-               ir_expression *const r04EE = nequal(swizzle_x(r03E1), body.constant(0u));
-               ir_expression *const r04EF = bit_and(swizzle_y(r03E1), body.constant(1048575u));
+               ir_expression *const r04EE = nequal(swizzle_y(r03E1), body.constant(0u));
+               ir_expression *const r04EF = bit_and(swizzle_x(r03E1), body.constant(1048575u));
                ir_expression *const r04F0 = nequal(r04EF, body.constant(0u));
                ir_expression *const r04F1 = logic_or(r04EE, r04F0);
                ir_expression *const r04F2 = logic_and(r04ED, r04F1);
@@ -5765,9 +5765,9 @@ subFloat64Fracs(void *mem_ctx, builtin_available_predicate avail)
                body.emit(r04F6);
                ir_expression *const r04F7 = bit_xor(r03E3, body.constant(1u));
                ir_expression *const r04F8 = lshift(r04F7, body.constant(int(31)));
-               body.emit(assign(r04F6, add(r04F8, body.constant(2146435072u)), 0x01));
+               body.emit(assign(r04F6, add(r04F8, body.constant(2146435072u)), 0x02));
 
-               body.emit(assign(r04F6, body.constant(0u), 0x02));
+               body.emit(assign(r04F6, body.constant(0u), 0x01));
 
                body.emit(assign(r03E4, r04F6, 0x03));
 
@@ -5795,7 +5795,7 @@ subFloat64Fracs(void *mem_ctx, builtin_available_predicate avail)
                /* ELSE INSTRUCTIONS */
                body.instructions = &f04F9->else_instructions;
 
-               body.emit(assign(r03E9, bit_or(swizzle_x(r03E9), body.constant(1073741824u)), 0x01));
+               body.emit(assign(r03E9, bit_or(swizzle_y(r03E9), body.constant(1073741824u)), 0x02));
 
 
             body.instructions = f04F9_parent_instructions;
@@ -5822,9 +5822,9 @@ subFloat64Fracs(void *mem_ctx, builtin_available_predicate avail)
                /* THEN INSTRUCTIONS */
                body.instructions = &f0500->then_instructions;
 
-               body.emit(assign(r04FC, swizzle_y(r03E9), 0x01));
+               body.emit(assign(r04FC, swizzle_x(r03E9), 0x01));
 
-               body.emit(assign(r04FD, swizzle_x(r03E9), 0x01));
+               body.emit(assign(r04FD, swizzle_y(r03E9), 0x01));
 
 
                /* ELSE INSTRUCTIONS */
@@ -5838,7 +5838,7 @@ subFloat64Fracs(void *mem_ctx, builtin_available_predicate avail)
                   /* THEN INSTRUCTIONS */
                   body.instructions = &f0502->then_instructions;
 
-                  ir_expression *const r0504 = lshift(swizzle_x(r03E9), r04FE);
+                  ir_expression *const r0504 = lshift(swizzle_y(r03E9), r04FE);
                   ir_expression *const r0505 = rshift(r03F3, r04FB);
                   ir_expression *const r0506 = bit_or(r0504, r0505);
                   ir_expression *const r0507 = lshift(r03F3, r04FE);
@@ -5847,7 +5847,7 @@ subFloat64Fracs(void *mem_ctx, builtin_available_predicate avail)
                   ir_expression *const r050A = expr(ir_unop_i2u, r0509);
                   body.emit(assign(r04FC, bit_or(r0506, r050A), 0x01));
 
-                  body.emit(assign(r04FD, rshift(swizzle_x(r03E9), r04FB), 0x01));
+                  body.emit(assign(r04FD, rshift(swizzle_y(r03E9), r04FB), 0x01));
 
 
                   /* ELSE INSTRUCTIONS */
@@ -5864,7 +5864,7 @@ subFloat64Fracs(void *mem_ctx, builtin_available_predicate avail)
                      ir_expression *const r050D = nequal(r03F3, body.constant(0u));
                      ir_expression *const r050E = expr(ir_unop_b2i, r050D);
                      ir_expression *const r050F = expr(ir_unop_i2u, r050E);
-                     body.emit(assign(r04FC, bit_or(swizzle_x(r03E9), r050F), 0x01));
+                     body.emit(assign(r04FC, bit_or(swizzle_y(r03E9), r050F), 0x01));
 
 
                      /* ELSE INSTRUCTIONS */
@@ -5879,8 +5879,8 @@ subFloat64Fracs(void *mem_ctx, builtin_available_predicate avail)
                         body.instructions = &f0510->then_instructions;
 
                         ir_expression *const r0512 = bit_and(r04FB, body.constant(int(31)));
-                        ir_expression *const r0513 = rshift(swizzle_x(r03E9), r0512);
-                        ir_expression *const r0514 = lshift(swizzle_x(r03E9), r04FE);
+                        ir_expression *const r0513 = rshift(swizzle_y(r03E9), r0512);
+                        ir_expression *const r0514 = lshift(swizzle_y(r03E9), r04FE);
                         ir_expression *const r0515 = bit_or(r0514, r03F3);
                         ir_expression *const r0516 = nequal(r0515, body.constant(0u));
                         ir_expression *const r0517 = expr(ir_unop_b2i, r0516);
@@ -5891,7 +5891,7 @@ subFloat64Fracs(void *mem_ctx, builtin_available_predicate avail)
                         /* ELSE INSTRUCTIONS */
                         body.instructions = &f0510->else_instructions;
 
-                        ir_expression *const r0519 = bit_or(swizzle_x(r03E9), r03F3);
+                        ir_expression *const r0519 = bit_or(swizzle_y(r03E9), r03F3);
                         ir_expression *const r051A = nequal(r0519, body.constant(0u));
                         ir_expression *const r051B = expr(ir_unop_b2i, r051A);
                         body.emit(assign(r04FC, expr(ir_unop_i2u, r051B), 0x01));
@@ -5922,18 +5922,18 @@ subFloat64Fracs(void *mem_ctx, builtin_available_predicate avail)
 
             /* END IF */
 
-            body.emit(assign(r03E9, r04FD, 0x01));
+            body.emit(assign(r03E9, r04FD, 0x02));
 
-            body.emit(assign(r03E9, r04FC, 0x02));
+            body.emit(assign(r03E9, r04FC, 0x01));
 
-            body.emit(assign(r03E7, bit_or(swizzle_x(r03E7), body.constant(1073741824u)), 0x01));
+            body.emit(assign(r03E7, bit_or(swizzle_y(r03E7), body.constant(1073741824u)), 0x02));
 
             ir_variable *const r051C = body.make_temp(glsl_type::uint_type, "z0Ptr");
             ir_variable *const r051D = body.make_temp(glsl_type::uint_type, "z1Ptr");
-            body.emit(assign(r051D, sub(swizzle_y(r03E7), r04FC), 0x01));
+            body.emit(assign(r051D, sub(swizzle_x(r03E7), r04FC), 0x01));
 
-            ir_expression *const r051E = sub(swizzle_x(r03E7), r04FD);
-            ir_expression *const r051F = less(swizzle_y(r03E7), r04FC);
+            ir_expression *const r051E = sub(swizzle_y(r03E7), r04FD);
+            ir_expression *const r051F = less(swizzle_x(r03E7), r04FC);
             ir_expression *const r0520 = expr(ir_unop_b2i, r051F);
             ir_expression *const r0521 = expr(ir_unop_i2u, r0520);
             body.emit(assign(r051C, sub(r051E, r0521), 0x01));
@@ -6402,9 +6402,9 @@ subFloat64Fracs(void *mem_ctx, builtin_available_predicate avail)
                   ir_variable *const r0578 = new(mem_ctx) ir_variable(glsl_type::uvec2_type, "z", ir_var_auto);
                   body.emit(r0578);
                   ir_expression *const r0579 = lshift(r03E3, body.constant(int(31)));
-                  body.emit(assign(r0578, add(r0579, body.constant(2146435072u)), 0x01));
+                  body.emit(assign(r0578, add(r0579, body.constant(2146435072u)), 0x02));
 
-                  body.emit(assign(r0578, body.constant(0u), 0x02));
+                  body.emit(assign(r0578, body.constant(0u), 0x01));
 
                   body.emit(assign(r0568, r0578, 0x03));
 
@@ -6665,9 +6665,9 @@ subFloat64Fracs(void *mem_ctx, builtin_available_predicate avail)
                ir_expression *const r05AA = lshift(r03E3, body.constant(int(31)));
                ir_expression *const r05AB = lshift(r0563, body.constant(int(20)));
                ir_expression *const r05AC = add(r05AA, r05AB);
-               body.emit(assign(r05A9, add(r05AC, r0564), 0x01));
+               body.emit(assign(r05A9, add(r05AC, r0564), 0x02));
 
-               body.emit(assign(r05A9, r0565, 0x02));
+               body.emit(assign(r05A9, r0565, 0x01));
 
                body.emit(assign(r0568, r05A9, 0x03));
 
@@ -6700,8 +6700,8 @@ subFloat64Fracs(void *mem_ctx, builtin_available_predicate avail)
             body.instructions = &f05AD->then_instructions;
 
             /* IF CONDITION */
-            ir_expression *const r05B0 = bit_or(swizzle_x(r03E9), swizzle_y(r03E9));
-            ir_expression *const r05B1 = bit_or(swizzle_x(r03E7), swizzle_y(r03E7));
+            ir_expression *const r05B0 = bit_or(swizzle_y(r03E9), swizzle_x(r03E9));
+            ir_expression *const r05B1 = bit_or(swizzle_y(r03E7), swizzle_x(r03E7));
             ir_expression *const r05B2 = bit_or(r05B0, r05B1);
             ir_expression *const r05B3 = nequal(r05B2, body.constant(0u));
             ir_if *f05AF = new(mem_ctx) ir_if(operand(r05B3).val);
@@ -6711,40 +6711,40 @@ subFloat64Fracs(void *mem_ctx, builtin_available_predicate avail)
                body.instructions = &f05AF->then_instructions;
 
                ir_variable *const r05B4 = body.make_temp(glsl_type::uvec2_type, "a");
-               body.emit(assign(r05B4, swizzle_x(r03E1), 0x01));
+               body.emit(assign(r05B4, swizzle_y(r03E1), 0x02));
 
                ir_variable *const r05B5 = body.make_temp(glsl_type::uvec2_type, "b");
-               body.emit(assign(r05B5, swizzle_x(r03E2), 0x01));
+               body.emit(assign(r05B5, swizzle_y(r03E2), 0x02));
 
                ir_variable *const r05B6 = body.make_temp(glsl_type::uvec2_type, "return_value");
                ir_variable *const r05B7 = body.make_temp(glsl_type::bool_type, "float64_is_signaling_nan_retval");
-               ir_expression *const r05B8 = rshift(swizzle_y(r03E1), body.constant(int(19)));
+               ir_expression *const r05B8 = rshift(swizzle_x(r03E1), body.constant(int(19)));
                ir_expression *const r05B9 = bit_and(r05B8, body.constant(4095u));
                ir_expression *const r05BA = equal(r05B9, body.constant(4094u));
-               ir_expression *const r05BB = nequal(swizzle_x(r03E1), body.constant(0u));
-               ir_expression *const r05BC = bit_and(swizzle_y(r03E1), body.constant(524287u));
+               ir_expression *const r05BB = nequal(swizzle_y(r03E1), body.constant(0u));
+               ir_expression *const r05BC = bit_and(swizzle_x(r03E1), body.constant(524287u));
                ir_expression *const r05BD = nequal(r05BC, body.constant(0u));
                ir_expression *const r05BE = logic_or(r05BB, r05BD);
                body.emit(assign(r05B7, logic_and(r05BA, r05BE), 0x01));
 
                ir_variable *const r05BF = body.make_temp(glsl_type::bool_type, "is_nan_retval");
-               ir_expression *const r05C0 = lshift(swizzle_y(r03E2), body.constant(int(1)));
+               ir_expression *const r05C0 = lshift(swizzle_x(r03E2), body.constant(int(1)));
                ir_expression *const r05C1 = lequal(body.constant(4292870144u), r05C0);
-               ir_expression *const r05C2 = nequal(swizzle_x(r03E2), body.constant(0u));
-               ir_expression *const r05C3 = bit_and(swizzle_y(r03E2), body.constant(1048575u));
+               ir_expression *const r05C2 = nequal(swizzle_y(r03E2), body.constant(0u));
+               ir_expression *const r05C3 = bit_and(swizzle_x(r03E2), body.constant(1048575u));
                ir_expression *const r05C4 = nequal(r05C3, body.constant(0u));
                ir_expression *const r05C5 = logic_or(r05C2, r05C4);
                body.emit(assign(r05BF, logic_and(r05C1, r05C5), 0x01));
 
-               body.emit(assign(r05B4, bit_or(swizzle_y(r03E1), body.constant(524288u)), 0x02));
+               body.emit(assign(r05B4, bit_or(swizzle_x(r03E1), body.constant(524288u)), 0x01));
 
-               body.emit(assign(r05B5, bit_or(swizzle_y(r03E2), body.constant(524288u)), 0x02));
+               body.emit(assign(r05B5, bit_or(swizzle_x(r03E2), body.constant(524288u)), 0x01));
 
                /* IF CONDITION */
-               ir_expression *const r05C7 = lshift(swizzle_y(r03E1), body.constant(int(1)));
+               ir_expression *const r05C7 = lshift(swizzle_x(r03E1), body.constant(int(1)));
                ir_expression *const r05C8 = lequal(body.constant(4292870144u), r05C7);
-               ir_expression *const r05C9 = nequal(swizzle_x(r03E1), body.constant(0u));
-               ir_expression *const r05CA = bit_and(swizzle_y(r03E1), body.constant(1048575u));
+               ir_expression *const r05C9 = nequal(swizzle_y(r03E1), body.constant(0u));
+               ir_expression *const r05CA = bit_and(swizzle_x(r03E1), body.constant(1048575u));
                ir_expression *const r05CB = nequal(r05CA, body.constant(0u));
                ir_expression *const r05CC = logic_or(r05C9, r05CB);
                ir_expression *const r05CD = logic_and(r05C8, r05CC);
@@ -6833,7 +6833,7 @@ subFloat64Fracs(void *mem_ctx, builtin_available_predicate avail)
             /* END IF */
 
             /* IF CONDITION */
-            ir_expression *const r05D5 = less(swizzle_x(r03E7), swizzle_x(r03E9));
+            ir_expression *const r05D5 = less(swizzle_y(r03E7), swizzle_y(r03E9));
             ir_if *f05D4 = new(mem_ctx) ir_if(operand(r05D5).val);
             exec_list *const f05D4_parent_instructions = body.instructions;
 
@@ -6842,10 +6842,10 @@ subFloat64Fracs(void *mem_ctx, builtin_available_predicate avail)
 
                ir_variable *const r05D6 = body.make_temp(glsl_type::uint_type, "z0Ptr");
                ir_variable *const r05D7 = body.make_temp(glsl_type::uint_type, "z1Ptr");
-               body.emit(assign(r05D7, sub(swizzle_y(r03E9), swizzle_y(r03E7)), 0x01));
+               body.emit(assign(r05D7, sub(swizzle_x(r03E9), swizzle_x(r03E7)), 0x01));
 
-               ir_expression *const r05D8 = sub(swizzle_x(r03E9), swizzle_x(r03E7));
-               ir_expression *const r05D9 = less(swizzle_y(r03E9), swizzle_y(r03E7));
+               ir_expression *const r05D8 = sub(swizzle_y(r03E9), swizzle_y(r03E7));
+               ir_expression *const r05D9 = less(swizzle_x(r03E9), swizzle_x(r03E7));
                ir_expression *const r05DA = expr(ir_unop_b2i, r05D9);
                ir_expression *const r05DB = expr(ir_unop_i2u, r05DA);
                body.emit(assign(r05D6, sub(r05D8, r05DB), 0x01));
@@ -7312,9 +7312,9 @@ subFloat64Fracs(void *mem_ctx, builtin_available_predicate avail)
                      ir_variable *const r0632 = new(mem_ctx) ir_variable(glsl_type::uvec2_type, "z", ir_var_auto);
                      body.emit(r0632);
                      ir_expression *const r0633 = lshift(r03E3, body.constant(int(31)));
-                     body.emit(assign(r0632, add(r0633, body.constant(2146435072u)), 0x01));
+                     body.emit(assign(r0632, add(r0633, body.constant(2146435072u)), 0x02));
 
-                     body.emit(assign(r0632, body.constant(0u), 0x02));
+                     body.emit(assign(r0632, body.constant(0u), 0x01));
 
                      body.emit(assign(r0622, r0632, 0x03));
 
@@ -7575,9 +7575,9 @@ subFloat64Fracs(void *mem_ctx, builtin_available_predicate avail)
                   ir_expression *const r0664 = lshift(r03E3, body.constant(int(31)));
                   ir_expression *const r0665 = lshift(r061D, body.constant(int(20)));
                   ir_expression *const r0666 = add(r0664, r0665);
-                  body.emit(assign(r0663, add(r0666, r061E), 0x01));
+                  body.emit(assign(r0663, add(r0666, r061E), 0x02));
 
-                  body.emit(assign(r0663, r061F, 0x02));
+                  body.emit(assign(r0663, r061F, 0x01));
 
                   body.emit(assign(r0622, r0663, 0x03));
 
@@ -7596,7 +7596,7 @@ subFloat64Fracs(void *mem_ctx, builtin_available_predicate avail)
                body.instructions = &f05D4->else_instructions;
 
                /* IF CONDITION */
-               ir_expression *const r0668 = less(swizzle_x(r03E9), swizzle_x(r03E7));
+               ir_expression *const r0668 = less(swizzle_y(r03E9), swizzle_y(r03E7));
                ir_if *f0667 = new(mem_ctx) ir_if(operand(r0668).val);
                exec_list *const f0667_parent_instructions = body.instructions;
 
@@ -7605,10 +7605,10 @@ subFloat64Fracs(void *mem_ctx, builtin_available_predicate avail)
 
                   ir_variable *const r0669 = body.make_temp(glsl_type::uint_type, "z0Ptr");
                   ir_variable *const r066A = body.make_temp(glsl_type::uint_type, "z1Ptr");
-                  body.emit(assign(r066A, sub(swizzle_y(r03E7), swizzle_y(r03E9)), 0x01));
+                  body.emit(assign(r066A, sub(swizzle_x(r03E7), swizzle_x(r03E9)), 0x01));
 
-                  ir_expression *const r066B = sub(swizzle_x(r03E7), swizzle_x(r03E9));
-                  ir_expression *const r066C = less(swizzle_y(r03E7), swizzle_y(r03E9));
+                  ir_expression *const r066B = sub(swizzle_y(r03E7), swizzle_y(r03E9));
+                  ir_expression *const r066C = less(swizzle_x(r03E7), swizzle_x(r03E9));
                   ir_expression *const r066D = expr(ir_unop_b2i, r066C);
                   ir_expression *const r066E = expr(ir_unop_i2u, r066D);
                   body.emit(assign(r0669, sub(r066B, r066E), 0x01));
@@ -8077,9 +8077,9 @@ subFloat64Fracs(void *mem_ctx, builtin_available_predicate avail)
                         ir_variable *const r06C5 = new(mem_ctx) ir_variable(glsl_type::uvec2_type, "z", ir_var_auto);
                         body.emit(r06C5);
                         ir_expression *const r06C6 = lshift(r03E3, body.constant(int(31)));
-                        body.emit(assign(r06C5, add(r06C6, body.constant(2146435072u)), 0x01));
+                        body.emit(assign(r06C5, add(r06C6, body.constant(2146435072u)), 0x02));
 
-                        body.emit(assign(r06C5, body.constant(0u), 0x02));
+                        body.emit(assign(r06C5, body.constant(0u), 0x01));
 
                         body.emit(assign(r06B5, r06C5, 0x03));
 
@@ -8340,9 +8340,9 @@ subFloat64Fracs(void *mem_ctx, builtin_available_predicate avail)
                      ir_expression *const r06F7 = lshift(r03E3, body.constant(int(31)));
                      ir_expression *const r06F8 = lshift(r06B0, body.constant(int(20)));
                      ir_expression *const r06F9 = add(r06F7, r06F8);
-                     body.emit(assign(r06F6, add(r06F9, r06B1), 0x01));
+                     body.emit(assign(r06F6, add(r06F9, r06B1), 0x02));
 
-                     body.emit(assign(r06F6, r06B2, 0x02));
+                     body.emit(assign(r06F6, r06B2, 0x01));
 
                      body.emit(assign(r06B5, r06F6, 0x03));
 
@@ -8361,7 +8361,7 @@ subFloat64Fracs(void *mem_ctx, builtin_available_predicate avail)
                   body.instructions = &f0667->else_instructions;
 
                   /* IF CONDITION */
-                  ir_expression *const r06FB = less(swizzle_y(r03E7), swizzle_y(r03E9));
+                  ir_expression *const r06FB = less(swizzle_x(r03E7), swizzle_x(r03E9));
                   ir_if *f06FA = new(mem_ctx) ir_if(operand(r06FB).val);
                   exec_list *const f06FA_parent_instructions = body.instructions;
 
@@ -8370,10 +8370,10 @@ subFloat64Fracs(void *mem_ctx, builtin_available_predicate avail)
 
                      ir_variable *const r06FC = body.make_temp(glsl_type::uint_type, "z0Ptr");
                      ir_variable *const r06FD = body.make_temp(glsl_type::uint_type, "z1Ptr");
-                     body.emit(assign(r06FD, sub(swizzle_y(r03E9), swizzle_y(r03E7)), 0x01));
+                     body.emit(assign(r06FD, sub(swizzle_x(r03E9), swizzle_x(r03E7)), 0x01));
 
-                     ir_expression *const r06FE = sub(swizzle_x(r03E9), swizzle_x(r03E7));
-                     ir_expression *const r06FF = less(swizzle_y(r03E9), swizzle_y(r03E7));
+                     ir_expression *const r06FE = sub(swizzle_y(r03E9), swizzle_y(r03E7));
+                     ir_expression *const r06FF = less(swizzle_x(r03E9), swizzle_x(r03E7));
                      ir_expression *const r0700 = expr(ir_unop_b2i, r06FF);
                      ir_expression *const r0701 = expr(ir_unop_i2u, r0700);
                      body.emit(assign(r06FC, sub(r06FE, r0701), 0x01));
@@ -8840,9 +8840,9 @@ subFloat64Fracs(void *mem_ctx, builtin_available_predicate avail)
                            ir_variable *const r0758 = new(mem_ctx) ir_variable(glsl_type::uvec2_type, "z", ir_var_auto);
                            body.emit(r0758);
                            ir_expression *const r0759 = lshift(r03E3, body.constant(int(31)));
-                           body.emit(assign(r0758, add(r0759, body.constant(2146435072u)), 0x01));
+                           body.emit(assign(r0758, add(r0759, body.constant(2146435072u)), 0x02));
 
-                           body.emit(assign(r0758, body.constant(0u), 0x02));
+                           body.emit(assign(r0758, body.constant(0u), 0x01));
 
                            body.emit(assign(r0748, r0758, 0x03));
 
@@ -9103,9 +9103,9 @@ subFloat64Fracs(void *mem_ctx, builtin_available_predicate avail)
                         ir_expression *const r078A = lshift(r03E3, body.constant(int(31)));
                         ir_expression *const r078B = lshift(r0743, body.constant(int(20)));
                         ir_expression *const r078C = add(r078A, r078B);
-                        body.emit(assign(r0789, add(r078C, r0744), 0x01));
+                        body.emit(assign(r0789, add(r078C, r0744), 0x02));
 
-                        body.emit(assign(r0789, r0745, 0x02));
+                        body.emit(assign(r0789, r0745, 0x01));
 
                         body.emit(assign(r0748, r0789, 0x03));
 
@@ -9124,7 +9124,7 @@ subFloat64Fracs(void *mem_ctx, builtin_available_predicate avail)
                      body.instructions = &f06FA->else_instructions;
 
                      /* IF CONDITION */
-                     ir_expression *const r078E = less(swizzle_y(r03E9), swizzle_y(r03E7));
+                     ir_expression *const r078E = less(swizzle_x(r03E9), swizzle_x(r03E7));
                      ir_if *f078D = new(mem_ctx) ir_if(operand(r078E).val);
                      exec_list *const f078D_parent_instructions = body.instructions;
 
@@ -9133,10 +9133,10 @@ subFloat64Fracs(void *mem_ctx, builtin_available_predicate avail)
 
                         ir_variable *const r078F = body.make_temp(glsl_type::uint_type, "z0Ptr");
                         ir_variable *const r0790 = body.make_temp(glsl_type::uint_type, "z1Ptr");
-                        body.emit(assign(r0790, sub(swizzle_y(r03E7), swizzle_y(r03E9)), 0x01));
+                        body.emit(assign(r0790, sub(swizzle_x(r03E7), swizzle_x(r03E9)), 0x01));
 
-                        ir_expression *const r0791 = sub(swizzle_x(r03E7), swizzle_x(r03E9));
-                        ir_expression *const r0792 = less(swizzle_y(r03E7), swizzle_y(r03E9));
+                        ir_expression *const r0791 = sub(swizzle_y(r03E7), swizzle_y(r03E9));
+                        ir_expression *const r0792 = less(swizzle_x(r03E7), swizzle_x(r03E9));
                         ir_expression *const r0793 = expr(ir_unop_b2i, r0792);
                         ir_expression *const r0794 = expr(ir_unop_i2u, r0793);
                         body.emit(assign(r078F, sub(r0791, r0794), 0x01));
@@ -9605,9 +9605,9 @@ subFloat64Fracs(void *mem_ctx, builtin_available_predicate avail)
                               ir_variable *const r07EB = new(mem_ctx) ir_variable(glsl_type::uvec2_type, "z", ir_var_auto);
                               body.emit(r07EB);
                               ir_expression *const r07EC = lshift(r03E3, body.constant(int(31)));
-                              body.emit(assign(r07EB, add(r07EC, body.constant(2146435072u)), 0x01));
+                              body.emit(assign(r07EB, add(r07EC, body.constant(2146435072u)), 0x02));
 
-                              body.emit(assign(r07EB, body.constant(0u), 0x02));
+                              body.emit(assign(r07EB, body.constant(0u), 0x01));
 
                               body.emit(assign(r07DB, r07EB, 0x03));
 
@@ -9868,9 +9868,9 @@ subFloat64Fracs(void *mem_ctx, builtin_available_predicate avail)
                            ir_expression *const r081D = lshift(r03E3, body.constant(int(31)));
                            ir_expression *const r081E = lshift(r07D6, body.constant(int(20)));
                            ir_expression *const r081F = add(r081D, r081E);
-                           body.emit(assign(r081C, add(r081F, r07D7), 0x01));
+                           body.emit(assign(r081C, add(r081F, r07D7), 0x02));
 
-                           body.emit(assign(r081C, r07D8, 0x02));
+                           body.emit(assign(r081C, r07D8, 0x01));
 
                            body.emit(assign(r07DB, r081C, 0x03));
 
@@ -9890,9 +9890,9 @@ subFloat64Fracs(void *mem_ctx, builtin_available_predicate avail)
 
                         ir_variable *const r0820 = new(mem_ctx) ir_variable(glsl_type::uvec2_type, "z", ir_var_auto);
                         body.emit(r0820);
-                        body.emit(assign(r0820, body.constant(0u), 0x01));
-
                         body.emit(assign(r0820, body.constant(0u), 0x02));
+
+                        body.emit(assign(r0820, body.constant(0u), 0x01));
 
                         body.emit(assign(r03E4, r0820, 0x03));
 
@@ -9959,10 +9959,10 @@ fadd64(void *mem_ctx, builtin_available_predicate avail)
    sig_parameters.push_tail(r0822);
    ir_variable *const r0823 = body.make_temp(glsl_type::uvec2_type, "return_value");
    ir_variable *const r0824 = body.make_temp(glsl_type::uint_type, "extractFloat64Sign_retval");
-   body.emit(assign(r0824, rshift(swizzle_x(r0821), body.constant(int(31))), 0x01));
+   body.emit(assign(r0824, rshift(swizzle_y(r0821), body.constant(int(31))), 0x01));
 
    ir_variable *const r0825 = body.make_temp(glsl_type::uint_type, "extractFloat64Sign_retval");
-   body.emit(assign(r0825, rshift(swizzle_x(r0822), body.constant(int(31))), 0x01));
+   body.emit(assign(r0825, rshift(swizzle_y(r0822), body.constant(int(31))), 0x01));
 
    /* IF CONDITION */
    ir_expression *const r0827 = equal(r0824, r0825);
@@ -9993,25 +9993,25 @@ fadd64(void *mem_ctx, builtin_available_predicate avail)
       body.emit(assign(r082E, body.constant(0u), 0x01));
 
       ir_variable *const r0830 = body.make_temp(glsl_type::uvec2_type, "vec_ctor");
-      body.emit(assign(r0830, bit_and(swizzle_x(r0821), body.constant(1048575u)), 0x01));
+      body.emit(assign(r0830, bit_and(swizzle_y(r0821), body.constant(1048575u)), 0x01));
 
-      body.emit(assign(r0830, swizzle_y(r0821), 0x02));
+      body.emit(assign(r0830, swizzle_x(r0821), 0x02));
 
       body.emit(assign(r082C, r0830, 0x03));
 
       ir_variable *const r0831 = body.make_temp(glsl_type::uint_type, "extractFloat64Exp_retval");
-      ir_expression *const r0832 = rshift(swizzle_x(r0821), body.constant(int(20)));
+      ir_expression *const r0832 = rshift(swizzle_y(r0821), body.constant(int(20)));
       body.emit(assign(r0831, bit_and(r0832, body.constant(2047u)), 0x01));
 
       ir_variable *const r0833 = body.make_temp(glsl_type::uvec2_type, "vec_ctor");
-      body.emit(assign(r0833, bit_and(swizzle_x(r0822), body.constant(1048575u)), 0x01));
+      body.emit(assign(r0833, bit_and(swizzle_y(r0822), body.constant(1048575u)), 0x01));
 
-      body.emit(assign(r0833, swizzle_y(r0822), 0x02));
+      body.emit(assign(r0833, swizzle_x(r0822), 0x02));
 
       body.emit(assign(r082B, r0833, 0x03));
 
       ir_variable *const r0834 = body.make_temp(glsl_type::uint_type, "extractFloat64Exp_retval");
-      ir_expression *const r0835 = rshift(swizzle_x(r0822), body.constant(int(20)));
+      ir_expression *const r0835 = rshift(swizzle_y(r0822), body.constant(int(20)));
       body.emit(assign(r0834, bit_and(r0835, body.constant(2047u)), 0x01));
 
       ir_variable *const r0836 = body.make_temp(glsl_type::int_type, "assignment_tmp");
@@ -10038,7 +10038,7 @@ fadd64(void *mem_ctx, builtin_available_predicate avail)
             body.instructions = &f083B->then_instructions;
 
             /* IF CONDITION */
-            ir_expression *const r083E = bit_or(swizzle_x(r0830), swizzle_y(r0821));
+            ir_expression *const r083E = bit_or(swizzle_x(r0821), swizzle_x(r0830));
             ir_expression *const r083F = nequal(r083E, body.constant(0u));
             ir_if *f083D = new(mem_ctx) ir_if(operand(r083F).val);
             exec_list *const f083D_parent_instructions = body.instructions;
@@ -10047,40 +10047,40 @@ fadd64(void *mem_ctx, builtin_available_predicate avail)
                body.instructions = &f083D->then_instructions;
 
                ir_variable *const r0840 = body.make_temp(glsl_type::uvec2_type, "a");
-               body.emit(assign(r0840, swizzle_x(r0821), 0x01));
+               body.emit(assign(r0840, swizzle_y(r0821), 0x02));
 
                ir_variable *const r0841 = body.make_temp(glsl_type::uvec2_type, "b");
-               body.emit(assign(r0841, swizzle_x(r0822), 0x01));
+               body.emit(assign(r0841, swizzle_y(r0822), 0x02));
 
                ir_variable *const r0842 = body.make_temp(glsl_type::uvec2_type, "return_value");
                ir_variable *const r0843 = body.make_temp(glsl_type::bool_type, "float64_is_signaling_nan_retval");
-               ir_expression *const r0844 = rshift(swizzle_y(r0821), body.constant(int(19)));
+               ir_expression *const r0844 = rshift(swizzle_x(r0821), body.constant(int(19)));
                ir_expression *const r0845 = bit_and(r0844, body.constant(4095u));
                ir_expression *const r0846 = equal(r0845, body.constant(4094u));
-               ir_expression *const r0847 = nequal(swizzle_x(r0821), body.constant(0u));
-               ir_expression *const r0848 = bit_and(swizzle_y(r0821), body.constant(524287u));
+               ir_expression *const r0847 = nequal(swizzle_y(r0821), body.constant(0u));
+               ir_expression *const r0848 = bit_and(swizzle_x(r0821), body.constant(524287u));
                ir_expression *const r0849 = nequal(r0848, body.constant(0u));
                ir_expression *const r084A = logic_or(r0847, r0849);
                body.emit(assign(r0843, logic_and(r0846, r084A), 0x01));
 
                ir_variable *const r084B = body.make_temp(glsl_type::bool_type, "is_nan_retval");
-               ir_expression *const r084C = lshift(swizzle_y(r0822), body.constant(int(1)));
+               ir_expression *const r084C = lshift(swizzle_x(r0822), body.constant(int(1)));
                ir_expression *const r084D = lequal(body.constant(4292870144u), r084C);
-               ir_expression *const r084E = nequal(swizzle_x(r0822), body.constant(0u));
-               ir_expression *const r084F = bit_and(swizzle_y(r0822), body.constant(1048575u));
+               ir_expression *const r084E = nequal(swizzle_y(r0822), body.constant(0u));
+               ir_expression *const r084F = bit_and(swizzle_x(r0822), body.constant(1048575u));
                ir_expression *const r0850 = nequal(r084F, body.constant(0u));
                ir_expression *const r0851 = logic_or(r084E, r0850);
                body.emit(assign(r084B, logic_and(r084D, r0851), 0x01));
 
-               body.emit(assign(r0840, bit_or(swizzle_y(r0821), body.constant(524288u)), 0x02));
+               body.emit(assign(r0840, bit_or(swizzle_x(r0821), body.constant(524288u)), 0x01));
 
-               body.emit(assign(r0841, bit_or(swizzle_y(r0822), body.constant(524288u)), 0x02));
+               body.emit(assign(r0841, bit_or(swizzle_x(r0822), body.constant(524288u)), 0x01));
 
                /* IF CONDITION */
-               ir_expression *const r0853 = lshift(swizzle_y(r0821), body.constant(int(1)));
+               ir_expression *const r0853 = lshift(swizzle_x(r0821), body.constant(int(1)));
                ir_expression *const r0854 = lequal(body.constant(4292870144u), r0853);
-               ir_expression *const r0855 = nequal(swizzle_x(r0821), body.constant(0u));
-               ir_expression *const r0856 = bit_and(swizzle_y(r0821), body.constant(1048575u));
+               ir_expression *const r0855 = nequal(swizzle_y(r0821), body.constant(0u));
+               ir_expression *const r0856 = bit_and(swizzle_x(r0821), body.constant(1048575u));
                ir_expression *const r0857 = nequal(r0856, body.constant(0u));
                ir_expression *const r0858 = logic_or(r0855, r0857);
                ir_expression *const r0859 = logic_and(r0854, r0858);
@@ -10163,7 +10163,7 @@ fadd64(void *mem_ctx, builtin_available_predicate avail)
                /* ELSE INSTRUCTIONS */
                body.instructions = &f085D->else_instructions;
 
-               body.emit(assign(r082B, bit_or(swizzle_x(r0833), body.constant(1048576u)), 0x01));
+               body.emit(assign(r082B, bit_or(swizzle_x(r0822), body.constant(1048576u)), 0x02));
 
 
             body.instructions = f085D_parent_instructions;
@@ -10172,10 +10172,10 @@ fadd64(void *mem_ctx, builtin_available_predicate avail)
             /* END IF */
 
             ir_variable *const r085F = body.make_temp(glsl_type::uint_type, "a0");
-            body.emit(assign(r085F, swizzle_x(r082B), 0x01));
+            body.emit(assign(r085F, swizzle_y(r082B), 0x01));
 
             ir_variable *const r0860 = body.make_temp(glsl_type::uint_type, "a1");
-            body.emit(assign(r0860, swizzle_y(r082B), 0x01));
+            body.emit(assign(r0860, swizzle_x(r082B), 0x01));
 
             ir_variable *const r0861 = body.make_temp(glsl_type::uint_type, "a2");
             body.emit(assign(r0861, body.constant(0u), 0x01));
@@ -10216,13 +10216,13 @@ fadd64(void *mem_ctx, builtin_available_predicate avail)
                   /* THEN INSTRUCTIONS */
                   body.instructions = &f0869->then_instructions;
 
-                  body.emit(assign(r0862, lshift(swizzle_y(r0833), r0865), 0x01));
+                  body.emit(assign(r0862, lshift(swizzle_x(r0833), r0865), 0x01));
 
-                  ir_expression *const r086B = lshift(swizzle_x(r082B), r0865);
-                  ir_expression *const r086C = rshift(swizzle_y(r0833), r082A);
+                  ir_expression *const r086B = lshift(swizzle_y(r082B), r0865);
+                  ir_expression *const r086C = rshift(swizzle_x(r0833), r082A);
                   body.emit(assign(r0863, bit_or(r086B, r086C), 0x01));
 
-                  body.emit(assign(r0864, rshift(swizzle_x(r082B), r082A), 0x01));
+                  body.emit(assign(r0864, rshift(swizzle_y(r082B), r082A), 0x01));
 
 
                   /* ELSE INSTRUCTIONS */
@@ -10244,7 +10244,7 @@ fadd64(void *mem_ctx, builtin_available_predicate avail)
                      /* ELSE INSTRUCTIONS */
                      body.instructions = &f086D->else_instructions;
 
-                     body.emit(assign(r0861, bit_or(body.constant(0u), swizzle_y(r0833)), 0x01));
+                     body.emit(assign(r0861, bit_or(body.constant(0u), swizzle_x(r0833)), 0x01));
 
                      /* IF CONDITION */
                      ir_expression *const r0870 = less(r082A, body.constant(int(64)));
@@ -10254,10 +10254,10 @@ fadd64(void *mem_ctx, builtin_available_predicate avail)
                         /* THEN INSTRUCTIONS */
                         body.instructions = &f086F->then_instructions;
 
-                        body.emit(assign(r0862, lshift(swizzle_x(r082B), r0865), 0x01));
+                        body.emit(assign(r0862, lshift(swizzle_y(r082B), r0865), 0x01));
 
                         ir_expression *const r0871 = bit_and(r082A, body.constant(int(31)));
-                        body.emit(assign(r0863, rshift(swizzle_x(r082B), r0871), 0x01));
+                        body.emit(assign(r0863, rshift(swizzle_y(r082B), r0871), 0x01));
 
 
                         /* ELSE INSTRUCTIONS */
@@ -10278,7 +10278,7 @@ fadd64(void *mem_ctx, builtin_available_predicate avail)
                            /* ELSE INSTRUCTIONS */
                            body.instructions = &f0873->else_instructions;
 
-                           ir_expression *const r0875 = nequal(swizzle_x(r082B), body.constant(0u));
+                           ir_expression *const r0875 = nequal(swizzle_y(r082B), body.constant(0u));
                            ir_expression *const r0876 = expr(ir_unop_b2i, r0875);
                            body.emit(assign(r0872, expr(ir_unop_i2u, r0876), 0x01));
 
@@ -10323,9 +10323,9 @@ fadd64(void *mem_ctx, builtin_available_predicate avail)
 
             /* END IF */
 
-            body.emit(assign(r082B, r0864, 0x01));
+            body.emit(assign(r082B, r0864, 0x02));
 
-            body.emit(assign(r082B, r0863, 0x02));
+            body.emit(assign(r082B, r0863, 0x01));
 
             body.emit(assign(r082E, r0862, 0x01));
 
@@ -10358,7 +10358,7 @@ fadd64(void *mem_ctx, builtin_available_predicate avail)
                body.instructions = &f087C->then_instructions;
 
                /* IF CONDITION */
-               ir_expression *const r087F = bit_or(swizzle_x(r082B), swizzle_y(r082B));
+               ir_expression *const r087F = bit_or(swizzle_y(r082B), swizzle_x(r082B));
                ir_expression *const r0880 = nequal(r087F, body.constant(0u));
                ir_if *f087E = new(mem_ctx) ir_if(operand(r0880).val);
                exec_list *const f087E_parent_instructions = body.instructions;
@@ -10367,40 +10367,40 @@ fadd64(void *mem_ctx, builtin_available_predicate avail)
                   body.instructions = &f087E->then_instructions;
 
                   ir_variable *const r0881 = body.make_temp(glsl_type::uvec2_type, "a");
-                  body.emit(assign(r0881, swizzle_x(r0821), 0x01));
+                  body.emit(assign(r0881, swizzle_y(r0821), 0x02));
 
                   ir_variable *const r0882 = body.make_temp(glsl_type::uvec2_type, "b");
-                  body.emit(assign(r0882, swizzle_x(r0822), 0x01));
+                  body.emit(assign(r0882, swizzle_y(r0822), 0x02));
 
                   ir_variable *const r0883 = body.make_temp(glsl_type::uvec2_type, "return_value");
                   ir_variable *const r0884 = body.make_temp(glsl_type::bool_type, "float64_is_signaling_nan_retval");
-                  ir_expression *const r0885 = rshift(swizzle_y(r0821), body.constant(int(19)));
+                  ir_expression *const r0885 = rshift(swizzle_x(r0821), body.constant(int(19)));
                   ir_expression *const r0886 = bit_and(r0885, body.constant(4095u));
                   ir_expression *const r0887 = equal(r0886, body.constant(4094u));
-                  ir_expression *const r0888 = nequal(swizzle_x(r0821), body.constant(0u));
-                  ir_expression *const r0889 = bit_and(swizzle_y(r0821), body.constant(524287u));
+                  ir_expression *const r0888 = nequal(swizzle_y(r0821), body.constant(0u));
+                  ir_expression *const r0889 = bit_and(swizzle_x(r0821), body.constant(524287u));
                   ir_expression *const r088A = nequal(r0889, body.constant(0u));
                   ir_expression *const r088B = logic_or(r0888, r088A);
                   body.emit(assign(r0884, logic_and(r0887, r088B), 0x01));
 
                   ir_variable *const r088C = body.make_temp(glsl_type::bool_type, "is_nan_retval");
-                  ir_expression *const r088D = lshift(swizzle_y(r0822), body.constant(int(1)));
+                  ir_expression *const r088D = lshift(swizzle_x(r0822), body.constant(int(1)));
                   ir_expression *const r088E = lequal(body.constant(4292870144u), r088D);
-                  ir_expression *const r088F = nequal(swizzle_x(r0822), body.constant(0u));
-                  ir_expression *const r0890 = bit_and(swizzle_y(r0822), body.constant(1048575u));
+                  ir_expression *const r088F = nequal(swizzle_y(r0822), body.constant(0u));
+                  ir_expression *const r0890 = bit_and(swizzle_x(r0822), body.constant(1048575u));
                   ir_expression *const r0891 = nequal(r0890, body.constant(0u));
                   ir_expression *const r0892 = logic_or(r088F, r0891);
                   body.emit(assign(r088C, logic_and(r088E, r0892), 0x01));
 
-                  body.emit(assign(r0881, bit_or(swizzle_y(r0821), body.constant(524288u)), 0x02));
+                  body.emit(assign(r0881, bit_or(swizzle_x(r0821), body.constant(524288u)), 0x01));
 
-                  body.emit(assign(r0882, bit_or(swizzle_y(r0822), body.constant(524288u)), 0x02));
+                  body.emit(assign(r0882, bit_or(swizzle_x(r0822), body.constant(524288u)), 0x01));
 
                   /* IF CONDITION */
-                  ir_expression *const r0894 = lshift(swizzle_y(r0821), body.constant(int(1)));
+                  ir_expression *const r0894 = lshift(swizzle_x(r0821), body.constant(int(1)));
                   ir_expression *const r0895 = lequal(body.constant(4292870144u), r0894);
-                  ir_expression *const r0896 = nequal(swizzle_x(r0821), body.constant(0u));
-                  ir_expression *const r0897 = bit_and(swizzle_y(r0821), body.constant(1048575u));
+                  ir_expression *const r0896 = nequal(swizzle_y(r0821), body.constant(0u));
+                  ir_expression *const r0897 = bit_and(swizzle_x(r0821), body.constant(1048575u));
                   ir_expression *const r0898 = nequal(r0897, body.constant(0u));
                   ir_expression *const r0899 = logic_or(r0896, r0898);
                   ir_expression *const r089A = logic_and(r0895, r0899);
@@ -10458,9 +10458,9 @@ fadd64(void *mem_ctx, builtin_available_predicate avail)
                   ir_variable *const r089E = new(mem_ctx) ir_variable(glsl_type::uvec2_type, "z", ir_var_auto);
                   body.emit(r089E);
                   ir_expression *const r089F = lshift(r0824, body.constant(int(31)));
-                  body.emit(assign(r089E, add(r089F, body.constant(2146435072u)), 0x01));
+                  body.emit(assign(r089E, add(r089F, body.constant(2146435072u)), 0x02));
 
-                  body.emit(assign(r089E, body.constant(0u), 0x02));
+                  body.emit(assign(r089E, body.constant(0u), 0x01));
 
                   body.emit(assign(r0829, r089E, 0x03));
 
@@ -10490,7 +10490,7 @@ fadd64(void *mem_ctx, builtin_available_predicate avail)
                   /* ELSE INSTRUCTIONS */
                   body.instructions = &f08A0->else_instructions;
 
-                  body.emit(assign(r082C, bit_or(swizzle_x(r0830), body.constant(1048576u)), 0x01));
+                  body.emit(assign(r082C, bit_or(swizzle_x(r0821), body.constant(1048576u)), 0x02));
 
 
                body.instructions = f08A0_parent_instructions;
@@ -10499,10 +10499,10 @@ fadd64(void *mem_ctx, builtin_available_predicate avail)
                /* END IF */
 
                ir_variable *const r08A2 = body.make_temp(glsl_type::uint_type, "a0");
-               body.emit(assign(r08A2, swizzle_x(r082C), 0x01));
+               body.emit(assign(r08A2, swizzle_y(r082C), 0x01));
 
                ir_variable *const r08A3 = body.make_temp(glsl_type::uint_type, "a1");
-               body.emit(assign(r08A3, swizzle_y(r082C), 0x01));
+               body.emit(assign(r08A3, swizzle_x(r082C), 0x01));
 
                ir_variable *const r08A4 = body.make_temp(glsl_type::uint_type, "a2");
                body.emit(assign(r08A4, body.constant(0u), 0x01));
@@ -10546,13 +10546,13 @@ fadd64(void *mem_ctx, builtin_available_predicate avail)
                      /* THEN INSTRUCTIONS */
                      body.instructions = &f08AD->then_instructions;
 
-                     body.emit(assign(r08A6, lshift(swizzle_y(r0830), r08A9), 0x01));
+                     body.emit(assign(r08A6, lshift(swizzle_x(r0830), r08A9), 0x01));
 
-                     ir_expression *const r08AF = lshift(swizzle_x(r082C), r08A9);
-                     ir_expression *const r08B0 = rshift(swizzle_y(r0830), r08A5);
+                     ir_expression *const r08AF = lshift(swizzle_y(r082C), r08A9);
+                     ir_expression *const r08B0 = rshift(swizzle_x(r0830), r08A5);
                      body.emit(assign(r08A7, bit_or(r08AF, r08B0), 0x01));
 
-                     body.emit(assign(r08A8, rshift(swizzle_x(r082C), r08A5), 0x01));
+                     body.emit(assign(r08A8, rshift(swizzle_y(r082C), r08A5), 0x01));
 
 
                      /* ELSE INSTRUCTIONS */
@@ -10574,7 +10574,7 @@ fadd64(void *mem_ctx, builtin_available_predicate avail)
                         /* ELSE INSTRUCTIONS */
                         body.instructions = &f08B1->else_instructions;
 
-                        body.emit(assign(r08A4, bit_or(body.constant(0u), swizzle_y(r0830)), 0x01));
+                        body.emit(assign(r08A4, bit_or(body.constant(0u), swizzle_x(r0830)), 0x01));
 
                         /* IF CONDITION */
                         ir_expression *const r08B4 = less(r08A5, body.constant(int(64)));
@@ -10584,10 +10584,10 @@ fadd64(void *mem_ctx, builtin_available_predicate avail)
                            /* THEN INSTRUCTIONS */
                            body.instructions = &f08B3->then_instructions;
 
-                           body.emit(assign(r08A6, lshift(swizzle_x(r082C), r08A9), 0x01));
+                           body.emit(assign(r08A6, lshift(swizzle_y(r082C), r08A9), 0x01));
 
                            ir_expression *const r08B5 = bit_and(r08A5, body.constant(int(31)));
-                           body.emit(assign(r08A7, rshift(swizzle_x(r082C), r08B5), 0x01));
+                           body.emit(assign(r08A7, rshift(swizzle_y(r082C), r08B5), 0x01));
 
 
                            /* ELSE INSTRUCTIONS */
@@ -10608,7 +10608,7 @@ fadd64(void *mem_ctx, builtin_available_predicate avail)
                               /* ELSE INSTRUCTIONS */
                               body.instructions = &f08B7->else_instructions;
 
-                              ir_expression *const r08B9 = nequal(swizzle_x(r082C), body.constant(0u));
+                              ir_expression *const r08B9 = nequal(swizzle_y(r082C), body.constant(0u));
                               ir_expression *const r08BA = expr(ir_unop_b2i, r08B9);
                               body.emit(assign(r08B6, expr(ir_unop_i2u, r08BA), 0x01));
 
@@ -10653,9 +10653,9 @@ fadd64(void *mem_ctx, builtin_available_predicate avail)
 
                /* END IF */
 
-               body.emit(assign(r082C, r08A8, 0x01));
+               body.emit(assign(r082C, r08A8, 0x02));
 
-               body.emit(assign(r082C, r08A7, 0x02));
+               body.emit(assign(r082C, r08A7, 0x01));
 
                body.emit(assign(r082E, r08A6, 0x01));
 
@@ -10680,8 +10680,8 @@ fadd64(void *mem_ctx, builtin_available_predicate avail)
                body.instructions = &f08BE->then_instructions;
 
                /* IF CONDITION */
-               ir_expression *const r08C1 = bit_or(swizzle_x(r082C), swizzle_y(r082C));
-               ir_expression *const r08C2 = bit_or(swizzle_x(r082B), swizzle_y(r082B));
+               ir_expression *const r08C1 = bit_or(swizzle_y(r082C), swizzle_x(r082C));
+               ir_expression *const r08C2 = bit_or(swizzle_y(r082B), swizzle_x(r082B));
                ir_expression *const r08C3 = bit_or(r08C1, r08C2);
                ir_expression *const r08C4 = nequal(r08C3, body.constant(0u));
                ir_if *f08C0 = new(mem_ctx) ir_if(operand(r08C4).val);
@@ -10691,40 +10691,40 @@ fadd64(void *mem_ctx, builtin_available_predicate avail)
                   body.instructions = &f08C0->then_instructions;
 
                   ir_variable *const r08C5 = body.make_temp(glsl_type::uvec2_type, "a");
-                  body.emit(assign(r08C5, swizzle_x(r0821), 0x01));
+                  body.emit(assign(r08C5, swizzle_y(r0821), 0x02));
 
                   ir_variable *const r08C6 = body.make_temp(glsl_type::uvec2_type, "b");
-                  body.emit(assign(r08C6, swizzle_x(r0822), 0x01));
+                  body.emit(assign(r08C6, swizzle_y(r0822), 0x02));
 
                   ir_variable *const r08C7 = body.make_temp(glsl_type::uvec2_type, "return_value");
                   ir_variable *const r08C8 = body.make_temp(glsl_type::bool_type, "float64_is_signaling_nan_retval");
-                  ir_expression *const r08C9 = rshift(swizzle_y(r0821), body.constant(int(19)));
+                  ir_expression *const r08C9 = rshift(swizzle_x(r0821), body.constant(int(19)));
                   ir_expression *const r08CA = bit_and(r08C9, body.constant(4095u));
                   ir_expression *const r08CB = equal(r08CA, body.constant(4094u));
-                  ir_expression *const r08CC = nequal(swizzle_x(r0821), body.constant(0u));
-                  ir_expression *const r08CD = bit_and(swizzle_y(r0821), body.constant(524287u));
+                  ir_expression *const r08CC = nequal(swizzle_y(r0821), body.constant(0u));
+                  ir_expression *const r08CD = bit_and(swizzle_x(r0821), body.constant(524287u));
                   ir_expression *const r08CE = nequal(r08CD, body.constant(0u));
                   ir_expression *const r08CF = logic_or(r08CC, r08CE);
                   body.emit(assign(r08C8, logic_and(r08CB, r08CF), 0x01));
 
                   ir_variable *const r08D0 = body.make_temp(glsl_type::bool_type, "is_nan_retval");
-                  ir_expression *const r08D1 = lshift(swizzle_y(r0822), body.constant(int(1)));
+                  ir_expression *const r08D1 = lshift(swizzle_x(r0822), body.constant(int(1)));
                   ir_expression *const r08D2 = lequal(body.constant(4292870144u), r08D1);
-                  ir_expression *const r08D3 = nequal(swizzle_x(r0822), body.constant(0u));
-                  ir_expression *const r08D4 = bit_and(swizzle_y(r0822), body.constant(1048575u));
+                  ir_expression *const r08D3 = nequal(swizzle_y(r0822), body.constant(0u));
+                  ir_expression *const r08D4 = bit_and(swizzle_x(r0822), body.constant(1048575u));
                   ir_expression *const r08D5 = nequal(r08D4, body.constant(0u));
                   ir_expression *const r08D6 = logic_or(r08D3, r08D5);
                   body.emit(assign(r08D0, logic_and(r08D2, r08D6), 0x01));
 
-                  body.emit(assign(r08C5, bit_or(swizzle_y(r0821), body.constant(524288u)), 0x02));
+                  body.emit(assign(r08C5, bit_or(swizzle_x(r0821), body.constant(524288u)), 0x01));
 
-                  body.emit(assign(r08C6, bit_or(swizzle_y(r0822), body.constant(524288u)), 0x02));
+                  body.emit(assign(r08C6, bit_or(swizzle_x(r0822), body.constant(524288u)), 0x01));
 
                   /* IF CONDITION */
-                  ir_expression *const r08D8 = lshift(swizzle_y(r0821), body.constant(int(1)));
+                  ir_expression *const r08D8 = lshift(swizzle_x(r0821), body.constant(int(1)));
                   ir_expression *const r08D9 = lequal(body.constant(4292870144u), r08D8);
-                  ir_expression *const r08DA = nequal(swizzle_x(r0821), body.constant(0u));
-                  ir_expression *const r08DB = bit_and(swizzle_y(r0821), body.constant(1048575u));
+                  ir_expression *const r08DA = nequal(swizzle_y(r0821), body.constant(0u));
+                  ir_expression *const r08DB = bit_and(swizzle_x(r0821), body.constant(1048575u));
                   ir_expression *const r08DC = nequal(r08DB, body.constant(0u));
                   ir_expression *const r08DD = logic_or(r08DA, r08DC);
                   ir_expression *const r08DE = logic_and(r08D9, r08DD);
@@ -10795,10 +10795,10 @@ fadd64(void *mem_ctx, builtin_available_predicate avail)
 
                ir_variable *const r08E2 = body.make_temp(glsl_type::uint_type, "z0Ptr");
                ir_variable *const r08E3 = body.make_temp(glsl_type::uint_type, "assignment_tmp");
-               body.emit(assign(r08E3, add(swizzle_y(r082C), swizzle_y(r082B)), 0x01));
+               body.emit(assign(r08E3, add(swizzle_x(r082C), swizzle_x(r082B)), 0x01));
 
-               ir_expression *const r08E4 = add(swizzle_x(r082C), swizzle_x(r082B));
-               ir_expression *const r08E5 = less(r08E3, swizzle_y(r082C));
+               ir_expression *const r08E4 = add(swizzle_y(r082C), swizzle_y(r082B));
+               ir_expression *const r08E5 = less(r08E3, swizzle_x(r082C));
                ir_expression *const r08E6 = expr(ir_unop_b2i, r08E5);
                ir_expression *const r08E7 = expr(ir_unop_i2u, r08E6);
                body.emit(assign(r08E2, add(r08E4, r08E7), 0x01));
@@ -10816,9 +10816,9 @@ fadd64(void *mem_ctx, builtin_available_predicate avail)
                   ir_variable *const r08EA = new(mem_ctx) ir_variable(glsl_type::uvec2_type, "z", ir_var_auto);
                   body.emit(r08EA);
                   ir_expression *const r08EB = lshift(r0824, body.constant(int(31)));
-                  body.emit(assign(r08EA, add(r08EB, r08E2), 0x01));
+                  body.emit(assign(r08EA, add(r08EB, r08E2), 0x02));
 
-                  body.emit(assign(r08EA, r08E3, 0x02));
+                  body.emit(assign(r08EA, r08E3, 0x01));
 
                   body.emit(assign(r0829, r08EA, 0x03));
 
@@ -10941,9 +10941,9 @@ fadd64(void *mem_ctx, builtin_available_predicate avail)
                         ir_variable *const r0906 = new(mem_ctx) ir_variable(glsl_type::uvec2_type, "z", ir_var_auto);
                         body.emit(r0906);
                         ir_expression *const r0907 = lshift(r0824, body.constant(int(31)));
-                        body.emit(assign(r0906, add(r0907, body.constant(2146435072u)), 0x01));
+                        body.emit(assign(r0906, add(r0907, body.constant(2146435072u)), 0x02));
 
-                        body.emit(assign(r0906, body.constant(0u), 0x02));
+                        body.emit(assign(r0906, body.constant(0u), 0x01));
 
                         body.emit(assign(r08F6, r0906, 0x03));
 
@@ -11204,9 +11204,9 @@ fadd64(void *mem_ctx, builtin_available_predicate avail)
                      ir_expression *const r0938 = lshift(r0824, body.constant(int(31)));
                      ir_expression *const r0939 = lshift(r08F1, body.constant(int(20)));
                      ir_expression *const r093A = add(r0938, r0939);
-                     body.emit(assign(r0937, add(r093A, r08F2), 0x01));
+                     body.emit(assign(r0937, add(r093A, r08F2), 0x02));
 
-                     body.emit(assign(r0937, r08F3, 0x02));
+                     body.emit(assign(r0937, r08F3, 0x01));
 
                      body.emit(assign(r08F6, r0937, 0x03));
 
@@ -11253,14 +11253,14 @@ fadd64(void *mem_ctx, builtin_available_predicate avail)
          /* THEN INSTRUCTIONS */
          body.instructions = &f093B->then_instructions;
 
-         body.emit(assign(r082C, bit_or(swizzle_x(r082C), body.constant(1048576u)), 0x01));
+         body.emit(assign(r082C, bit_or(swizzle_y(r082C), body.constant(1048576u)), 0x02));
 
          ir_variable *const r093C = body.make_temp(glsl_type::uint_type, "z0Ptr");
          ir_variable *const r093D = body.make_temp(glsl_type::uint_type, "assignment_tmp");
-         body.emit(assign(r093D, add(swizzle_y(r082C), swizzle_y(r082B)), 0x01));
+         body.emit(assign(r093D, add(swizzle_x(r082C), swizzle_x(r082B)), 0x01));
 
-         ir_expression *const r093E = add(swizzle_x(r082C), swizzle_x(r082B));
-         ir_expression *const r093F = less(r093D, swizzle_y(r082C));
+         ir_expression *const r093E = add(swizzle_y(r082C), swizzle_y(r082B));
+         ir_expression *const r093F = less(r093D, swizzle_x(r082C));
          ir_expression *const r0940 = expr(ir_unop_b2i, r093F);
          ir_expression *const r0941 = expr(ir_unop_i2u, r0940);
          body.emit(assign(r093C, add(r093E, r0941), 0x01));
@@ -11366,9 +11366,9 @@ fadd64(void *mem_ctx, builtin_available_predicate avail)
                   ir_variable *const r0959 = new(mem_ctx) ir_variable(glsl_type::uvec2_type, "z", ir_var_auto);
                   body.emit(r0959);
                   ir_expression *const r095A = lshift(r0824, body.constant(int(31)));
-                  body.emit(assign(r0959, add(r095A, body.constant(2146435072u)), 0x01));
+                  body.emit(assign(r0959, add(r095A, body.constant(2146435072u)), 0x02));
 
-                  body.emit(assign(r0959, body.constant(0u), 0x02));
+                  body.emit(assign(r0959, body.constant(0u), 0x01));
 
                   body.emit(assign(r0949, r0959, 0x03));
 
@@ -11629,9 +11629,9 @@ fadd64(void *mem_ctx, builtin_available_predicate avail)
                ir_expression *const r098B = lshift(r0824, body.constant(int(31)));
                ir_expression *const r098C = lshift(r0944, body.constant(int(20)));
                ir_expression *const r098D = add(r098B, r098C);
-               body.emit(assign(r098A, add(r098D, r0945), 0x01));
+               body.emit(assign(r098A, add(r098D, r0945), 0x02));
 
-               body.emit(assign(r098A, r0946, 0x02));
+               body.emit(assign(r098A, r0946, 0x01));
 
                body.emit(assign(r0949, r098A, 0x03));
 
@@ -11765,9 +11765,9 @@ fadd64(void *mem_ctx, builtin_available_predicate avail)
                   ir_variable *const r09AB = new(mem_ctx) ir_variable(glsl_type::uvec2_type, "z", ir_var_auto);
                   body.emit(r09AB);
                   ir_expression *const r09AC = lshift(r0824, body.constant(int(31)));
-                  body.emit(assign(r09AB, add(r09AC, body.constant(2146435072u)), 0x01));
+                  body.emit(assign(r09AB, add(r09AC, body.constant(2146435072u)), 0x02));
 
-                  body.emit(assign(r09AB, body.constant(0u), 0x02));
+                  body.emit(assign(r09AB, body.constant(0u), 0x01));
 
                   body.emit(assign(r099B, r09AB, 0x03));
 
@@ -12028,9 +12028,9 @@ fadd64(void *mem_ctx, builtin_available_predicate avail)
                ir_expression *const r09DD = lshift(r0824, body.constant(int(31)));
                ir_expression *const r09DE = lshift(r0996, body.constant(int(20)));
                ir_expression *const r09DF = add(r09DD, r09DE);
-               body.emit(assign(r09DC, add(r09DF, r0997), 0x01));
+               body.emit(assign(r09DC, add(r09DF, r0997), 0x02));
 
-               body.emit(assign(r09DC, r0998, 0x02));
+               body.emit(assign(r09DC, r0998, 0x01));
 
                body.emit(assign(r099B, r09DC, 0x03));
 
@@ -12081,23 +12081,23 @@ fadd64(void *mem_ctx, builtin_available_predicate avail)
       ir_variable *const r09E7 = new(mem_ctx) ir_variable(glsl_type::uint_type, "zExp", ir_var_auto);
       body.emit(r09E7);
       ir_variable *const r09E8 = body.make_temp(glsl_type::uvec2_type, "vec_ctor");
-      body.emit(assign(r09E8, bit_and(swizzle_x(r0821), body.constant(1048575u)), 0x01));
+      body.emit(assign(r09E8, bit_and(swizzle_y(r0821), body.constant(1048575u)), 0x01));
 
-      body.emit(assign(r09E8, swizzle_y(r0821), 0x02));
+      body.emit(assign(r09E8, swizzle_x(r0821), 0x02));
 
       ir_variable *const r09E9 = body.make_temp(glsl_type::uint_type, "extractFloat64Exp_retval");
-      ir_expression *const r09EA = rshift(swizzle_x(r0821), body.constant(int(20)));
+      ir_expression *const r09EA = rshift(swizzle_y(r0821), body.constant(int(20)));
       body.emit(assign(r09E9, bit_and(r09EA, body.constant(2047u)), 0x01));
 
       body.emit(assign(r09E5, r09E9, 0x01));
 
       ir_variable *const r09EB = body.make_temp(glsl_type::uvec2_type, "vec_ctor");
-      body.emit(assign(r09EB, bit_and(swizzle_x(r0822), body.constant(1048575u)), 0x01));
+      body.emit(assign(r09EB, bit_and(swizzle_y(r0822), body.constant(1048575u)), 0x01));
 
-      body.emit(assign(r09EB, swizzle_y(r0822), 0x02));
+      body.emit(assign(r09EB, swizzle_x(r0822), 0x02));
 
       ir_variable *const r09EC = body.make_temp(glsl_type::uint_type, "extractFloat64Exp_retval");
-      ir_expression *const r09ED = rshift(swizzle_x(r0822), body.constant(int(20)));
+      ir_expression *const r09ED = rshift(swizzle_y(r0822), body.constant(int(20)));
       body.emit(assign(r09EC, bit_and(r09ED, body.constant(2047u)), 0x01));
 
       body.emit(assign(r09E3, r09EC, 0x01));
@@ -12107,28 +12107,28 @@ fadd64(void *mem_ctx, builtin_available_predicate avail)
       body.emit(assign(r09E2, sub(r09EE, r09EF), 0x01));
 
       ir_variable *const r09F0 = body.make_temp(glsl_type::uint_type, "z1Ptr");
-      body.emit(assign(r09F0, lshift(swizzle_y(r0821), body.constant(int(10))), 0x01));
+      body.emit(assign(r09F0, lshift(swizzle_x(r09E8), body.constant(int(10))), 0x01));
 
       ir_variable *const r09F1 = body.make_temp(glsl_type::uint_type, "conditional_tmp");
-      ir_expression *const r09F2 = lshift(swizzle_x(r09E8), body.constant(int(10)));
-      ir_expression *const r09F3 = rshift(swizzle_y(r0821), body.constant(int(22)));
+      ir_expression *const r09F2 = lshift(swizzle_x(r0821), body.constant(int(10)));
+      ir_expression *const r09F3 = rshift(swizzle_x(r09E8), body.constant(int(22)));
       body.emit(assign(r09F1, bit_or(r09F2, r09F3), 0x01));
 
-      body.emit(assign(r09E6, r09F1, 0x01));
+      body.emit(assign(r09E6, r09F1, 0x02));
 
-      body.emit(assign(r09E6, r09F0, 0x02));
+      body.emit(assign(r09E6, r09F0, 0x01));
 
       ir_variable *const r09F4 = body.make_temp(glsl_type::uint_type, "z1Ptr");
-      body.emit(assign(r09F4, lshift(swizzle_y(r0822), body.constant(int(10))), 0x01));
+      body.emit(assign(r09F4, lshift(swizzle_x(r09EB), body.constant(int(10))), 0x01));
 
       ir_variable *const r09F5 = body.make_temp(glsl_type::uint_type, "conditional_tmp");
-      ir_expression *const r09F6 = lshift(swizzle_x(r09EB), body.constant(int(10)));
-      ir_expression *const r09F7 = rshift(swizzle_y(r0822), body.constant(int(22)));
+      ir_expression *const r09F6 = lshift(swizzle_x(r0822), body.constant(int(10)));
+      ir_expression *const r09F7 = rshift(swizzle_x(r09EB), body.constant(int(22)));
       body.emit(assign(r09F5, bit_or(r09F6, r09F7), 0x01));
 
-      body.emit(assign(r09E4, r09F5, 0x01));
+      body.emit(assign(r09E4, r09F5, 0x02));
 
-      body.emit(assign(r09E4, r09F4, 0x02));
+      body.emit(assign(r09E4, r09F4, 0x01));
 
       /* IF CONDITION */
       ir_expression *const r09F9 = less(body.constant(int(0)), r09E2);
@@ -12156,40 +12156,40 @@ fadd64(void *mem_ctx, builtin_available_predicate avail)
                body.instructions = &f09FC->then_instructions;
 
                ir_variable *const r09FF = body.make_temp(glsl_type::uvec2_type, "a");
-               body.emit(assign(r09FF, swizzle_x(r0821), 0x01));
+               body.emit(assign(r09FF, swizzle_y(r0821), 0x02));
 
                ir_variable *const r0A00 = body.make_temp(glsl_type::uvec2_type, "b");
-               body.emit(assign(r0A00, swizzle_x(r0822), 0x01));
+               body.emit(assign(r0A00, swizzle_y(r0822), 0x02));
 
                ir_variable *const r0A01 = body.make_temp(glsl_type::uvec2_type, "return_value");
                ir_variable *const r0A02 = body.make_temp(glsl_type::bool_type, "float64_is_signaling_nan_retval");
-               ir_expression *const r0A03 = rshift(swizzle_y(r0821), body.constant(int(19)));
+               ir_expression *const r0A03 = rshift(swizzle_x(r0821), body.constant(int(19)));
                ir_expression *const r0A04 = bit_and(r0A03, body.constant(4095u));
                ir_expression *const r0A05 = equal(r0A04, body.constant(4094u));
-               ir_expression *const r0A06 = nequal(swizzle_x(r0821), body.constant(0u));
-               ir_expression *const r0A07 = bit_and(swizzle_y(r0821), body.constant(524287u));
+               ir_expression *const r0A06 = nequal(swizzle_y(r0821), body.constant(0u));
+               ir_expression *const r0A07 = bit_and(swizzle_x(r0821), body.constant(524287u));
                ir_expression *const r0A08 = nequal(r0A07, body.constant(0u));
                ir_expression *const r0A09 = logic_or(r0A06, r0A08);
                body.emit(assign(r0A02, logic_and(r0A05, r0A09), 0x01));
 
                ir_variable *const r0A0A = body.make_temp(glsl_type::bool_type, "is_nan_retval");
-               ir_expression *const r0A0B = lshift(swizzle_y(r0822), body.constant(int(1)));
+               ir_expression *const r0A0B = lshift(swizzle_x(r0822), body.constant(int(1)));
                ir_expression *const r0A0C = lequal(body.constant(4292870144u), r0A0B);
-               ir_expression *const r0A0D = nequal(swizzle_x(r0822), body.constant(0u));
-               ir_expression *const r0A0E = bit_and(swizzle_y(r0822), body.constant(1048575u));
+               ir_expression *const r0A0D = nequal(swizzle_y(r0822), body.constant(0u));
+               ir_expression *const r0A0E = bit_and(swizzle_x(r0822), body.constant(1048575u));
                ir_expression *const r0A0F = nequal(r0A0E, body.constant(0u));
                ir_expression *const r0A10 = logic_or(r0A0D, r0A0F);
                body.emit(assign(r0A0A, logic_and(r0A0C, r0A10), 0x01));
 
-               body.emit(assign(r09FF, bit_or(swizzle_y(r0821), body.constant(524288u)), 0x02));
+               body.emit(assign(r09FF, bit_or(swizzle_x(r0821), body.constant(524288u)), 0x01));
 
-               body.emit(assign(r0A00, bit_or(swizzle_y(r0822), body.constant(524288u)), 0x02));
+               body.emit(assign(r0A00, bit_or(swizzle_x(r0822), body.constant(524288u)), 0x01));
 
                /* IF CONDITION */
-               ir_expression *const r0A12 = lshift(swizzle_y(r0821), body.constant(int(1)));
+               ir_expression *const r0A12 = lshift(swizzle_x(r0821), body.constant(int(1)));
                ir_expression *const r0A13 = lequal(body.constant(4292870144u), r0A12);
-               ir_expression *const r0A14 = nequal(swizzle_x(r0821), body.constant(0u));
-               ir_expression *const r0A15 = bit_and(swizzle_y(r0821), body.constant(1048575u));
+               ir_expression *const r0A14 = nequal(swizzle_y(r0821), body.constant(0u));
+               ir_expression *const r0A15 = bit_and(swizzle_x(r0821), body.constant(1048575u));
                ir_expression *const r0A16 = nequal(r0A15, body.constant(0u));
                ir_expression *const r0A17 = logic_or(r0A14, r0A16);
                ir_expression *const r0A18 = logic_and(r0A13, r0A17);
@@ -12268,7 +12268,7 @@ fadd64(void *mem_ctx, builtin_available_predicate avail)
                /* ELSE INSTRUCTIONS */
                body.instructions = &f0A1C->else_instructions;
 
-               body.emit(assign(r09E4, bit_or(r09F5, body.constant(1073741824u)), 0x01));
+               body.emit(assign(r09E4, bit_or(r09F5, body.constant(1073741824u)), 0x02));
 
 
             body.instructions = f0A1C_parent_instructions;
@@ -12292,9 +12292,9 @@ fadd64(void *mem_ctx, builtin_available_predicate avail)
                /* THEN INSTRUCTIONS */
                body.instructions = &f0A22->then_instructions;
 
-               body.emit(assign(r0A1E, swizzle_y(r09E4), 0x01));
+               body.emit(assign(r0A1E, swizzle_x(r09E4), 0x01));
 
-               body.emit(assign(r0A1F, swizzle_x(r09E4), 0x01));
+               body.emit(assign(r0A1F, swizzle_y(r09E4), 0x01));
 
 
                /* ELSE INSTRUCTIONS */
@@ -12308,7 +12308,7 @@ fadd64(void *mem_ctx, builtin_available_predicate avail)
                   /* THEN INSTRUCTIONS */
                   body.instructions = &f0A24->then_instructions;
 
-                  ir_expression *const r0A26 = lshift(swizzle_x(r09E4), r0A20);
+                  ir_expression *const r0A26 = lshift(swizzle_y(r09E4), r0A20);
                   ir_expression *const r0A27 = rshift(r09F4, r09E2);
                   ir_expression *const r0A28 = bit_or(r0A26, r0A27);
                   ir_expression *const r0A29 = lshift(r09F4, r0A20);
@@ -12317,7 +12317,7 @@ fadd64(void *mem_ctx, builtin_available_predicate avail)
                   ir_expression *const r0A2C = expr(ir_unop_i2u, r0A2B);
                   body.emit(assign(r0A1E, bit_or(r0A28, r0A2C), 0x01));
 
-                  body.emit(assign(r0A1F, rshift(swizzle_x(r09E4), r09E2), 0x01));
+                  body.emit(assign(r0A1F, rshift(swizzle_y(r09E4), r09E2), 0x01));
 
 
                   /* ELSE INSTRUCTIONS */
@@ -12334,7 +12334,7 @@ fadd64(void *mem_ctx, builtin_available_predicate avail)
                      ir_expression *const r0A2F = nequal(r09F4, body.constant(0u));
                      ir_expression *const r0A30 = expr(ir_unop_b2i, r0A2F);
                      ir_expression *const r0A31 = expr(ir_unop_i2u, r0A30);
-                     body.emit(assign(r0A1E, bit_or(swizzle_x(r09E4), r0A31), 0x01));
+                     body.emit(assign(r0A1E, bit_or(swizzle_y(r09E4), r0A31), 0x01));
 
 
                      /* ELSE INSTRUCTIONS */
@@ -12349,8 +12349,8 @@ fadd64(void *mem_ctx, builtin_available_predicate avail)
                         body.instructions = &f0A32->then_instructions;
 
                         ir_expression *const r0A34 = bit_and(r09E2, body.constant(int(31)));
-                        ir_expression *const r0A35 = rshift(swizzle_x(r09E4), r0A34);
-                        ir_expression *const r0A36 = lshift(swizzle_x(r09E4), r0A20);
+                        ir_expression *const r0A35 = rshift(swizzle_y(r09E4), r0A34);
+                        ir_expression *const r0A36 = lshift(swizzle_y(r09E4), r0A20);
                         ir_expression *const r0A37 = bit_or(r0A36, r09F4);
                         ir_expression *const r0A38 = nequal(r0A37, body.constant(0u));
                         ir_expression *const r0A39 = expr(ir_unop_b2i, r0A38);
@@ -12361,7 +12361,7 @@ fadd64(void *mem_ctx, builtin_available_predicate avail)
                         /* ELSE INSTRUCTIONS */
                         body.instructions = &f0A32->else_instructions;
 
-                        ir_expression *const r0A3B = bit_or(swizzle_x(r09E4), r09F4);
+                        ir_expression *const r0A3B = bit_or(swizzle_y(r09E4), r09F4);
                         ir_expression *const r0A3C = nequal(r0A3B, body.constant(0u));
                         ir_expression *const r0A3D = expr(ir_unop_b2i, r0A3C);
                         body.emit(assign(r0A1E, expr(ir_unop_i2u, r0A3D), 0x01));
@@ -12392,17 +12392,17 @@ fadd64(void *mem_ctx, builtin_available_predicate avail)
 
             /* END IF */
 
-            body.emit(assign(r09E4, r0A1F, 0x01));
+            body.emit(assign(r09E4, r0A1F, 0x02));
 
-            body.emit(assign(r09E4, r0A1E, 0x02));
+            body.emit(assign(r09E4, r0A1E, 0x01));
 
-            body.emit(assign(r09E6, bit_or(r09F1, body.constant(1073741824u)), 0x01));
+            body.emit(assign(r09E6, bit_or(r09F1, body.constant(1073741824u)), 0x02));
 
             ir_variable *const r0A3E = body.make_temp(glsl_type::uint_type, "z0Ptr");
             ir_variable *const r0A3F = body.make_temp(glsl_type::uint_type, "z1Ptr");
             body.emit(assign(r0A3F, sub(r09F0, r0A1E), 0x01));
 
-            ir_expression *const r0A40 = sub(swizzle_x(r09E6), r0A1F);
+            ir_expression *const r0A40 = sub(swizzle_y(r09E6), r0A1F);
             ir_expression *const r0A41 = less(r09F0, r0A1E);
             ir_expression *const r0A42 = expr(ir_unop_b2i, r0A41);
             ir_expression *const r0A43 = expr(ir_unop_i2u, r0A42);
@@ -12870,9 +12870,9 @@ fadd64(void *mem_ctx, builtin_available_predicate avail)
                   ir_variable *const r0A9A = new(mem_ctx) ir_variable(glsl_type::uvec2_type, "z", ir_var_auto);
                   body.emit(r0A9A);
                   ir_expression *const r0A9B = lshift(r0824, body.constant(int(31)));
-                  body.emit(assign(r0A9A, add(r0A9B, body.constant(2146435072u)), 0x01));
+                  body.emit(assign(r0A9A, add(r0A9B, body.constant(2146435072u)), 0x02));
 
-                  body.emit(assign(r0A9A, body.constant(0u), 0x02));
+                  body.emit(assign(r0A9A, body.constant(0u), 0x01));
 
                   body.emit(assign(r0A8A, r0A9A, 0x03));
 
@@ -13133,9 +13133,9 @@ fadd64(void *mem_ctx, builtin_available_predicate avail)
                ir_expression *const r0ACC = lshift(r0824, body.constant(int(31)));
                ir_expression *const r0ACD = lshift(r0A85, body.constant(int(20)));
                ir_expression *const r0ACE = add(r0ACC, r0ACD);
-               body.emit(assign(r0ACB, add(r0ACE, r0A86), 0x01));
+               body.emit(assign(r0ACB, add(r0ACE, r0A86), 0x02));
 
-               body.emit(assign(r0ACB, r0A87, 0x02));
+               body.emit(assign(r0ACB, r0A87, 0x01));
 
                body.emit(assign(r0A8A, r0ACB, 0x03));
 
@@ -13176,7 +13176,7 @@ fadd64(void *mem_ctx, builtin_available_predicate avail)
                body.instructions = &f0AD1->then_instructions;
 
                /* IF CONDITION */
-               ir_expression *const r0AD4 = bit_or(swizzle_x(r09E4), swizzle_y(r09E4));
+               ir_expression *const r0AD4 = bit_or(swizzle_y(r09E4), swizzle_x(r09E4));
                ir_expression *const r0AD5 = nequal(r0AD4, body.constant(0u));
                ir_if *f0AD3 = new(mem_ctx) ir_if(operand(r0AD5).val);
                exec_list *const f0AD3_parent_instructions = body.instructions;
@@ -13185,40 +13185,40 @@ fadd64(void *mem_ctx, builtin_available_predicate avail)
                   body.instructions = &f0AD3->then_instructions;
 
                   ir_variable *const r0AD6 = body.make_temp(glsl_type::uvec2_type, "a");
-                  body.emit(assign(r0AD6, swizzle_x(r0821), 0x01));
+                  body.emit(assign(r0AD6, swizzle_y(r0821), 0x02));
 
                   ir_variable *const r0AD7 = body.make_temp(glsl_type::uvec2_type, "b");
-                  body.emit(assign(r0AD7, swizzle_x(r0822), 0x01));
+                  body.emit(assign(r0AD7, swizzle_y(r0822), 0x02));
 
                   ir_variable *const r0AD8 = body.make_temp(glsl_type::uvec2_type, "return_value");
                   ir_variable *const r0AD9 = body.make_temp(glsl_type::bool_type, "float64_is_signaling_nan_retval");
-                  ir_expression *const r0ADA = rshift(swizzle_y(r0821), body.constant(int(19)));
+                  ir_expression *const r0ADA = rshift(swizzle_x(r0821), body.constant(int(19)));
                   ir_expression *const r0ADB = bit_and(r0ADA, body.constant(4095u));
                   ir_expression *const r0ADC = equal(r0ADB, body.constant(4094u));
-                  ir_expression *const r0ADD = nequal(swizzle_x(r0821), body.constant(0u));
-                  ir_expression *const r0ADE = bit_and(swizzle_y(r0821), body.constant(524287u));
+                  ir_expression *const r0ADD = nequal(swizzle_y(r0821), body.constant(0u));
+                  ir_expression *const r0ADE = bit_and(swizzle_x(r0821), body.constant(524287u));
                   ir_expression *const r0ADF = nequal(r0ADE, body.constant(0u));
                   ir_expression *const r0AE0 = logic_or(r0ADD, r0ADF);
                   body.emit(assign(r0AD9, logic_and(r0ADC, r0AE0), 0x01));
 
                   ir_variable *const r0AE1 = body.make_temp(glsl_type::bool_type, "is_nan_retval");
-                  ir_expression *const r0AE2 = lshift(swizzle_y(r0822), body.constant(int(1)));
+                  ir_expression *const r0AE2 = lshift(swizzle_x(r0822), body.constant(int(1)));
                   ir_expression *const r0AE3 = lequal(body.constant(4292870144u), r0AE2);
-                  ir_expression *const r0AE4 = nequal(swizzle_x(r0822), body.constant(0u));
-                  ir_expression *const r0AE5 = bit_and(swizzle_y(r0822), body.constant(1048575u));
+                  ir_expression *const r0AE4 = nequal(swizzle_y(r0822), body.constant(0u));
+                  ir_expression *const r0AE5 = bit_and(swizzle_x(r0822), body.constant(1048575u));
                   ir_expression *const r0AE6 = nequal(r0AE5, body.constant(0u));
                   ir_expression *const r0AE7 = logic_or(r0AE4, r0AE6);
                   body.emit(assign(r0AE1, logic_and(r0AE3, r0AE7), 0x01));
 
-                  body.emit(assign(r0AD6, bit_or(swizzle_y(r0821), body.constant(524288u)), 0x02));
+                  body.emit(assign(r0AD6, bit_or(swizzle_x(r0821), body.constant(524288u)), 0x01));
 
-                  body.emit(assign(r0AD7, bit_or(swizzle_y(r0822), body.constant(524288u)), 0x02));
+                  body.emit(assign(r0AD7, bit_or(swizzle_x(r0822), body.constant(524288u)), 0x01));
 
                   /* IF CONDITION */
-                  ir_expression *const r0AE9 = lshift(swizzle_y(r0821), body.constant(int(1)));
+                  ir_expression *const r0AE9 = lshift(swizzle_x(r0821), body.constant(int(1)));
                   ir_expression *const r0AEA = lequal(body.constant(4292870144u), r0AE9);
-                  ir_expression *const r0AEB = nequal(swizzle_x(r0821), body.constant(0u));
-                  ir_expression *const r0AEC = bit_and(swizzle_y(r0821), body.constant(1048575u));
+                  ir_expression *const r0AEB = nequal(swizzle_y(r0821), body.constant(0u));
+                  ir_expression *const r0AEC = bit_and(swizzle_x(r0821), body.constant(1048575u));
                   ir_expression *const r0AED = nequal(r0AEC, body.constant(0u));
                   ir_expression *const r0AEE = logic_or(r0AEB, r0AED);
                   ir_expression *const r0AEF = logic_and(r0AEA, r0AEE);
@@ -13275,9 +13275,9 @@ fadd64(void *mem_ctx, builtin_available_predicate avail)
                   body.emit(r0AF3);
                   ir_expression *const r0AF4 = bit_xor(r0824, body.constant(1u));
                   ir_expression *const r0AF5 = lshift(r0AF4, body.constant(int(31)));
-                  body.emit(assign(r0AF3, add(r0AF5, body.constant(2146435072u)), 0x01));
+                  body.emit(assign(r0AF3, add(r0AF5, body.constant(2146435072u)), 0x02));
 
-                  body.emit(assign(r0AF3, body.constant(0u), 0x02));
+                  body.emit(assign(r0AF3, body.constant(0u), 0x01));
 
                   body.emit(assign(r09E1, r0AF3, 0x03));
 
@@ -13305,7 +13305,7 @@ fadd64(void *mem_ctx, builtin_available_predicate avail)
                   /* ELSE INSTRUCTIONS */
                   body.instructions = &f0AF6->else_instructions;
 
-                  body.emit(assign(r09E6, bit_or(swizzle_x(r09E6), body.constant(1073741824u)), 0x01));
+                  body.emit(assign(r09E6, bit_or(swizzle_y(r09E6), body.constant(1073741824u)), 0x02));
 
 
                body.instructions = f0AF6_parent_instructions;
@@ -13332,9 +13332,9 @@ fadd64(void *mem_ctx, builtin_available_predicate avail)
                   /* THEN INSTRUCTIONS */
                   body.instructions = &f0AFD->then_instructions;
 
-                  body.emit(assign(r0AF9, swizzle_y(r09E6), 0x01));
+                  body.emit(assign(r0AF9, swizzle_x(r09E6), 0x01));
 
-                  body.emit(assign(r0AFA, swizzle_x(r09E6), 0x01));
+                  body.emit(assign(r0AFA, swizzle_y(r09E6), 0x01));
 
 
                   /* ELSE INSTRUCTIONS */
@@ -13348,7 +13348,7 @@ fadd64(void *mem_ctx, builtin_available_predicate avail)
                      /* THEN INSTRUCTIONS */
                      body.instructions = &f0AFF->then_instructions;
 
-                     ir_expression *const r0B01 = lshift(swizzle_x(r09E6), r0AFB);
+                     ir_expression *const r0B01 = lshift(swizzle_y(r09E6), r0AFB);
                      ir_expression *const r0B02 = rshift(r09F0, r0AF8);
                      ir_expression *const r0B03 = bit_or(r0B01, r0B02);
                      ir_expression *const r0B04 = lshift(r09F0, r0AFB);
@@ -13357,7 +13357,7 @@ fadd64(void *mem_ctx, builtin_available_predicate avail)
                      ir_expression *const r0B07 = expr(ir_unop_i2u, r0B06);
                      body.emit(assign(r0AF9, bit_or(r0B03, r0B07), 0x01));
 
-                     body.emit(assign(r0AFA, rshift(swizzle_x(r09E6), r0AF8), 0x01));
+                     body.emit(assign(r0AFA, rshift(swizzle_y(r09E6), r0AF8), 0x01));
 
 
                      /* ELSE INSTRUCTIONS */
@@ -13374,7 +13374,7 @@ fadd64(void *mem_ctx, builtin_available_predicate avail)
                         ir_expression *const r0B0A = nequal(r09F0, body.constant(0u));
                         ir_expression *const r0B0B = expr(ir_unop_b2i, r0B0A);
                         ir_expression *const r0B0C = expr(ir_unop_i2u, r0B0B);
-                        body.emit(assign(r0AF9, bit_or(swizzle_x(r09E6), r0B0C), 0x01));
+                        body.emit(assign(r0AF9, bit_or(swizzle_y(r09E6), r0B0C), 0x01));
 
 
                         /* ELSE INSTRUCTIONS */
@@ -13389,8 +13389,8 @@ fadd64(void *mem_ctx, builtin_available_predicate avail)
                            body.instructions = &f0B0D->then_instructions;
 
                            ir_expression *const r0B0F = bit_and(r0AF8, body.constant(int(31)));
-                           ir_expression *const r0B10 = rshift(swizzle_x(r09E6), r0B0F);
-                           ir_expression *const r0B11 = lshift(swizzle_x(r09E6), r0AFB);
+                           ir_expression *const r0B10 = rshift(swizzle_y(r09E6), r0B0F);
+                           ir_expression *const r0B11 = lshift(swizzle_y(r09E6), r0AFB);
                            ir_expression *const r0B12 = bit_or(r0B11, r09F0);
                            ir_expression *const r0B13 = nequal(r0B12, body.constant(0u));
                            ir_expression *const r0B14 = expr(ir_unop_b2i, r0B13);
@@ -13401,7 +13401,7 @@ fadd64(void *mem_ctx, builtin_available_predicate avail)
                            /* ELSE INSTRUCTIONS */
                            body.instructions = &f0B0D->else_instructions;
 
-                           ir_expression *const r0B16 = bit_or(swizzle_x(r09E6), r09F0);
+                           ir_expression *const r0B16 = bit_or(swizzle_y(r09E6), r09F0);
                            ir_expression *const r0B17 = nequal(r0B16, body.constant(0u));
                            ir_expression *const r0B18 = expr(ir_unop_b2i, r0B17);
                            body.emit(assign(r0AF9, expr(ir_unop_i2u, r0B18), 0x01));
@@ -13432,18 +13432,18 @@ fadd64(void *mem_ctx, builtin_available_predicate avail)
 
                /* END IF */
 
-               body.emit(assign(r09E6, r0AFA, 0x01));
+               body.emit(assign(r09E6, r0AFA, 0x02));
 
-               body.emit(assign(r09E6, r0AF9, 0x02));
+               body.emit(assign(r09E6, r0AF9, 0x01));
 
-               body.emit(assign(r09E4, bit_or(swizzle_x(r09E4), body.constant(1073741824u)), 0x01));
+               body.emit(assign(r09E4, bit_or(swizzle_y(r09E4), body.constant(1073741824u)), 0x02));
 
                ir_variable *const r0B19 = body.make_temp(glsl_type::uint_type, "z0Ptr");
                ir_variable *const r0B1A = body.make_temp(glsl_type::uint_type, "z1Ptr");
-               body.emit(assign(r0B1A, sub(swizzle_y(r09E4), r0AF9), 0x01));
+               body.emit(assign(r0B1A, sub(swizzle_x(r09E4), r0AF9), 0x01));
 
-               ir_expression *const r0B1B = sub(swizzle_x(r09E4), r0AFA);
-               ir_expression *const r0B1C = less(swizzle_y(r09E4), r0AF9);
+               ir_expression *const r0B1B = sub(swizzle_y(r09E4), r0AFA);
+               ir_expression *const r0B1C = less(swizzle_x(r09E4), r0AF9);
                ir_expression *const r0B1D = expr(ir_unop_b2i, r0B1C);
                ir_expression *const r0B1E = expr(ir_unop_i2u, r0B1D);
                body.emit(assign(r0B19, sub(r0B1B, r0B1E), 0x01));
@@ -13912,9 +13912,9 @@ fadd64(void *mem_ctx, builtin_available_predicate avail)
                      ir_variable *const r0B75 = new(mem_ctx) ir_variable(glsl_type::uvec2_type, "z", ir_var_auto);
                      body.emit(r0B75);
                      ir_expression *const r0B76 = lshift(r09E0, body.constant(int(31)));
-                     body.emit(assign(r0B75, add(r0B76, body.constant(2146435072u)), 0x01));
+                     body.emit(assign(r0B75, add(r0B76, body.constant(2146435072u)), 0x02));
 
-                     body.emit(assign(r0B75, body.constant(0u), 0x02));
+                     body.emit(assign(r0B75, body.constant(0u), 0x01));
 
                      body.emit(assign(r0B65, r0B75, 0x03));
 
@@ -14175,9 +14175,9 @@ fadd64(void *mem_ctx, builtin_available_predicate avail)
                   ir_expression *const r0BA7 = lshift(r09E0, body.constant(int(31)));
                   ir_expression *const r0BA8 = lshift(r0B60, body.constant(int(20)));
                   ir_expression *const r0BA9 = add(r0BA7, r0BA8);
-                  body.emit(assign(r0BA6, add(r0BA9, r0B61), 0x01));
+                  body.emit(assign(r0BA6, add(r0BA9, r0B61), 0x02));
 
-                  body.emit(assign(r0BA6, r0B62, 0x02));
+                  body.emit(assign(r0BA6, r0B62, 0x01));
 
                   body.emit(assign(r0B65, r0BA6, 0x03));
 
@@ -14210,8 +14210,8 @@ fadd64(void *mem_ctx, builtin_available_predicate avail)
                body.instructions = &f0BAA->then_instructions;
 
                /* IF CONDITION */
-               ir_expression *const r0BAD = bit_or(swizzle_x(r09E6), swizzle_y(r09E6));
-               ir_expression *const r0BAE = bit_or(swizzle_x(r09E4), swizzle_y(r09E4));
+               ir_expression *const r0BAD = bit_or(swizzle_y(r09E6), swizzle_x(r09E6));
+               ir_expression *const r0BAE = bit_or(swizzle_y(r09E4), swizzle_x(r09E4));
                ir_expression *const r0BAF = bit_or(r0BAD, r0BAE);
                ir_expression *const r0BB0 = nequal(r0BAF, body.constant(0u));
                ir_if *f0BAC = new(mem_ctx) ir_if(operand(r0BB0).val);
@@ -14221,40 +14221,40 @@ fadd64(void *mem_ctx, builtin_available_predicate avail)
                   body.instructions = &f0BAC->then_instructions;
 
                   ir_variable *const r0BB1 = body.make_temp(glsl_type::uvec2_type, "a");
-                  body.emit(assign(r0BB1, swizzle_x(r0821), 0x01));
+                  body.emit(assign(r0BB1, swizzle_y(r0821), 0x02));
 
                   ir_variable *const r0BB2 = body.make_temp(glsl_type::uvec2_type, "b");
-                  body.emit(assign(r0BB2, swizzle_x(r0822), 0x01));
+                  body.emit(assign(r0BB2, swizzle_y(r0822), 0x02));
 
                   ir_variable *const r0BB3 = body.make_temp(glsl_type::uvec2_type, "return_value");
                   ir_variable *const r0BB4 = body.make_temp(glsl_type::bool_type, "float64_is_signaling_nan_retval");
-                  ir_expression *const r0BB5 = rshift(swizzle_y(r0821), body.constant(int(19)));
+                  ir_expression *const r0BB5 = rshift(swizzle_x(r0821), body.constant(int(19)));
                   ir_expression *const r0BB6 = bit_and(r0BB5, body.constant(4095u));
                   ir_expression *const r0BB7 = equal(r0BB6, body.constant(4094u));
-                  ir_expression *const r0BB8 = nequal(swizzle_x(r0821), body.constant(0u));
-                  ir_expression *const r0BB9 = bit_and(swizzle_y(r0821), body.constant(524287u));
+                  ir_expression *const r0BB8 = nequal(swizzle_y(r0821), body.constant(0u));
+                  ir_expression *const r0BB9 = bit_and(swizzle_x(r0821), body.constant(524287u));
                   ir_expression *const r0BBA = nequal(r0BB9, body.constant(0u));
                   ir_expression *const r0BBB = logic_or(r0BB8, r0BBA);
                   body.emit(assign(r0BB4, logic_and(r0BB7, r0BBB), 0x01));
 
                   ir_variable *const r0BBC = body.make_temp(glsl_type::bool_type, "is_nan_retval");
-                  ir_expression *const r0BBD = lshift(swizzle_y(r0822), body.constant(int(1)));
+                  ir_expression *const r0BBD = lshift(swizzle_x(r0822), body.constant(int(1)));
                   ir_expression *const r0BBE = lequal(body.constant(4292870144u), r0BBD);
-                  ir_expression *const r0BBF = nequal(swizzle_x(r0822), body.constant(0u));
-                  ir_expression *const r0BC0 = bit_and(swizzle_y(r0822), body.constant(1048575u));
+                  ir_expression *const r0BBF = nequal(swizzle_y(r0822), body.constant(0u));
+                  ir_expression *const r0BC0 = bit_and(swizzle_x(r0822), body.constant(1048575u));
                   ir_expression *const r0BC1 = nequal(r0BC0, body.constant(0u));
                   ir_expression *const r0BC2 = logic_or(r0BBF, r0BC1);
                   body.emit(assign(r0BBC, logic_and(r0BBE, r0BC2), 0x01));
 
-                  body.emit(assign(r0BB1, bit_or(swizzle_y(r0821), body.constant(524288u)), 0x02));
+                  body.emit(assign(r0BB1, bit_or(swizzle_x(r0821), body.constant(524288u)), 0x01));
 
-                  body.emit(assign(r0BB2, bit_or(swizzle_y(r0822), body.constant(524288u)), 0x02));
+                  body.emit(assign(r0BB2, bit_or(swizzle_x(r0822), body.constant(524288u)), 0x01));
 
                   /* IF CONDITION */
-                  ir_expression *const r0BC4 = lshift(swizzle_y(r0821), body.constant(int(1)));
+                  ir_expression *const r0BC4 = lshift(swizzle_x(r0821), body.constant(int(1)));
                   ir_expression *const r0BC5 = lequal(body.constant(4292870144u), r0BC4);
-                  ir_expression *const r0BC6 = nequal(swizzle_x(r0821), body.constant(0u));
-                  ir_expression *const r0BC7 = bit_and(swizzle_y(r0821), body.constant(1048575u));
+                  ir_expression *const r0BC6 = nequal(swizzle_y(r0821), body.constant(0u));
+                  ir_expression *const r0BC7 = bit_and(swizzle_x(r0821), body.constant(1048575u));
                   ir_expression *const r0BC8 = nequal(r0BC7, body.constant(0u));
                   ir_expression *const r0BC9 = logic_or(r0BC6, r0BC8);
                   ir_expression *const r0BCA = logic_and(r0BC5, r0BC9);
@@ -14343,7 +14343,7 @@ fadd64(void *mem_ctx, builtin_available_predicate avail)
                /* END IF */
 
                /* IF CONDITION */
-               ir_expression *const r0BD2 = less(swizzle_x(r09E4), swizzle_x(r09E6));
+               ir_expression *const r0BD2 = less(swizzle_y(r09E4), swizzle_y(r09E6));
                ir_if *f0BD1 = new(mem_ctx) ir_if(operand(r0BD2).val);
                exec_list *const f0BD1_parent_instructions = body.instructions;
 
@@ -14352,10 +14352,10 @@ fadd64(void *mem_ctx, builtin_available_predicate avail)
 
                   ir_variable *const r0BD3 = body.make_temp(glsl_type::uint_type, "z0Ptr");
                   ir_variable *const r0BD4 = body.make_temp(glsl_type::uint_type, "z1Ptr");
-                  body.emit(assign(r0BD4, sub(swizzle_y(r09E6), swizzle_y(r09E4)), 0x01));
+                  body.emit(assign(r0BD4, sub(swizzle_x(r09E6), swizzle_x(r09E4)), 0x01));
 
-                  ir_expression *const r0BD5 = sub(swizzle_x(r09E6), swizzle_x(r09E4));
-                  ir_expression *const r0BD6 = less(swizzle_y(r09E6), swizzle_y(r09E4));
+                  ir_expression *const r0BD5 = sub(swizzle_y(r09E6), swizzle_y(r09E4));
+                  ir_expression *const r0BD6 = less(swizzle_x(r09E6), swizzle_x(r09E4));
                   ir_expression *const r0BD7 = expr(ir_unop_b2i, r0BD6);
                   ir_expression *const r0BD8 = expr(ir_unop_i2u, r0BD7);
                   body.emit(assign(r0BD3, sub(r0BD5, r0BD8), 0x01));
@@ -14822,9 +14822,9 @@ fadd64(void *mem_ctx, builtin_available_predicate avail)
                         ir_variable *const r0C2F = new(mem_ctx) ir_variable(glsl_type::uvec2_type, "z", ir_var_auto);
                         body.emit(r0C2F);
                         ir_expression *const r0C30 = lshift(r09E0, body.constant(int(31)));
-                        body.emit(assign(r0C2F, add(r0C30, body.constant(2146435072u)), 0x01));
+                        body.emit(assign(r0C2F, add(r0C30, body.constant(2146435072u)), 0x02));
 
-                        body.emit(assign(r0C2F, body.constant(0u), 0x02));
+                        body.emit(assign(r0C2F, body.constant(0u), 0x01));
 
                         body.emit(assign(r0C1F, r0C2F, 0x03));
 
@@ -15085,9 +15085,9 @@ fadd64(void *mem_ctx, builtin_available_predicate avail)
                      ir_expression *const r0C61 = lshift(r09E0, body.constant(int(31)));
                      ir_expression *const r0C62 = lshift(r0C1A, body.constant(int(20)));
                      ir_expression *const r0C63 = add(r0C61, r0C62);
-                     body.emit(assign(r0C60, add(r0C63, r0C1B), 0x01));
+                     body.emit(assign(r0C60, add(r0C63, r0C1B), 0x02));
 
-                     body.emit(assign(r0C60, r0C1C, 0x02));
+                     body.emit(assign(r0C60, r0C1C, 0x01));
 
                      body.emit(assign(r0C1F, r0C60, 0x03));
 
@@ -15106,7 +15106,7 @@ fadd64(void *mem_ctx, builtin_available_predicate avail)
                   body.instructions = &f0BD1->else_instructions;
 
                   /* IF CONDITION */
-                  ir_expression *const r0C65 = less(swizzle_x(r09E6), swizzle_x(r09E4));
+                  ir_expression *const r0C65 = less(swizzle_y(r09E6), swizzle_y(r09E4));
                   ir_if *f0C64 = new(mem_ctx) ir_if(operand(r0C65).val);
                   exec_list *const f0C64_parent_instructions = body.instructions;
 
@@ -15115,10 +15115,10 @@ fadd64(void *mem_ctx, builtin_available_predicate avail)
 
                      ir_variable *const r0C66 = body.make_temp(glsl_type::uint_type, "z0Ptr");
                      ir_variable *const r0C67 = body.make_temp(glsl_type::uint_type, "z1Ptr");
-                     body.emit(assign(r0C67, sub(swizzle_y(r09E4), swizzle_y(r09E6)), 0x01));
+                     body.emit(assign(r0C67, sub(swizzle_x(r09E4), swizzle_x(r09E6)), 0x01));
 
-                     ir_expression *const r0C68 = sub(swizzle_x(r09E4), swizzle_x(r09E6));
-                     ir_expression *const r0C69 = less(swizzle_y(r09E4), swizzle_y(r09E6));
+                     ir_expression *const r0C68 = sub(swizzle_y(r09E4), swizzle_y(r09E6));
+                     ir_expression *const r0C69 = less(swizzle_x(r09E4), swizzle_x(r09E6));
                      ir_expression *const r0C6A = expr(ir_unop_b2i, r0C69);
                      ir_expression *const r0C6B = expr(ir_unop_i2u, r0C6A);
                      body.emit(assign(r0C66, sub(r0C68, r0C6B), 0x01));
@@ -15587,9 +15587,9 @@ fadd64(void *mem_ctx, builtin_available_predicate avail)
                            ir_variable *const r0CC2 = new(mem_ctx) ir_variable(glsl_type::uvec2_type, "z", ir_var_auto);
                            body.emit(r0CC2);
                            ir_expression *const r0CC3 = lshift(r09E0, body.constant(int(31)));
-                           body.emit(assign(r0CC2, add(r0CC3, body.constant(2146435072u)), 0x01));
+                           body.emit(assign(r0CC2, add(r0CC3, body.constant(2146435072u)), 0x02));
 
-                           body.emit(assign(r0CC2, body.constant(0u), 0x02));
+                           body.emit(assign(r0CC2, body.constant(0u), 0x01));
 
                            body.emit(assign(r0CB2, r0CC2, 0x03));
 
@@ -15850,9 +15850,9 @@ fadd64(void *mem_ctx, builtin_available_predicate avail)
                         ir_expression *const r0CF4 = lshift(r09E0, body.constant(int(31)));
                         ir_expression *const r0CF5 = lshift(r0CAD, body.constant(int(20)));
                         ir_expression *const r0CF6 = add(r0CF4, r0CF5);
-                        body.emit(assign(r0CF3, add(r0CF6, r0CAE), 0x01));
+                        body.emit(assign(r0CF3, add(r0CF6, r0CAE), 0x02));
 
-                        body.emit(assign(r0CF3, r0CAF, 0x02));
+                        body.emit(assign(r0CF3, r0CAF, 0x01));
 
                         body.emit(assign(r0CB2, r0CF3, 0x03));
 
@@ -15871,7 +15871,7 @@ fadd64(void *mem_ctx, builtin_available_predicate avail)
                      body.instructions = &f0C64->else_instructions;
 
                      /* IF CONDITION */
-                     ir_expression *const r0CF8 = less(swizzle_y(r09E4), swizzle_y(r09E6));
+                     ir_expression *const r0CF8 = less(swizzle_x(r09E4), swizzle_x(r09E6));
                      ir_if *f0CF7 = new(mem_ctx) ir_if(operand(r0CF8).val);
                      exec_list *const f0CF7_parent_instructions = body.instructions;
 
@@ -15880,10 +15880,10 @@ fadd64(void *mem_ctx, builtin_available_predicate avail)
 
                         ir_variable *const r0CF9 = body.make_temp(glsl_type::uint_type, "z0Ptr");
                         ir_variable *const r0CFA = body.make_temp(glsl_type::uint_type, "z1Ptr");
-                        body.emit(assign(r0CFA, sub(swizzle_y(r09E6), swizzle_y(r09E4)), 0x01));
+                        body.emit(assign(r0CFA, sub(swizzle_x(r09E6), swizzle_x(r09E4)), 0x01));
 
-                        ir_expression *const r0CFB = sub(swizzle_x(r09E6), swizzle_x(r09E4));
-                        ir_expression *const r0CFC = less(swizzle_y(r09E6), swizzle_y(r09E4));
+                        ir_expression *const r0CFB = sub(swizzle_y(r09E6), swizzle_y(r09E4));
+                        ir_expression *const r0CFC = less(swizzle_x(r09E6), swizzle_x(r09E4));
                         ir_expression *const r0CFD = expr(ir_unop_b2i, r0CFC);
                         ir_expression *const r0CFE = expr(ir_unop_i2u, r0CFD);
                         body.emit(assign(r0CF9, sub(r0CFB, r0CFE), 0x01));
@@ -16350,9 +16350,9 @@ fadd64(void *mem_ctx, builtin_available_predicate avail)
                               ir_variable *const r0D55 = new(mem_ctx) ir_variable(glsl_type::uvec2_type, "z", ir_var_auto);
                               body.emit(r0D55);
                               ir_expression *const r0D56 = lshift(r09E0, body.constant(int(31)));
-                              body.emit(assign(r0D55, add(r0D56, body.constant(2146435072u)), 0x01));
+                              body.emit(assign(r0D55, add(r0D56, body.constant(2146435072u)), 0x02));
 
-                              body.emit(assign(r0D55, body.constant(0u), 0x02));
+                              body.emit(assign(r0D55, body.constant(0u), 0x01));
 
                               body.emit(assign(r0D45, r0D55, 0x03));
 
@@ -16613,9 +16613,9 @@ fadd64(void *mem_ctx, builtin_available_predicate avail)
                            ir_expression *const r0D87 = lshift(r09E0, body.constant(int(31)));
                            ir_expression *const r0D88 = lshift(r0D40, body.constant(int(20)));
                            ir_expression *const r0D89 = add(r0D87, r0D88);
-                           body.emit(assign(r0D86, add(r0D89, r0D41), 0x01));
+                           body.emit(assign(r0D86, add(r0D89, r0D41), 0x02));
 
-                           body.emit(assign(r0D86, r0D42, 0x02));
+                           body.emit(assign(r0D86, r0D42, 0x01));
 
                            body.emit(assign(r0D45, r0D86, 0x03));
 
@@ -16634,7 +16634,7 @@ fadd64(void *mem_ctx, builtin_available_predicate avail)
                         body.instructions = &f0CF7->else_instructions;
 
                         /* IF CONDITION */
-                        ir_expression *const r0D8B = less(swizzle_y(r09E6), swizzle_y(r09E4));
+                        ir_expression *const r0D8B = less(swizzle_x(r09E6), swizzle_x(r09E4));
                         ir_if *f0D8A = new(mem_ctx) ir_if(operand(r0D8B).val);
                         exec_list *const f0D8A_parent_instructions = body.instructions;
 
@@ -16643,10 +16643,10 @@ fadd64(void *mem_ctx, builtin_available_predicate avail)
 
                            ir_variable *const r0D8C = body.make_temp(glsl_type::uint_type, "z0Ptr");
                            ir_variable *const r0D8D = body.make_temp(glsl_type::uint_type, "z1Ptr");
-                           body.emit(assign(r0D8D, sub(swizzle_y(r09E4), swizzle_y(r09E6)), 0x01));
+                           body.emit(assign(r0D8D, sub(swizzle_x(r09E4), swizzle_x(r09E6)), 0x01));
 
-                           ir_expression *const r0D8E = sub(swizzle_x(r09E4), swizzle_x(r09E6));
-                           ir_expression *const r0D8F = less(swizzle_y(r09E4), swizzle_y(r09E6));
+                           ir_expression *const r0D8E = sub(swizzle_y(r09E4), swizzle_y(r09E6));
+                           ir_expression *const r0D8F = less(swizzle_x(r09E4), swizzle_x(r09E6));
                            ir_expression *const r0D90 = expr(ir_unop_b2i, r0D8F);
                            ir_expression *const r0D91 = expr(ir_unop_i2u, r0D90);
                            body.emit(assign(r0D8C, sub(r0D8E, r0D91), 0x01));
@@ -17115,9 +17115,9 @@ fadd64(void *mem_ctx, builtin_available_predicate avail)
                                  ir_variable *const r0DE8 = new(mem_ctx) ir_variable(glsl_type::uvec2_type, "z", ir_var_auto);
                                  body.emit(r0DE8);
                                  ir_expression *const r0DE9 = lshift(r09E0, body.constant(int(31)));
-                                 body.emit(assign(r0DE8, add(r0DE9, body.constant(2146435072u)), 0x01));
+                                 body.emit(assign(r0DE8, add(r0DE9, body.constant(2146435072u)), 0x02));
 
-                                 body.emit(assign(r0DE8, body.constant(0u), 0x02));
+                                 body.emit(assign(r0DE8, body.constant(0u), 0x01));
 
                                  body.emit(assign(r0DD8, r0DE8, 0x03));
 
@@ -17378,9 +17378,9 @@ fadd64(void *mem_ctx, builtin_available_predicate avail)
                               ir_expression *const r0E1A = lshift(r09E0, body.constant(int(31)));
                               ir_expression *const r0E1B = lshift(r0DD3, body.constant(int(20)));
                               ir_expression *const r0E1C = add(r0E1A, r0E1B);
-                              body.emit(assign(r0E19, add(r0E1C, r0DD4), 0x01));
+                              body.emit(assign(r0E19, add(r0E1C, r0DD4), 0x02));
 
-                              body.emit(assign(r0E19, r0DD5, 0x02));
+                              body.emit(assign(r0E19, r0DD5, 0x01));
 
                               body.emit(assign(r0DD8, r0E19, 0x03));
 
@@ -17400,9 +17400,9 @@ fadd64(void *mem_ctx, builtin_available_predicate avail)
 
                            ir_variable *const r0E1D = new(mem_ctx) ir_variable(glsl_type::uvec2_type, "z", ir_var_auto);
                            body.emit(r0E1D);
-                           body.emit(assign(r0E1D, body.constant(0u), 0x01));
-
                            body.emit(assign(r0E1D, body.constant(0u), 0x02));
+
+                           body.emit(assign(r0E1D, body.constant(0u), 0x01));
 
                            body.emit(assign(r09E1, r0E1D, 0x03));
 
@@ -18141,33 +18141,33 @@ fmul64(void *mem_ctx, builtin_available_predicate avail)
    body.emit(assign(r0EE1, body.constant(0u), 0x01));
 
    ir_variable *const r0EE4 = body.make_temp(glsl_type::uvec2_type, "vec_ctor");
-   body.emit(assign(r0EE4, bit_and(swizzle_x(r0ED7), body.constant(1048575u)), 0x01));
+   body.emit(assign(r0EE4, bit_and(swizzle_y(r0ED7), body.constant(1048575u)), 0x01));
 
-   body.emit(assign(r0EE4, swizzle_y(r0ED7), 0x02));
+   body.emit(assign(r0EE4, swizzle_x(r0ED7), 0x02));
 
    body.emit(assign(r0EDF, r0EE4, 0x03));
 
    ir_variable *const r0EE5 = body.make_temp(glsl_type::uint_type, "extractFloat64Exp_retval");
-   ir_expression *const r0EE6 = rshift(swizzle_x(r0ED7), body.constant(int(20)));
+   ir_expression *const r0EE6 = rshift(swizzle_y(r0ED7), body.constant(int(20)));
    body.emit(assign(r0EE5, bit_and(r0EE6, body.constant(2047u)), 0x01));
 
    body.emit(assign(r0EDE, r0EE5, 0x01));
 
    ir_variable *const r0EE7 = body.make_temp(glsl_type::uvec2_type, "vec_ctor");
-   body.emit(assign(r0EE7, bit_and(swizzle_x(r0ED8), body.constant(1048575u)), 0x01));
+   body.emit(assign(r0EE7, bit_and(swizzle_y(r0ED8), body.constant(1048575u)), 0x01));
 
-   body.emit(assign(r0EE7, swizzle_y(r0ED8), 0x02));
+   body.emit(assign(r0EE7, swizzle_x(r0ED8), 0x02));
 
    body.emit(assign(r0EDD, r0EE7, 0x03));
 
    ir_variable *const r0EE8 = body.make_temp(glsl_type::uint_type, "extractFloat64Exp_retval");
-   ir_expression *const r0EE9 = rshift(swizzle_x(r0ED8), body.constant(int(20)));
+   ir_expression *const r0EE9 = rshift(swizzle_y(r0ED8), body.constant(int(20)));
    body.emit(assign(r0EE8, bit_and(r0EE9, body.constant(2047u)), 0x01));
 
    body.emit(assign(r0EDC, r0EE8, 0x01));
 
-   ir_expression *const r0EEA = rshift(swizzle_x(r0ED7), body.constant(int(31)));
-   ir_expression *const r0EEB = rshift(swizzle_x(r0ED8), body.constant(int(31)));
+   ir_expression *const r0EEA = rshift(swizzle_y(r0ED7), body.constant(int(31)));
+   ir_expression *const r0EEB = rshift(swizzle_y(r0ED8), body.constant(int(31)));
    body.emit(assign(r0EDB, bit_xor(r0EEA, r0EEB), 0x01));
 
    /* IF CONDITION */
@@ -18179,10 +18179,10 @@ fmul64(void *mem_ctx, builtin_available_predicate avail)
       body.instructions = &f0EEC->then_instructions;
 
       /* IF CONDITION */
-      ir_expression *const r0EEF = bit_or(swizzle_x(r0EE4), swizzle_y(r0ED7));
+      ir_expression *const r0EEF = bit_or(swizzle_x(r0ED7), swizzle_x(r0EE4));
       ir_expression *const r0EF0 = nequal(r0EEF, body.constant(0u));
       ir_expression *const r0EF1 = equal(r0EE8, body.constant(2047u));
-      ir_expression *const r0EF2 = bit_or(swizzle_x(r0EE7), swizzle_y(r0ED8));
+      ir_expression *const r0EF2 = bit_or(swizzle_x(r0ED8), swizzle_x(r0EE7));
       ir_expression *const r0EF3 = nequal(r0EF2, body.constant(0u));
       ir_expression *const r0EF4 = logic_and(r0EF1, r0EF3);
       ir_expression *const r0EF5 = logic_or(r0EF0, r0EF4);
@@ -18193,40 +18193,40 @@ fmul64(void *mem_ctx, builtin_available_predicate avail)
          body.instructions = &f0EEE->then_instructions;
 
          ir_variable *const r0EF6 = body.make_temp(glsl_type::uvec2_type, "a");
-         body.emit(assign(r0EF6, swizzle_x(r0ED7), 0x01));
+         body.emit(assign(r0EF6, swizzle_y(r0ED7), 0x02));
 
          ir_variable *const r0EF7 = body.make_temp(glsl_type::uvec2_type, "b");
-         body.emit(assign(r0EF7, swizzle_x(r0ED8), 0x01));
+         body.emit(assign(r0EF7, swizzle_y(r0ED8), 0x02));
 
          ir_variable *const r0EF8 = body.make_temp(glsl_type::uvec2_type, "return_value");
          ir_variable *const r0EF9 = body.make_temp(glsl_type::bool_type, "float64_is_signaling_nan_retval");
-         ir_expression *const r0EFA = rshift(swizzle_y(r0ED7), body.constant(int(19)));
+         ir_expression *const r0EFA = rshift(swizzle_x(r0ED7), body.constant(int(19)));
          ir_expression *const r0EFB = bit_and(r0EFA, body.constant(4095u));
          ir_expression *const r0EFC = equal(r0EFB, body.constant(4094u));
-         ir_expression *const r0EFD = nequal(swizzle_x(r0ED7), body.constant(0u));
-         ir_expression *const r0EFE = bit_and(swizzle_y(r0ED7), body.constant(524287u));
+         ir_expression *const r0EFD = nequal(swizzle_y(r0ED7), body.constant(0u));
+         ir_expression *const r0EFE = bit_and(swizzle_x(r0ED7), body.constant(524287u));
          ir_expression *const r0EFF = nequal(r0EFE, body.constant(0u));
          ir_expression *const r0F00 = logic_or(r0EFD, r0EFF);
          body.emit(assign(r0EF9, logic_and(r0EFC, r0F00), 0x01));
 
          ir_variable *const r0F01 = body.make_temp(glsl_type::bool_type, "is_nan_retval");
-         ir_expression *const r0F02 = lshift(swizzle_y(r0ED8), body.constant(int(1)));
+         ir_expression *const r0F02 = lshift(swizzle_x(r0ED8), body.constant(int(1)));
          ir_expression *const r0F03 = lequal(body.constant(4292870144u), r0F02);
-         ir_expression *const r0F04 = nequal(swizzle_x(r0ED8), body.constant(0u));
-         ir_expression *const r0F05 = bit_and(swizzle_y(r0ED8), body.constant(1048575u));
+         ir_expression *const r0F04 = nequal(swizzle_y(r0ED8), body.constant(0u));
+         ir_expression *const r0F05 = bit_and(swizzle_x(r0ED8), body.constant(1048575u));
          ir_expression *const r0F06 = nequal(r0F05, body.constant(0u));
          ir_expression *const r0F07 = logic_or(r0F04, r0F06);
          body.emit(assign(r0F01, logic_and(r0F03, r0F07), 0x01));
 
-         body.emit(assign(r0EF6, bit_or(swizzle_y(r0ED7), body.constant(524288u)), 0x02));
+         body.emit(assign(r0EF6, bit_or(swizzle_x(r0ED7), body.constant(524288u)), 0x01));
 
-         body.emit(assign(r0EF7, bit_or(swizzle_y(r0ED8), body.constant(524288u)), 0x02));
+         body.emit(assign(r0EF7, bit_or(swizzle_x(r0ED8), body.constant(524288u)), 0x01));
 
          /* IF CONDITION */
-         ir_expression *const r0F09 = lshift(swizzle_y(r0ED7), body.constant(int(1)));
+         ir_expression *const r0F09 = lshift(swizzle_x(r0ED7), body.constant(int(1)));
          ir_expression *const r0F0A = lequal(body.constant(4292870144u), r0F09);
-         ir_expression *const r0F0B = nequal(swizzle_x(r0ED7), body.constant(0u));
-         ir_expression *const r0F0C = bit_and(swizzle_y(r0ED7), body.constant(1048575u));
+         ir_expression *const r0F0B = nequal(swizzle_y(r0ED7), body.constant(0u));
+         ir_expression *const r0F0C = bit_and(swizzle_x(r0ED7), body.constant(1048575u));
          ir_expression *const r0F0D = nequal(r0F0C, body.constant(0u));
          ir_expression *const r0F0E = logic_or(r0F0B, r0F0D);
          ir_expression *const r0F0F = logic_and(r0F0A, r0F0E);
@@ -18282,8 +18282,8 @@ fmul64(void *mem_ctx, builtin_available_predicate avail)
          body.instructions = &f0EEE->else_instructions;
 
          /* IF CONDITION */
-         ir_expression *const r0F14 = bit_or(r0EE8, swizzle_x(r0EE7));
-         ir_expression *const r0F15 = bit_or(r0F14, swizzle_y(r0ED8));
+         ir_expression *const r0F14 = bit_or(r0EE8, swizzle_x(r0ED8));
+         ir_expression *const r0F15 = bit_or(r0F14, swizzle_x(r0EE7));
          ir_expression *const r0F16 = equal(r0F15, body.constant(0u));
          ir_if *f0F13 = new(mem_ctx) ir_if(operand(r0F16).val);
          exec_list *const f0F13_parent_instructions = body.instructions;
@@ -18307,9 +18307,9 @@ fmul64(void *mem_ctx, builtin_available_predicate avail)
             ir_variable *const r0F18 = new(mem_ctx) ir_variable(glsl_type::uvec2_type, "z", ir_var_auto);
             body.emit(r0F18);
             ir_expression *const r0F19 = lshift(r0EDB, body.constant(int(31)));
-            body.emit(assign(r0F18, add(r0F19, body.constant(2146435072u)), 0x01));
+            body.emit(assign(r0F18, add(r0F19, body.constant(2146435072u)), 0x02));
 
-            body.emit(assign(r0F18, body.constant(0u), 0x02));
+            body.emit(assign(r0F18, body.constant(0u), 0x01));
 
             body.emit(assign(r0EDA, r0F18, 0x03));
 
@@ -18340,7 +18340,7 @@ fmul64(void *mem_ctx, builtin_available_predicate avail)
          body.instructions = &f0F1A->then_instructions;
 
          /* IF CONDITION */
-         ir_expression *const r0F1D = bit_or(swizzle_x(r0EE7), swizzle_y(r0ED8));
+         ir_expression *const r0F1D = bit_or(swizzle_x(r0ED8), swizzle_x(r0EE7));
          ir_expression *const r0F1E = nequal(r0F1D, body.constant(0u));
          ir_if *f0F1C = new(mem_ctx) ir_if(operand(r0F1E).val);
          exec_list *const f0F1C_parent_instructions = body.instructions;
@@ -18349,40 +18349,40 @@ fmul64(void *mem_ctx, builtin_available_predicate avail)
             body.instructions = &f0F1C->then_instructions;
 
             ir_variable *const r0F1F = body.make_temp(glsl_type::uvec2_type, "a");
-            body.emit(assign(r0F1F, swizzle_x(r0ED7), 0x01));
+            body.emit(assign(r0F1F, swizzle_y(r0ED7), 0x02));
 
             ir_variable *const r0F20 = body.make_temp(glsl_type::uvec2_type, "b");
-            body.emit(assign(r0F20, swizzle_x(r0ED8), 0x01));
+            body.emit(assign(r0F20, swizzle_y(r0ED8), 0x02));
 
             ir_variable *const r0F21 = body.make_temp(glsl_type::uvec2_type, "return_value");
             ir_variable *const r0F22 = body.make_temp(glsl_type::bool_type, "float64_is_signaling_nan_retval");
-            ir_expression *const r0F23 = rshift(swizzle_y(r0ED7), body.constant(int(19)));
+            ir_expression *const r0F23 = rshift(swizzle_x(r0ED7), body.constant(int(19)));
             ir_expression *const r0F24 = bit_and(r0F23, body.constant(4095u));
             ir_expression *const r0F25 = equal(r0F24, body.constant(4094u));
-            ir_expression *const r0F26 = nequal(swizzle_x(r0ED7), body.constant(0u));
-            ir_expression *const r0F27 = bit_and(swizzle_y(r0ED7), body.constant(524287u));
+            ir_expression *const r0F26 = nequal(swizzle_y(r0ED7), body.constant(0u));
+            ir_expression *const r0F27 = bit_and(swizzle_x(r0ED7), body.constant(524287u));
             ir_expression *const r0F28 = nequal(r0F27, body.constant(0u));
             ir_expression *const r0F29 = logic_or(r0F26, r0F28);
             body.emit(assign(r0F22, logic_and(r0F25, r0F29), 0x01));
 
             ir_variable *const r0F2A = body.make_temp(glsl_type::bool_type, "is_nan_retval");
-            ir_expression *const r0F2B = lshift(swizzle_y(r0ED8), body.constant(int(1)));
+            ir_expression *const r0F2B = lshift(swizzle_x(r0ED8), body.constant(int(1)));
             ir_expression *const r0F2C = lequal(body.constant(4292870144u), r0F2B);
-            ir_expression *const r0F2D = nequal(swizzle_x(r0ED8), body.constant(0u));
-            ir_expression *const r0F2E = bit_and(swizzle_y(r0ED8), body.constant(1048575u));
+            ir_expression *const r0F2D = nequal(swizzle_y(r0ED8), body.constant(0u));
+            ir_expression *const r0F2E = bit_and(swizzle_x(r0ED8), body.constant(1048575u));
             ir_expression *const r0F2F = nequal(r0F2E, body.constant(0u));
             ir_expression *const r0F30 = logic_or(r0F2D, r0F2F);
             body.emit(assign(r0F2A, logic_and(r0F2C, r0F30), 0x01));
 
-            body.emit(assign(r0F1F, bit_or(swizzle_y(r0ED7), body.constant(524288u)), 0x02));
+            body.emit(assign(r0F1F, bit_or(swizzle_x(r0ED7), body.constant(524288u)), 0x01));
 
-            body.emit(assign(r0F20, bit_or(swizzle_y(r0ED8), body.constant(524288u)), 0x02));
+            body.emit(assign(r0F20, bit_or(swizzle_x(r0ED8), body.constant(524288u)), 0x01));
 
             /* IF CONDITION */
-            ir_expression *const r0F32 = lshift(swizzle_y(r0ED7), body.constant(int(1)));
+            ir_expression *const r0F32 = lshift(swizzle_x(r0ED7), body.constant(int(1)));
             ir_expression *const r0F33 = lequal(body.constant(4292870144u), r0F32);
-            ir_expression *const r0F34 = nequal(swizzle_x(r0ED7), body.constant(0u));
-            ir_expression *const r0F35 = bit_and(swizzle_y(r0ED7), body.constant(1048575u));
+            ir_expression *const r0F34 = nequal(swizzle_y(r0ED7), body.constant(0u));
+            ir_expression *const r0F35 = bit_and(swizzle_x(r0ED7), body.constant(1048575u));
             ir_expression *const r0F36 = nequal(r0F35, body.constant(0u));
             ir_expression *const r0F37 = logic_or(r0F34, r0F36);
             ir_expression *const r0F38 = logic_and(r0F33, r0F37);
@@ -18438,8 +18438,8 @@ fmul64(void *mem_ctx, builtin_available_predicate avail)
             body.instructions = &f0F1C->else_instructions;
 
             /* IF CONDITION */
-            ir_expression *const r0F3D = bit_or(r0EE5, swizzle_x(r0EE4));
-            ir_expression *const r0F3E = bit_or(r0F3D, swizzle_y(r0ED7));
+            ir_expression *const r0F3D = bit_or(r0EE5, swizzle_x(r0ED7));
+            ir_expression *const r0F3E = bit_or(r0F3D, swizzle_x(r0EE4));
             ir_expression *const r0F3F = equal(r0F3E, body.constant(0u));
             ir_if *f0F3C = new(mem_ctx) ir_if(operand(r0F3F).val);
             exec_list *const f0F3C_parent_instructions = body.instructions;
@@ -18463,9 +18463,9 @@ fmul64(void *mem_ctx, builtin_available_predicate avail)
                ir_variable *const r0F41 = new(mem_ctx) ir_variable(glsl_type::uvec2_type, "z", ir_var_auto);
                body.emit(r0F41);
                ir_expression *const r0F42 = lshift(r0EDB, body.constant(int(31)));
-               body.emit(assign(r0F41, add(r0F42, body.constant(2146435072u)), 0x01));
+               body.emit(assign(r0F41, add(r0F42, body.constant(2146435072u)), 0x02));
 
-               body.emit(assign(r0F41, body.constant(0u), 0x02));
+               body.emit(assign(r0F41, body.constant(0u), 0x01));
 
                body.emit(assign(r0EDA, r0F41, 0x03));
 
@@ -18496,7 +18496,7 @@ fmul64(void *mem_ctx, builtin_available_predicate avail)
             body.instructions = &f0F43->then_instructions;
 
             /* IF CONDITION */
-            ir_expression *const r0F46 = bit_or(swizzle_x(r0EE4), swizzle_y(r0ED7));
+            ir_expression *const r0F46 = bit_or(swizzle_x(r0ED7), swizzle_x(r0EE4));
             ir_expression *const r0F47 = equal(r0F46, body.constant(0u));
             ir_if *f0F45 = new(mem_ctx) ir_if(operand(r0F47).val);
             exec_list *const f0F45_parent_instructions = body.instructions;
@@ -18506,9 +18506,9 @@ fmul64(void *mem_ctx, builtin_available_predicate avail)
 
                ir_variable *const r0F48 = new(mem_ctx) ir_variable(glsl_type::uvec2_type, "z", ir_var_auto);
                body.emit(r0F48);
-               body.emit(assign(r0F48, lshift(r0EDB, body.constant(int(31))), 0x01));
+               body.emit(assign(r0F48, lshift(r0EDB, body.constant(int(31))), 0x02));
 
-               body.emit(assign(r0F48, body.constant(0u), 0x02));
+               body.emit(assign(r0F48, body.constant(0u), 0x01));
 
                body.emit(assign(r0EDA, r0F48, 0x03));
 
@@ -18519,24 +18519,24 @@ fmul64(void *mem_ctx, builtin_available_predicate avail)
                body.instructions = &f0F45->else_instructions;
 
                ir_variable *const r0F49 = body.make_temp(glsl_type::uint_type, "aFrac0");
-               body.emit(assign(r0F49, swizzle_x(r0EE4), 0x01));
+               body.emit(assign(r0F49, swizzle_y(r0EE4), 0x01));
 
                ir_variable *const r0F4A = body.make_temp(glsl_type::uint_type, "aFrac1");
-               body.emit(assign(r0F4A, swizzle_y(r0EE4), 0x01));
+               body.emit(assign(r0F4A, swizzle_x(r0EE4), 0x01));
 
                ir_variable *const r0F4B = body.make_temp(glsl_type::uint_type, "zExpPtr");
                body.emit(assign(r0F4B, r0EE5, 0x01));
 
                ir_variable *const r0F4C = body.make_temp(glsl_type::uint_type, "zFrac0Ptr");
-               body.emit(assign(r0F4C, swizzle_x(r0EE4), 0x01));
+               body.emit(assign(r0F4C, swizzle_y(r0EE4), 0x01));
 
                ir_variable *const r0F4D = body.make_temp(glsl_type::uint_type, "zFrac1Ptr");
-               body.emit(assign(r0F4D, swizzle_y(r0EE4), 0x01));
+               body.emit(assign(r0F4D, swizzle_x(r0EE4), 0x01));
 
                ir_variable *const r0F4E = new(mem_ctx) ir_variable(glsl_type::int_type, "shiftCount", ir_var_auto);
                body.emit(r0F4E);
                /* IF CONDITION */
-               ir_expression *const r0F50 = equal(swizzle_x(r0EE4), body.constant(0u));
+               ir_expression *const r0F50 = equal(swizzle_x(r0ED7), body.constant(0u));
                ir_if *f0F4F = new(mem_ctx) ir_if(operand(r0F50).val);
                exec_list *const f0F4F_parent_instructions = body.instructions;
 
@@ -18550,7 +18550,7 @@ fmul64(void *mem_ctx, builtin_available_predicate avail)
                   ir_variable *const r0F53 = new(mem_ctx) ir_variable(glsl_type::uint_type, "shiftCount", ir_var_auto);
                   body.emit(r0F53);
                   /* IF CONDITION */
-                  ir_expression *const r0F55 = equal(swizzle_y(r0ED7), body.constant(0u));
+                  ir_expression *const r0F55 = equal(swizzle_x(r0EE4), body.constant(0u));
                   ir_if *f0F54 = new(mem_ctx) ir_if(operand(r0F55).val);
                   exec_list *const f0F54_parent_instructions = body.instructions;
 
@@ -18566,7 +18566,7 @@ fmul64(void *mem_ctx, builtin_available_predicate avail)
                      body.emit(assign(r0F53, body.constant(0u), 0x01));
 
                      /* IF CONDITION */
-                     ir_expression *const r0F57 = bit_and(swizzle_y(r0ED7), body.constant(4294901760u));
+                     ir_expression *const r0F57 = bit_and(swizzle_x(r0EE4), body.constant(4294901760u));
                      ir_expression *const r0F58 = equal(r0F57, body.constant(0u));
                      ir_if *f0F56 = new(mem_ctx) ir_if(operand(r0F58).val);
                      exec_list *const f0F56_parent_instructions = body.instructions;
@@ -18576,7 +18576,7 @@ fmul64(void *mem_ctx, builtin_available_predicate avail)
 
                         body.emit(assign(r0F53, body.constant(16u), 0x01));
 
-                        body.emit(assign(r0F51, lshift(swizzle_y(r0ED7), body.constant(int(16))), 0x01));
+                        body.emit(assign(r0F51, lshift(swizzle_x(r0EE4), body.constant(int(16))), 0x01));
 
 
                      body.instructions = f0F56_parent_instructions;
@@ -18678,16 +18678,16 @@ fmul64(void *mem_ctx, builtin_available_predicate avail)
                      body.instructions = &f0F66->then_instructions;
 
                      ir_expression *const r0F68 = neg(r0F4E);
-                     body.emit(assign(r0F4C, rshift(swizzle_y(r0ED7), r0F68), 0x01));
+                     body.emit(assign(r0F4C, rshift(swizzle_x(r0EE4), r0F68), 0x01));
 
                      ir_expression *const r0F69 = bit_and(r0F4E, body.constant(int(31)));
-                     body.emit(assign(r0F4D, lshift(swizzle_y(r0ED7), r0F69), 0x01));
+                     body.emit(assign(r0F4D, lshift(swizzle_x(r0EE4), r0F69), 0x01));
 
 
                      /* ELSE INSTRUCTIONS */
                      body.instructions = &f0F66->else_instructions;
 
-                     body.emit(assign(r0F4C, lshift(swizzle_y(r0ED7), r0F4E), 0x01));
+                     body.emit(assign(r0F4C, lshift(swizzle_x(r0EE4), r0F4E), 0x01));
 
                      body.emit(assign(r0F4D, body.constant(0u), 0x01));
 
@@ -18711,7 +18711,7 @@ fmul64(void *mem_ctx, builtin_available_predicate avail)
                   ir_variable *const r0F6D = new(mem_ctx) ir_variable(glsl_type::uint_type, "shiftCount", ir_var_auto);
                   body.emit(r0F6D);
                   /* IF CONDITION */
-                  ir_expression *const r0F6F = equal(swizzle_x(r0EE4), body.constant(0u));
+                  ir_expression *const r0F6F = equal(swizzle_x(r0ED7), body.constant(0u));
                   ir_if *f0F6E = new(mem_ctx) ir_if(operand(r0F6F).val);
                   exec_list *const f0F6E_parent_instructions = body.instructions;
 
@@ -18727,7 +18727,7 @@ fmul64(void *mem_ctx, builtin_available_predicate avail)
                      body.emit(assign(r0F6D, body.constant(0u), 0x01));
 
                      /* IF CONDITION */
-                     ir_expression *const r0F71 = bit_and(swizzle_x(r0EE4), body.constant(4294901760u));
+                     ir_expression *const r0F71 = bit_and(swizzle_x(r0ED7), body.constant(4294901760u));
                      ir_expression *const r0F72 = equal(r0F71, body.constant(0u));
                      ir_if *f0F70 = new(mem_ctx) ir_if(operand(r0F72).val);
                      exec_list *const f0F70_parent_instructions = body.instructions;
@@ -18737,7 +18737,7 @@ fmul64(void *mem_ctx, builtin_available_predicate avail)
 
                         body.emit(assign(r0F6D, body.constant(16u), 0x01));
 
-                        body.emit(assign(r0F6B, lshift(swizzle_x(r0EE4), body.constant(int(16))), 0x01));
+                        body.emit(assign(r0F6B, lshift(swizzle_x(r0ED7), body.constant(int(16))), 0x01));
 
 
                      body.instructions = f0F70_parent_instructions;
@@ -18831,7 +18831,7 @@ fmul64(void *mem_ctx, builtin_available_predicate avail)
                   body.emit(assign(r0F4E, add(r0F7F, body.constant(int(-11))), 0x01));
 
                   ir_variable *const r0F80 = body.make_temp(glsl_type::uint_type, "z1Ptr");
-                  body.emit(assign(r0F80, lshift(swizzle_y(r0ED7), r0F4E), 0x01));
+                  body.emit(assign(r0F80, lshift(swizzle_x(r0EE4), r0F4E), 0x01));
 
                   ir_variable *const r0F81 = body.make_temp(glsl_type::uint_type, "conditional_tmp");
                   /* IF CONDITION */
@@ -18848,10 +18848,10 @@ fmul64(void *mem_ctx, builtin_available_predicate avail)
                      /* ELSE INSTRUCTIONS */
                      body.instructions = &f0F82->else_instructions;
 
-                     ir_expression *const r0F84 = lshift(swizzle_x(r0EE4), r0F4E);
+                     ir_expression *const r0F84 = lshift(swizzle_x(r0ED7), r0F4E);
                      ir_expression *const r0F85 = neg(r0F4E);
                      ir_expression *const r0F86 = bit_and(r0F85, body.constant(int(31)));
-                     ir_expression *const r0F87 = rshift(swizzle_y(r0ED7), r0F86);
+                     ir_expression *const r0F87 = rshift(swizzle_x(r0EE4), r0F86);
                      body.emit(assign(r0F81, bit_or(r0F84, r0F87), 0x01));
 
 
@@ -18875,9 +18875,9 @@ fmul64(void *mem_ctx, builtin_available_predicate avail)
 
                body.emit(assign(r0EDE, r0F4B, 0x01));
 
-               body.emit(assign(r0EDF, r0F4C, 0x01));
+               body.emit(assign(r0EDF, r0F4C, 0x02));
 
-               body.emit(assign(r0EDF, r0F4D, 0x02));
+               body.emit(assign(r0EDF, r0F4D, 0x01));
 
 
             body.instructions = f0F45_parent_instructions;
@@ -18907,7 +18907,7 @@ fmul64(void *mem_ctx, builtin_available_predicate avail)
                body.instructions = &f0F8A->then_instructions;
 
                /* IF CONDITION */
-               ir_expression *const r0F8D = bit_or(swizzle_x(r0EE7), swizzle_y(r0ED8));
+               ir_expression *const r0F8D = bit_or(swizzle_x(r0ED8), swizzle_x(r0EE7));
                ir_expression *const r0F8E = equal(r0F8D, body.constant(0u));
                ir_if *f0F8C = new(mem_ctx) ir_if(operand(r0F8E).val);
                exec_list *const f0F8C_parent_instructions = body.instructions;
@@ -18917,9 +18917,9 @@ fmul64(void *mem_ctx, builtin_available_predicate avail)
 
                   ir_variable *const r0F8F = new(mem_ctx) ir_variable(glsl_type::uvec2_type, "z", ir_var_auto);
                   body.emit(r0F8F);
-                  body.emit(assign(r0F8F, lshift(r0EDB, body.constant(int(31))), 0x01));
+                  body.emit(assign(r0F8F, lshift(r0EDB, body.constant(int(31))), 0x02));
 
-                  body.emit(assign(r0F8F, body.constant(0u), 0x02));
+                  body.emit(assign(r0F8F, body.constant(0u), 0x01));
 
                   body.emit(assign(r0EDA, r0F8F, 0x03));
 
@@ -18930,24 +18930,24 @@ fmul64(void *mem_ctx, builtin_available_predicate avail)
                   body.instructions = &f0F8C->else_instructions;
 
                   ir_variable *const r0F90 = body.make_temp(glsl_type::uint_type, "aFrac0");
-                  body.emit(assign(r0F90, swizzle_x(r0EE7), 0x01));
+                  body.emit(assign(r0F90, swizzle_y(r0EE7), 0x01));
 
                   ir_variable *const r0F91 = body.make_temp(glsl_type::uint_type, "aFrac1");
-                  body.emit(assign(r0F91, swizzle_y(r0EE7), 0x01));
+                  body.emit(assign(r0F91, swizzle_x(r0EE7), 0x01));
 
                   ir_variable *const r0F92 = body.make_temp(glsl_type::uint_type, "zExpPtr");
                   body.emit(assign(r0F92, r0EE8, 0x01));
 
                   ir_variable *const r0F93 = body.make_temp(glsl_type::uint_type, "zFrac0Ptr");
-                  body.emit(assign(r0F93, swizzle_x(r0EE7), 0x01));
+                  body.emit(assign(r0F93, swizzle_y(r0EE7), 0x01));
 
                   ir_variable *const r0F94 = body.make_temp(glsl_type::uint_type, "zFrac1Ptr");
-                  body.emit(assign(r0F94, swizzle_y(r0EE7), 0x01));
+                  body.emit(assign(r0F94, swizzle_x(r0EE7), 0x01));
 
                   ir_variable *const r0F95 = new(mem_ctx) ir_variable(glsl_type::int_type, "shiftCount", ir_var_auto);
                   body.emit(r0F95);
                   /* IF CONDITION */
-                  ir_expression *const r0F97 = equal(swizzle_x(r0EE7), body.constant(0u));
+                  ir_expression *const r0F97 = equal(swizzle_x(r0ED8), body.constant(0u));
                   ir_if *f0F96 = new(mem_ctx) ir_if(operand(r0F97).val);
                   exec_list *const f0F96_parent_instructions = body.instructions;
 
@@ -18961,7 +18961,7 @@ fmul64(void *mem_ctx, builtin_available_predicate avail)
                      ir_variable *const r0F9A = new(mem_ctx) ir_variable(glsl_type::uint_type, "shiftCount", ir_var_auto);
                      body.emit(r0F9A);
                      /* IF CONDITION */
-                     ir_expression *const r0F9C = equal(swizzle_y(r0ED8), body.constant(0u));
+                     ir_expression *const r0F9C = equal(swizzle_x(r0EE7), body.constant(0u));
                      ir_if *f0F9B = new(mem_ctx) ir_if(operand(r0F9C).val);
                      exec_list *const f0F9B_parent_instructions = body.instructions;
 
@@ -18977,7 +18977,7 @@ fmul64(void *mem_ctx, builtin_available_predicate avail)
                         body.emit(assign(r0F9A, body.constant(0u), 0x01));
 
                         /* IF CONDITION */
-                        ir_expression *const r0F9E = bit_and(swizzle_y(r0ED8), body.constant(4294901760u));
+                        ir_expression *const r0F9E = bit_and(swizzle_x(r0EE7), body.constant(4294901760u));
                         ir_expression *const r0F9F = equal(r0F9E, body.constant(0u));
                         ir_if *f0F9D = new(mem_ctx) ir_if(operand(r0F9F).val);
                         exec_list *const f0F9D_parent_instructions = body.instructions;
@@ -18987,7 +18987,7 @@ fmul64(void *mem_ctx, builtin_available_predicate avail)
 
                            body.emit(assign(r0F9A, body.constant(16u), 0x01));
 
-                           body.emit(assign(r0F98, lshift(swizzle_y(r0ED8), body.constant(int(16))), 0x01));
+                           body.emit(assign(r0F98, lshift(swizzle_x(r0EE7), body.constant(int(16))), 0x01));
 
 
                         body.instructions = f0F9D_parent_instructions;
@@ -19089,16 +19089,16 @@ fmul64(void *mem_ctx, builtin_available_predicate avail)
                         body.instructions = &f0FAD->then_instructions;
 
                         ir_expression *const r0FAF = neg(r0F95);
-                        body.emit(assign(r0F93, rshift(swizzle_y(r0ED8), r0FAF), 0x01));
+                        body.emit(assign(r0F93, rshift(swizzle_x(r0EE7), r0FAF), 0x01));
 
                         ir_expression *const r0FB0 = bit_and(r0F95, body.constant(int(31)));
-                        body.emit(assign(r0F94, lshift(swizzle_y(r0ED8), r0FB0), 0x01));
+                        body.emit(assign(r0F94, lshift(swizzle_x(r0EE7), r0FB0), 0x01));
 
 
                         /* ELSE INSTRUCTIONS */
                         body.instructions = &f0FAD->else_instructions;
 
-                        body.emit(assign(r0F93, lshift(swizzle_y(r0ED8), r0F95), 0x01));
+                        body.emit(assign(r0F93, lshift(swizzle_x(r0EE7), r0F95), 0x01));
 
                         body.emit(assign(r0F94, body.constant(0u), 0x01));
 
@@ -19122,7 +19122,7 @@ fmul64(void *mem_ctx, builtin_available_predicate avail)
                      ir_variable *const r0FB4 = new(mem_ctx) ir_variable(glsl_type::uint_type, "shiftCount", ir_var_auto);
                      body.emit(r0FB4);
                      /* IF CONDITION */
-                     ir_expression *const r0FB6 = equal(swizzle_x(r0EE7), body.constant(0u));
+                     ir_expression *const r0FB6 = equal(swizzle_x(r0ED8), body.constant(0u));
                      ir_if *f0FB5 = new(mem_ctx) ir_if(operand(r0FB6).val);
                      exec_list *const f0FB5_parent_instructions = body.instructions;
 
@@ -19138,7 +19138,7 @@ fmul64(void *mem_ctx, builtin_available_predicate avail)
                         body.emit(assign(r0FB4, body.constant(0u), 0x01));
 
                         /* IF CONDITION */
-                        ir_expression *const r0FB8 = bit_and(swizzle_x(r0EE7), body.constant(4294901760u));
+                        ir_expression *const r0FB8 = bit_and(swizzle_x(r0ED8), body.constant(4294901760u));
                         ir_expression *const r0FB9 = equal(r0FB8, body.constant(0u));
                         ir_if *f0FB7 = new(mem_ctx) ir_if(operand(r0FB9).val);
                         exec_list *const f0FB7_parent_instructions = body.instructions;
@@ -19148,7 +19148,7 @@ fmul64(void *mem_ctx, builtin_available_predicate avail)
 
                            body.emit(assign(r0FB4, body.constant(16u), 0x01));
 
-                           body.emit(assign(r0FB2, lshift(swizzle_x(r0EE7), body.constant(int(16))), 0x01));
+                           body.emit(assign(r0FB2, lshift(swizzle_x(r0ED8), body.constant(int(16))), 0x01));
 
 
                         body.instructions = f0FB7_parent_instructions;
@@ -19242,7 +19242,7 @@ fmul64(void *mem_ctx, builtin_available_predicate avail)
                      body.emit(assign(r0F95, add(r0FC6, body.constant(int(-11))), 0x01));
 
                      ir_variable *const r0FC7 = body.make_temp(glsl_type::uint_type, "z1Ptr");
-                     body.emit(assign(r0FC7, lshift(swizzle_y(r0ED8), r0F95), 0x01));
+                     body.emit(assign(r0FC7, lshift(swizzle_x(r0EE7), r0F95), 0x01));
 
                      ir_variable *const r0FC8 = body.make_temp(glsl_type::uint_type, "conditional_tmp");
                      /* IF CONDITION */
@@ -19259,10 +19259,10 @@ fmul64(void *mem_ctx, builtin_available_predicate avail)
                         /* ELSE INSTRUCTIONS */
                         body.instructions = &f0FC9->else_instructions;
 
-                        ir_expression *const r0FCB = lshift(swizzle_x(r0EE7), r0F95);
+                        ir_expression *const r0FCB = lshift(swizzle_x(r0ED8), r0F95);
                         ir_expression *const r0FCC = neg(r0F95);
                         ir_expression *const r0FCD = bit_and(r0FCC, body.constant(int(31)));
-                        ir_expression *const r0FCE = rshift(swizzle_y(r0ED8), r0FCD);
+                        ir_expression *const r0FCE = rshift(swizzle_x(r0EE7), r0FCD);
                         body.emit(assign(r0FC8, bit_or(r0FCB, r0FCE), 0x01));
 
 
@@ -19286,9 +19286,9 @@ fmul64(void *mem_ctx, builtin_available_predicate avail)
 
                   body.emit(assign(r0EDC, r0F92, 0x01));
 
-                  body.emit(assign(r0EDD, r0F93, 0x01));
+                  body.emit(assign(r0EDD, r0F93, 0x02));
 
-                  body.emit(assign(r0EDD, r0F94, 0x02));
+                  body.emit(assign(r0EDD, r0F94, 0x01));
 
 
                body.instructions = f0F8C_parent_instructions;
@@ -19314,19 +19314,19 @@ fmul64(void *mem_ctx, builtin_available_predicate avail)
                ir_expression *const r0FD3 = add(r0FD2, body.constant(int(-1024)));
                body.emit(assign(r0EE0, expr(ir_unop_i2u, r0FD3), 0x01));
 
-               body.emit(assign(r0EDF, bit_or(swizzle_x(r0EDF), body.constant(1048576u)), 0x01));
+               body.emit(assign(r0EDF, bit_or(swizzle_y(r0EDF), body.constant(1048576u)), 0x02));
 
                ir_variable *const r0FD4 = body.make_temp(glsl_type::uint_type, "z1Ptr");
-               body.emit(assign(r0FD4, lshift(swizzle_y(r0EDD), body.constant(int(12))), 0x01));
+               body.emit(assign(r0FD4, lshift(swizzle_x(r0EDD), body.constant(int(12))), 0x01));
 
                ir_variable *const r0FD5 = body.make_temp(glsl_type::uint_type, "conditional_tmp");
-               ir_expression *const r0FD6 = lshift(swizzle_x(r0EDD), body.constant(int(12)));
-               ir_expression *const r0FD7 = rshift(swizzle_y(r0EDD), body.constant(int(20)));
+               ir_expression *const r0FD6 = lshift(swizzle_y(r0EDD), body.constant(int(12)));
+               ir_expression *const r0FD7 = rshift(swizzle_x(r0EDD), body.constant(int(20)));
                body.emit(assign(r0FD5, bit_or(r0FD6, r0FD7), 0x01));
 
-               body.emit(assign(r0EDD, r0FD5, 0x01));
+               body.emit(assign(r0EDD, r0FD5, 0x02));
 
-               body.emit(assign(r0EDD, r0FD4, 0x02));
+               body.emit(assign(r0EDD, r0FD4, 0x01));
 
                ir_variable *const r0FD8 = new(mem_ctx) ir_variable(glsl_type::uint_type, "z0", ir_var_auto);
                body.emit(r0FD8);
@@ -19335,7 +19335,7 @@ fmul64(void *mem_ctx, builtin_available_predicate avail)
                ir_variable *const r0FDA = new(mem_ctx) ir_variable(glsl_type::uint_type, "z1", ir_var_auto);
                body.emit(r0FDA);
                ir_variable *const r0FDB = body.make_temp(glsl_type::uint_type, "assignment_tmp");
-               body.emit(assign(r0FDB, rshift(swizzle_y(r0EDF), body.constant(int(16))), 0x01));
+               body.emit(assign(r0FDB, rshift(swizzle_x(r0EDF), body.constant(int(16))), 0x01));
 
                ir_variable *const r0FDC = body.make_temp(glsl_type::uint_type, "assignment_tmp");
                body.emit(assign(r0FDC, rshift(r0FD4, body.constant(int(16))), 0x01));
@@ -19343,7 +19343,7 @@ fmul64(void *mem_ctx, builtin_available_predicate avail)
                ir_variable *const r0FDD = body.make_temp(glsl_type::uint_type, "assignment_tmp");
                body.emit(assign(r0FDD, mul(r0FDB, r0FD4), 0x01));
 
-               ir_expression *const r0FDE = mul(swizzle_y(r0EDF), r0FDC);
+               ir_expression *const r0FDE = mul(swizzle_x(r0EDF), r0FDC);
                body.emit(assign(r0FD9, add(r0FDE, r0FDD), 0x01));
 
                ir_expression *const r0FDF = mul(r0FDB, r0FDC);
@@ -19357,7 +19357,7 @@ fmul64(void *mem_ctx, builtin_available_predicate avail)
 
                body.emit(assign(r0FD9, lshift(r0FD9, body.constant(int(16))), 0x01));
 
-               ir_expression *const r0FE6 = mul(swizzle_y(r0EDF), r0FD4);
+               ir_expression *const r0FE6 = mul(swizzle_x(r0EDF), r0FD4);
                body.emit(assign(r0FDA, add(r0FE6, r0FD9), 0x01));
 
                ir_expression *const r0FE7 = less(r0FDA, r0FD9);
@@ -19372,7 +19372,7 @@ fmul64(void *mem_ctx, builtin_available_predicate avail)
                ir_variable *const r0FEC = new(mem_ctx) ir_variable(glsl_type::uint_type, "z1", ir_var_auto);
                body.emit(r0FEC);
                ir_variable *const r0FED = body.make_temp(glsl_type::uint_type, "assignment_tmp");
-               body.emit(assign(r0FED, rshift(swizzle_y(r0EDF), body.constant(int(16))), 0x01));
+               body.emit(assign(r0FED, rshift(swizzle_x(r0EDF), body.constant(int(16))), 0x01));
 
                ir_variable *const r0FEE = body.make_temp(glsl_type::uint_type, "assignment_tmp");
                body.emit(assign(r0FEE, rshift(r0FD5, body.constant(int(16))), 0x01));
@@ -19380,7 +19380,7 @@ fmul64(void *mem_ctx, builtin_available_predicate avail)
                ir_variable *const r0FEF = body.make_temp(glsl_type::uint_type, "assignment_tmp");
                body.emit(assign(r0FEF, mul(r0FED, r0FD5), 0x01));
 
-               ir_expression *const r0FF0 = mul(swizzle_y(r0EDF), r0FEE);
+               ir_expression *const r0FF0 = mul(swizzle_x(r0EDF), r0FEE);
                body.emit(assign(r0FEB, add(r0FF0, r0FEF), 0x01));
 
                ir_expression *const r0FF1 = mul(r0FED, r0FEE);
@@ -19394,7 +19394,7 @@ fmul64(void *mem_ctx, builtin_available_predicate avail)
 
                body.emit(assign(r0FEB, lshift(r0FEB, body.constant(int(16))), 0x01));
 
-               ir_expression *const r0FF8 = mul(swizzle_y(r0EDF), r0FD5);
+               ir_expression *const r0FF8 = mul(swizzle_x(r0EDF), r0FD5);
                body.emit(assign(r0FEC, add(r0FF8, r0FEB), 0x01));
 
                ir_expression *const r0FF9 = less(r0FEC, r0FEB);
@@ -19412,7 +19412,7 @@ fmul64(void *mem_ctx, builtin_available_predicate avail)
                ir_variable *const r0FFF = new(mem_ctx) ir_variable(glsl_type::uint_type, "z1", ir_var_auto);
                body.emit(r0FFF);
                ir_variable *const r1000 = body.make_temp(glsl_type::uint_type, "assignment_tmp");
-               body.emit(assign(r1000, rshift(swizzle_x(r0EDF), body.constant(int(16))), 0x01));
+               body.emit(assign(r1000, rshift(swizzle_y(r0EDF), body.constant(int(16))), 0x01));
 
                ir_variable *const r1001 = body.make_temp(glsl_type::uint_type, "assignment_tmp");
                body.emit(assign(r1001, rshift(r0FD5, body.constant(int(16))), 0x01));
@@ -19420,7 +19420,7 @@ fmul64(void *mem_ctx, builtin_available_predicate avail)
                ir_variable *const r1002 = body.make_temp(glsl_type::uint_type, "assignment_tmp");
                body.emit(assign(r1002, mul(r1000, r0FD5), 0x01));
 
-               ir_expression *const r1003 = mul(swizzle_x(r0EDF), r1001);
+               ir_expression *const r1003 = mul(swizzle_y(r0EDF), r1001);
                body.emit(assign(r0FFE, add(r1003, r1002), 0x01));
 
                ir_expression *const r1004 = mul(r1000, r1001);
@@ -19434,7 +19434,7 @@ fmul64(void *mem_ctx, builtin_available_predicate avail)
 
                body.emit(assign(r0FFE, lshift(r0FFE, body.constant(int(16))), 0x01));
 
-               ir_expression *const r100B = mul(swizzle_x(r0EDF), r0FD5);
+               ir_expression *const r100B = mul(swizzle_y(r0EDF), r0FD5);
                body.emit(assign(r0FFF, add(r100B, r0FFE), 0x01));
 
                ir_expression *const r100C = less(r0FFF, r0FFE);
@@ -19456,7 +19456,7 @@ fmul64(void *mem_ctx, builtin_available_predicate avail)
                ir_variable *const r1016 = new(mem_ctx) ir_variable(glsl_type::uint_type, "z1", ir_var_auto);
                body.emit(r1016);
                ir_variable *const r1017 = body.make_temp(glsl_type::uint_type, "assignment_tmp");
-               body.emit(assign(r1017, rshift(swizzle_x(r0EDF), body.constant(int(16))), 0x01));
+               body.emit(assign(r1017, rshift(swizzle_y(r0EDF), body.constant(int(16))), 0x01));
 
                ir_variable *const r1018 = body.make_temp(glsl_type::uint_type, "assignment_tmp");
                body.emit(assign(r1018, rshift(r0FD4, body.constant(int(16))), 0x01));
@@ -19464,7 +19464,7 @@ fmul64(void *mem_ctx, builtin_available_predicate avail)
                ir_variable *const r1019 = body.make_temp(glsl_type::uint_type, "assignment_tmp");
                body.emit(assign(r1019, mul(r1017, r0FD4), 0x01));
 
-               ir_expression *const r101A = mul(swizzle_x(r0EDF), r1018);
+               ir_expression *const r101A = mul(swizzle_y(r0EDF), r1018);
                body.emit(assign(r1015, add(r101A, r1019), 0x01));
 
                ir_expression *const r101B = mul(r1017, r1018);
@@ -19478,7 +19478,7 @@ fmul64(void *mem_ctx, builtin_available_predicate avail)
 
                body.emit(assign(r1015, lshift(r1015, body.constant(int(16))), 0x01));
 
-               ir_expression *const r1022 = mul(swizzle_x(r0EDF), r0FD4);
+               ir_expression *const r1022 = mul(swizzle_y(r0EDF), r0FD4);
                body.emit(assign(r1016, add(r1022, r1015), 0x01));
 
                ir_expression *const r1023 = less(r1016, r1015);
@@ -19498,7 +19498,7 @@ fmul64(void *mem_ctx, builtin_available_predicate avail)
 
                ir_variable *const r102C = body.make_temp(glsl_type::uint_type, "z0Ptr");
                ir_variable *const r102D = body.make_temp(glsl_type::uint_type, "assignment_tmp");
-               body.emit(assign(r102D, add(r1027, swizzle_y(r0EDF)), 0x01));
+               body.emit(assign(r102D, add(r1027, swizzle_x(r0EDF)), 0x01));
 
                ir_expression *const r102E = less(r100F, r0FFF);
                ir_expression *const r102F = expr(ir_unop_b2i, r102E);
@@ -19508,7 +19508,7 @@ fmul64(void *mem_ctx, builtin_available_predicate avail)
                ir_expression *const r1033 = expr(ir_unop_b2i, r1032);
                ir_expression *const r1034 = expr(ir_unop_i2u, r1033);
                ir_expression *const r1035 = add(r1031, r1034);
-               ir_expression *const r1036 = add(r1035, swizzle_x(r0EDF));
+               ir_expression *const r1036 = add(r1035, swizzle_y(r0EDF));
                ir_expression *const r1037 = less(r102D, r1027);
                ir_expression *const r1038 = expr(ir_unop_b2i, r1037);
                ir_expression *const r1039 = expr(ir_unop_i2u, r1038);
@@ -19645,9 +19645,9 @@ fmul64(void *mem_ctx, builtin_available_predicate avail)
                      ir_variable *const r105A = new(mem_ctx) ir_variable(glsl_type::uvec2_type, "z", ir_var_auto);
                      body.emit(r105A);
                      ir_expression *const r105B = lshift(r0EDB, body.constant(int(31)));
-                     body.emit(assign(r105A, add(r105B, body.constant(2146435072u)), 0x01));
+                     body.emit(assign(r105A, add(r105B, body.constant(2146435072u)), 0x02));
 
-                     body.emit(assign(r105A, body.constant(0u), 0x02));
+                     body.emit(assign(r105A, body.constant(0u), 0x01));
 
                      body.emit(assign(r104A, r105A, 0x03));
 
@@ -19908,9 +19908,9 @@ fmul64(void *mem_ctx, builtin_available_predicate avail)
                   ir_expression *const r108C = lshift(r0EDB, body.constant(int(31)));
                   ir_expression *const r108D = lshift(r1045, body.constant(int(20)));
                   ir_expression *const r108E = add(r108C, r108D);
-                  body.emit(assign(r108B, add(r108E, r1046), 0x01));
+                  body.emit(assign(r108B, add(r108E, r1046), 0x02));
 
-                  body.emit(assign(r108B, r1047, 0x02));
+                  body.emit(assign(r108B, r1047, 0x01));
 
                   body.emit(assign(r104A, r108B, 0x03));
 
@@ -20554,33 +20554,33 @@ fdiv64(void *mem_ctx, builtin_available_predicate avail)
    body.emit(assign(r1139, body.constant(0u), 0x01));
 
    ir_variable *const r1140 = body.make_temp(glsl_type::uvec2_type, "vec_ctor");
-   body.emit(assign(r1140, bit_and(swizzle_x(r1130), body.constant(1048575u)), 0x01));
+   body.emit(assign(r1140, bit_and(swizzle_y(r1130), body.constant(1048575u)), 0x01));
 
-   body.emit(assign(r1140, swizzle_y(r1130), 0x02));
+   body.emit(assign(r1140, swizzle_x(r1130), 0x02));
 
    body.emit(assign(r1138, r1140, 0x03));
 
    ir_variable *const r1141 = body.make_temp(glsl_type::uint_type, "extractFloat64Exp_retval");
-   ir_expression *const r1142 = rshift(swizzle_x(r1130), body.constant(int(20)));
+   ir_expression *const r1142 = rshift(swizzle_y(r1130), body.constant(int(20)));
    body.emit(assign(r1141, bit_and(r1142, body.constant(2047u)), 0x01));
 
    body.emit(assign(r1137, r1141, 0x01));
 
    ir_variable *const r1143 = body.make_temp(glsl_type::uvec2_type, "vec_ctor");
-   body.emit(assign(r1143, bit_and(swizzle_x(r1131), body.constant(1048575u)), 0x01));
+   body.emit(assign(r1143, bit_and(swizzle_y(r1131), body.constant(1048575u)), 0x01));
 
-   body.emit(assign(r1143, swizzle_y(r1131), 0x02));
+   body.emit(assign(r1143, swizzle_x(r1131), 0x02));
 
    body.emit(assign(r1136, r1143, 0x03));
 
    ir_variable *const r1144 = body.make_temp(glsl_type::uint_type, "extractFloat64Exp_retval");
-   ir_expression *const r1145 = rshift(swizzle_x(r1131), body.constant(int(20)));
+   ir_expression *const r1145 = rshift(swizzle_y(r1131), body.constant(int(20)));
    body.emit(assign(r1144, bit_and(r1145, body.constant(2047u)), 0x01));
 
    body.emit(assign(r1135, r1144, 0x01));
 
-   ir_expression *const r1146 = rshift(swizzle_x(r1130), body.constant(int(31)));
-   ir_expression *const r1147 = rshift(swizzle_x(r1131), body.constant(int(31)));
+   ir_expression *const r1146 = rshift(swizzle_y(r1130), body.constant(int(31)));
+   ir_expression *const r1147 = rshift(swizzle_y(r1131), body.constant(int(31)));
    body.emit(assign(r1134, bit_xor(r1146, r1147), 0x01));
 
    /* IF CONDITION */
@@ -20592,7 +20592,7 @@ fdiv64(void *mem_ctx, builtin_available_predicate avail)
       body.instructions = &f1148->then_instructions;
 
       /* IF CONDITION */
-      ir_expression *const r114B = bit_or(swizzle_x(r1140), swizzle_y(r1130));
+      ir_expression *const r114B = bit_or(swizzle_x(r1130), swizzle_x(r1140));
       ir_expression *const r114C = nequal(r114B, body.constant(0u));
       ir_if *f114A = new(mem_ctx) ir_if(operand(r114C).val);
       exec_list *const f114A_parent_instructions = body.instructions;
@@ -20601,40 +20601,40 @@ fdiv64(void *mem_ctx, builtin_available_predicate avail)
          body.instructions = &f114A->then_instructions;
 
          ir_variable *const r114D = body.make_temp(glsl_type::uvec2_type, "a");
-         body.emit(assign(r114D, swizzle_x(r1130), 0x01));
+         body.emit(assign(r114D, swizzle_y(r1130), 0x02));
 
          ir_variable *const r114E = body.make_temp(glsl_type::uvec2_type, "b");
-         body.emit(assign(r114E, swizzle_x(r1131), 0x01));
+         body.emit(assign(r114E, swizzle_y(r1131), 0x02));
 
          ir_variable *const r114F = body.make_temp(glsl_type::uvec2_type, "return_value");
          ir_variable *const r1150 = body.make_temp(glsl_type::bool_type, "float64_is_signaling_nan_retval");
-         ir_expression *const r1151 = rshift(swizzle_y(r1130), body.constant(int(19)));
+         ir_expression *const r1151 = rshift(swizzle_x(r1130), body.constant(int(19)));
          ir_expression *const r1152 = bit_and(r1151, body.constant(4095u));
          ir_expression *const r1153 = equal(r1152, body.constant(4094u));
-         ir_expression *const r1154 = nequal(swizzle_x(r1130), body.constant(0u));
-         ir_expression *const r1155 = bit_and(swizzle_y(r1130), body.constant(524287u));
+         ir_expression *const r1154 = nequal(swizzle_y(r1130), body.constant(0u));
+         ir_expression *const r1155 = bit_and(swizzle_x(r1130), body.constant(524287u));
          ir_expression *const r1156 = nequal(r1155, body.constant(0u));
          ir_expression *const r1157 = logic_or(r1154, r1156);
          body.emit(assign(r1150, logic_and(r1153, r1157), 0x01));
 
          ir_variable *const r1158 = body.make_temp(glsl_type::bool_type, "is_nan_retval");
-         ir_expression *const r1159 = lshift(swizzle_y(r1131), body.constant(int(1)));
+         ir_expression *const r1159 = lshift(swizzle_x(r1131), body.constant(int(1)));
          ir_expression *const r115A = lequal(body.constant(4292870144u), r1159);
-         ir_expression *const r115B = nequal(swizzle_x(r1131), body.constant(0u));
-         ir_expression *const r115C = bit_and(swizzle_y(r1131), body.constant(1048575u));
+         ir_expression *const r115B = nequal(swizzle_y(r1131), body.constant(0u));
+         ir_expression *const r115C = bit_and(swizzle_x(r1131), body.constant(1048575u));
          ir_expression *const r115D = nequal(r115C, body.constant(0u));
          ir_expression *const r115E = logic_or(r115B, r115D);
          body.emit(assign(r1158, logic_and(r115A, r115E), 0x01));
 
-         body.emit(assign(r114D, bit_or(swizzle_y(r1130), body.constant(524288u)), 0x02));
+         body.emit(assign(r114D, bit_or(swizzle_x(r1130), body.constant(524288u)), 0x01));
 
-         body.emit(assign(r114E, bit_or(swizzle_y(r1131), body.constant(524288u)), 0x02));
+         body.emit(assign(r114E, bit_or(swizzle_x(r1131), body.constant(524288u)), 0x01));
 
          /* IF CONDITION */
-         ir_expression *const r1160 = lshift(swizzle_y(r1130), body.constant(int(1)));
+         ir_expression *const r1160 = lshift(swizzle_x(r1130), body.constant(int(1)));
          ir_expression *const r1161 = lequal(body.constant(4292870144u), r1160);
-         ir_expression *const r1162 = nequal(swizzle_x(r1130), body.constant(0u));
-         ir_expression *const r1163 = bit_and(swizzle_y(r1130), body.constant(1048575u));
+         ir_expression *const r1162 = nequal(swizzle_y(r1130), body.constant(0u));
+         ir_expression *const r1163 = bit_and(swizzle_x(r1130), body.constant(1048575u));
          ir_expression *const r1164 = nequal(r1163, body.constant(0u));
          ir_expression *const r1165 = logic_or(r1162, r1164);
          ir_expression *const r1166 = logic_and(r1161, r1165);
@@ -20698,7 +20698,7 @@ fdiv64(void *mem_ctx, builtin_available_predicate avail)
             body.instructions = &f116A->then_instructions;
 
             /* IF CONDITION */
-            ir_expression *const r116D = bit_or(swizzle_x(r1143), swizzle_y(r1131));
+            ir_expression *const r116D = bit_or(swizzle_x(r1131), swizzle_x(r1143));
             ir_expression *const r116E = nequal(r116D, body.constant(0u));
             ir_if *f116C = new(mem_ctx) ir_if(operand(r116E).val);
             exec_list *const f116C_parent_instructions = body.instructions;
@@ -20707,40 +20707,40 @@ fdiv64(void *mem_ctx, builtin_available_predicate avail)
                body.instructions = &f116C->then_instructions;
 
                ir_variable *const r116F = body.make_temp(glsl_type::uvec2_type, "a");
-               body.emit(assign(r116F, swizzle_x(r1130), 0x01));
+               body.emit(assign(r116F, swizzle_y(r1130), 0x02));
 
                ir_variable *const r1170 = body.make_temp(glsl_type::uvec2_type, "b");
-               body.emit(assign(r1170, swizzle_x(r1131), 0x01));
+               body.emit(assign(r1170, swizzle_y(r1131), 0x02));
 
                ir_variable *const r1171 = body.make_temp(glsl_type::uvec2_type, "return_value");
                ir_variable *const r1172 = body.make_temp(glsl_type::bool_type, "float64_is_signaling_nan_retval");
-               ir_expression *const r1173 = rshift(swizzle_y(r1130), body.constant(int(19)));
+               ir_expression *const r1173 = rshift(swizzle_x(r1130), body.constant(int(19)));
                ir_expression *const r1174 = bit_and(r1173, body.constant(4095u));
                ir_expression *const r1175 = equal(r1174, body.constant(4094u));
-               ir_expression *const r1176 = nequal(swizzle_x(r1130), body.constant(0u));
-               ir_expression *const r1177 = bit_and(swizzle_y(r1130), body.constant(524287u));
+               ir_expression *const r1176 = nequal(swizzle_y(r1130), body.constant(0u));
+               ir_expression *const r1177 = bit_and(swizzle_x(r1130), body.constant(524287u));
                ir_expression *const r1178 = nequal(r1177, body.constant(0u));
                ir_expression *const r1179 = logic_or(r1176, r1178);
                body.emit(assign(r1172, logic_and(r1175, r1179), 0x01));
 
                ir_variable *const r117A = body.make_temp(glsl_type::bool_type, "is_nan_retval");
-               ir_expression *const r117B = lshift(swizzle_y(r1131), body.constant(int(1)));
+               ir_expression *const r117B = lshift(swizzle_x(r1131), body.constant(int(1)));
                ir_expression *const r117C = lequal(body.constant(4292870144u), r117B);
-               ir_expression *const r117D = nequal(swizzle_x(r1131), body.constant(0u));
-               ir_expression *const r117E = bit_and(swizzle_y(r1131), body.constant(1048575u));
+               ir_expression *const r117D = nequal(swizzle_y(r1131), body.constant(0u));
+               ir_expression *const r117E = bit_and(swizzle_x(r1131), body.constant(1048575u));
                ir_expression *const r117F = nequal(r117E, body.constant(0u));
                ir_expression *const r1180 = logic_or(r117D, r117F);
                body.emit(assign(r117A, logic_and(r117C, r1180), 0x01));
 
-               body.emit(assign(r116F, bit_or(swizzle_y(r1130), body.constant(524288u)), 0x02));
+               body.emit(assign(r116F, bit_or(swizzle_x(r1130), body.constant(524288u)), 0x01));
 
-               body.emit(assign(r1170, bit_or(swizzle_y(r1131), body.constant(524288u)), 0x02));
+               body.emit(assign(r1170, bit_or(swizzle_x(r1131), body.constant(524288u)), 0x01));
 
                /* IF CONDITION */
-               ir_expression *const r1182 = lshift(swizzle_y(r1130), body.constant(int(1)));
+               ir_expression *const r1182 = lshift(swizzle_x(r1130), body.constant(int(1)));
                ir_expression *const r1183 = lequal(body.constant(4292870144u), r1182);
-               ir_expression *const r1184 = nequal(swizzle_x(r1130), body.constant(0u));
-               ir_expression *const r1185 = bit_and(swizzle_y(r1130), body.constant(1048575u));
+               ir_expression *const r1184 = nequal(swizzle_y(r1130), body.constant(0u));
+               ir_expression *const r1185 = bit_and(swizzle_x(r1130), body.constant(1048575u));
                ir_expression *const r1186 = nequal(r1185, body.constant(0u));
                ir_expression *const r1187 = logic_or(r1184, r1186);
                ir_expression *const r1188 = logic_and(r1183, r1187);
@@ -20817,9 +20817,9 @@ fdiv64(void *mem_ctx, builtin_available_predicate avail)
             ir_variable *const r118D = new(mem_ctx) ir_variable(glsl_type::uvec2_type, "z", ir_var_auto);
             body.emit(r118D);
             ir_expression *const r118E = lshift(r1134, body.constant(int(31)));
-            body.emit(assign(r118D, add(r118E, body.constant(2146435072u)), 0x01));
+            body.emit(assign(r118D, add(r118E, body.constant(2146435072u)), 0x02));
 
-            body.emit(assign(r118D, body.constant(0u), 0x02));
+            body.emit(assign(r118D, body.constant(0u), 0x01));
 
             body.emit(assign(r1133, r118D, 0x03));
 
@@ -20850,7 +20850,7 @@ fdiv64(void *mem_ctx, builtin_available_predicate avail)
          body.instructions = &f118F->then_instructions;
 
          /* IF CONDITION */
-         ir_expression *const r1192 = bit_or(swizzle_x(r1143), swizzle_y(r1131));
+         ir_expression *const r1192 = bit_or(swizzle_x(r1131), swizzle_x(r1143));
          ir_expression *const r1193 = nequal(r1192, body.constant(0u));
          ir_if *f1191 = new(mem_ctx) ir_if(operand(r1193).val);
          exec_list *const f1191_parent_instructions = body.instructions;
@@ -20859,40 +20859,40 @@ fdiv64(void *mem_ctx, builtin_available_predicate avail)
             body.instructions = &f1191->then_instructions;
 
             ir_variable *const r1194 = body.make_temp(glsl_type::uvec2_type, "a");
-            body.emit(assign(r1194, swizzle_x(r1130), 0x01));
+            body.emit(assign(r1194, swizzle_y(r1130), 0x02));
 
             ir_variable *const r1195 = body.make_temp(glsl_type::uvec2_type, "b");
-            body.emit(assign(r1195, swizzle_x(r1131), 0x01));
+            body.emit(assign(r1195, swizzle_y(r1131), 0x02));
 
             ir_variable *const r1196 = body.make_temp(glsl_type::uvec2_type, "return_value");
             ir_variable *const r1197 = body.make_temp(glsl_type::bool_type, "float64_is_signaling_nan_retval");
-            ir_expression *const r1198 = rshift(swizzle_y(r1130), body.constant(int(19)));
+            ir_expression *const r1198 = rshift(swizzle_x(r1130), body.constant(int(19)));
             ir_expression *const r1199 = bit_and(r1198, body.constant(4095u));
             ir_expression *const r119A = equal(r1199, body.constant(4094u));
-            ir_expression *const r119B = nequal(swizzle_x(r1130), body.constant(0u));
-            ir_expression *const r119C = bit_and(swizzle_y(r1130), body.constant(524287u));
+            ir_expression *const r119B = nequal(swizzle_y(r1130), body.constant(0u));
+            ir_expression *const r119C = bit_and(swizzle_x(r1130), body.constant(524287u));
             ir_expression *const r119D = nequal(r119C, body.constant(0u));
             ir_expression *const r119E = logic_or(r119B, r119D);
             body.emit(assign(r1197, logic_and(r119A, r119E), 0x01));
 
             ir_variable *const r119F = body.make_temp(glsl_type::bool_type, "is_nan_retval");
-            ir_expression *const r11A0 = lshift(swizzle_y(r1131), body.constant(int(1)));
+            ir_expression *const r11A0 = lshift(swizzle_x(r1131), body.constant(int(1)));
             ir_expression *const r11A1 = lequal(body.constant(4292870144u), r11A0);
-            ir_expression *const r11A2 = nequal(swizzle_x(r1131), body.constant(0u));
-            ir_expression *const r11A3 = bit_and(swizzle_y(r1131), body.constant(1048575u));
+            ir_expression *const r11A2 = nequal(swizzle_y(r1131), body.constant(0u));
+            ir_expression *const r11A3 = bit_and(swizzle_x(r1131), body.constant(1048575u));
             ir_expression *const r11A4 = nequal(r11A3, body.constant(0u));
             ir_expression *const r11A5 = logic_or(r11A2, r11A4);
             body.emit(assign(r119F, logic_and(r11A1, r11A5), 0x01));
 
-            body.emit(assign(r1194, bit_or(swizzle_y(r1130), body.constant(524288u)), 0x02));
+            body.emit(assign(r1194, bit_or(swizzle_x(r1130), body.constant(524288u)), 0x01));
 
-            body.emit(assign(r1195, bit_or(swizzle_y(r1131), body.constant(524288u)), 0x02));
+            body.emit(assign(r1195, bit_or(swizzle_x(r1131), body.constant(524288u)), 0x01));
 
             /* IF CONDITION */
-            ir_expression *const r11A7 = lshift(swizzle_y(r1130), body.constant(int(1)));
+            ir_expression *const r11A7 = lshift(swizzle_x(r1130), body.constant(int(1)));
             ir_expression *const r11A8 = lequal(body.constant(4292870144u), r11A7);
-            ir_expression *const r11A9 = nequal(swizzle_x(r1130), body.constant(0u));
-            ir_expression *const r11AA = bit_and(swizzle_y(r1130), body.constant(1048575u));
+            ir_expression *const r11A9 = nequal(swizzle_y(r1130), body.constant(0u));
+            ir_expression *const r11AA = bit_and(swizzle_x(r1130), body.constant(1048575u));
             ir_expression *const r11AB = nequal(r11AA, body.constant(0u));
             ir_expression *const r11AC = logic_or(r11A9, r11AB);
             ir_expression *const r11AD = logic_and(r11A8, r11AC);
@@ -20949,9 +20949,9 @@ fdiv64(void *mem_ctx, builtin_available_predicate avail)
 
             ir_variable *const r11B1 = new(mem_ctx) ir_variable(glsl_type::uvec2_type, "z", ir_var_auto);
             body.emit(r11B1);
-            body.emit(assign(r11B1, lshift(r1134, body.constant(int(31))), 0x01));
+            body.emit(assign(r11B1, lshift(r1134, body.constant(int(31))), 0x02));
 
-            body.emit(assign(r11B1, body.constant(0u), 0x02));
+            body.emit(assign(r11B1, body.constant(0u), 0x01));
 
             body.emit(assign(r1133, r11B1, 0x03));
 
@@ -20976,7 +20976,7 @@ fdiv64(void *mem_ctx, builtin_available_predicate avail)
             body.instructions = &f11B2->then_instructions;
 
             /* IF CONDITION */
-            ir_expression *const r11B5 = bit_or(swizzle_x(r1143), swizzle_y(r1131));
+            ir_expression *const r11B5 = bit_or(swizzle_x(r1131), swizzle_x(r1143));
             ir_expression *const r11B6 = equal(r11B5, body.constant(0u));
             ir_if *f11B4 = new(mem_ctx) ir_if(operand(r11B6).val);
             exec_list *const f11B4_parent_instructions = body.instructions;
@@ -20985,8 +20985,8 @@ fdiv64(void *mem_ctx, builtin_available_predicate avail)
                body.instructions = &f11B4->then_instructions;
 
                /* IF CONDITION */
-               ir_expression *const r11B8 = bit_or(r1141, swizzle_x(r1140));
-               ir_expression *const r11B9 = bit_or(r11B8, swizzle_y(r1130));
+               ir_expression *const r11B8 = bit_or(r1141, swizzle_x(r1130));
+               ir_expression *const r11B9 = bit_or(r11B8, swizzle_x(r1140));
                ir_expression *const r11BA = equal(r11B9, body.constant(0u));
                ir_if *f11B7 = new(mem_ctx) ir_if(operand(r11BA).val);
                exec_list *const f11B7_parent_instructions = body.instructions;
@@ -21010,9 +21010,9 @@ fdiv64(void *mem_ctx, builtin_available_predicate avail)
                   ir_variable *const r11BC = new(mem_ctx) ir_variable(glsl_type::uvec2_type, "z", ir_var_auto);
                   body.emit(r11BC);
                   ir_expression *const r11BD = lshift(r1134, body.constant(int(31)));
-                  body.emit(assign(r11BC, add(r11BD, body.constant(2146435072u)), 0x01));
+                  body.emit(assign(r11BC, add(r11BD, body.constant(2146435072u)), 0x02));
 
-                  body.emit(assign(r11BC, body.constant(0u), 0x02));
+                  body.emit(assign(r11BC, body.constant(0u), 0x01));
 
                   body.emit(assign(r1133, r11BC, 0x03));
 
@@ -21029,24 +21029,24 @@ fdiv64(void *mem_ctx, builtin_available_predicate avail)
                body.instructions = &f11B4->else_instructions;
 
                ir_variable *const r11BE = body.make_temp(glsl_type::uint_type, "aFrac0");
-               body.emit(assign(r11BE, swizzle_x(r1143), 0x01));
+               body.emit(assign(r11BE, swizzle_y(r1143), 0x01));
 
                ir_variable *const r11BF = body.make_temp(glsl_type::uint_type, "aFrac1");
-               body.emit(assign(r11BF, swizzle_y(r1143), 0x01));
+               body.emit(assign(r11BF, swizzle_x(r1143), 0x01));
 
                ir_variable *const r11C0 = body.make_temp(glsl_type::uint_type, "zExpPtr");
                body.emit(assign(r11C0, r1144, 0x01));
 
                ir_variable *const r11C1 = body.make_temp(glsl_type::uint_type, "zFrac0Ptr");
-               body.emit(assign(r11C1, swizzle_x(r1143), 0x01));
+               body.emit(assign(r11C1, swizzle_y(r1143), 0x01));
 
                ir_variable *const r11C2 = body.make_temp(glsl_type::uint_type, "zFrac1Ptr");
-               body.emit(assign(r11C2, swizzle_y(r1143), 0x01));
+               body.emit(assign(r11C2, swizzle_x(r1143), 0x01));
 
                ir_variable *const r11C3 = new(mem_ctx) ir_variable(glsl_type::int_type, "shiftCount", ir_var_auto);
                body.emit(r11C3);
                /* IF CONDITION */
-               ir_expression *const r11C5 = equal(swizzle_x(r1143), body.constant(0u));
+               ir_expression *const r11C5 = equal(swizzle_x(r1131), body.constant(0u));
                ir_if *f11C4 = new(mem_ctx) ir_if(operand(r11C5).val);
                exec_list *const f11C4_parent_instructions = body.instructions;
 
@@ -21060,7 +21060,7 @@ fdiv64(void *mem_ctx, builtin_available_predicate avail)
                   ir_variable *const r11C8 = new(mem_ctx) ir_variable(glsl_type::uint_type, "shiftCount", ir_var_auto);
                   body.emit(r11C8);
                   /* IF CONDITION */
-                  ir_expression *const r11CA = equal(swizzle_y(r1131), body.constant(0u));
+                  ir_expression *const r11CA = equal(swizzle_x(r1143), body.constant(0u));
                   ir_if *f11C9 = new(mem_ctx) ir_if(operand(r11CA).val);
                   exec_list *const f11C9_parent_instructions = body.instructions;
 
@@ -21076,7 +21076,7 @@ fdiv64(void *mem_ctx, builtin_available_predicate avail)
                      body.emit(assign(r11C8, body.constant(0u), 0x01));
 
                      /* IF CONDITION */
-                     ir_expression *const r11CC = bit_and(swizzle_y(r1131), body.constant(4294901760u));
+                     ir_expression *const r11CC = bit_and(swizzle_x(r1143), body.constant(4294901760u));
                      ir_expression *const r11CD = equal(r11CC, body.constant(0u));
                      ir_if *f11CB = new(mem_ctx) ir_if(operand(r11CD).val);
                      exec_list *const f11CB_parent_instructions = body.instructions;
@@ -21086,7 +21086,7 @@ fdiv64(void *mem_ctx, builtin_available_predicate avail)
 
                         body.emit(assign(r11C8, body.constant(16u), 0x01));
 
-                        body.emit(assign(r11C6, lshift(swizzle_y(r1131), body.constant(int(16))), 0x01));
+                        body.emit(assign(r11C6, lshift(swizzle_x(r1143), body.constant(int(16))), 0x01));
 
 
                      body.instructions = f11CB_parent_instructions;
@@ -21188,16 +21188,16 @@ fdiv64(void *mem_ctx, builtin_available_predicate avail)
                      body.instructions = &f11DB->then_instructions;
 
                      ir_expression *const r11DD = neg(r11C3);
-                     body.emit(assign(r11C1, rshift(swizzle_y(r1131), r11DD), 0x01));
+                     body.emit(assign(r11C1, rshift(swizzle_x(r1143), r11DD), 0x01));
 
                      ir_expression *const r11DE = bit_and(r11C3, body.constant(int(31)));
-                     body.emit(assign(r11C2, lshift(swizzle_y(r1131), r11DE), 0x01));
+                     body.emit(assign(r11C2, lshift(swizzle_x(r1143), r11DE), 0x01));
 
 
                      /* ELSE INSTRUCTIONS */
                      body.instructions = &f11DB->else_instructions;
 
-                     body.emit(assign(r11C1, lshift(swizzle_y(r1131), r11C3), 0x01));
+                     body.emit(assign(r11C1, lshift(swizzle_x(r1143), r11C3), 0x01));
 
                      body.emit(assign(r11C2, body.constant(0u), 0x01));
 
@@ -21221,7 +21221,7 @@ fdiv64(void *mem_ctx, builtin_available_predicate avail)
                   ir_variable *const r11E2 = new(mem_ctx) ir_variable(glsl_type::uint_type, "shiftCount", ir_var_auto);
                   body.emit(r11E2);
                   /* IF CONDITION */
-                  ir_expression *const r11E4 = equal(swizzle_x(r1143), body.constant(0u));
+                  ir_expression *const r11E4 = equal(swizzle_x(r1131), body.constant(0u));
                   ir_if *f11E3 = new(mem_ctx) ir_if(operand(r11E4).val);
                   exec_list *const f11E3_parent_instructions = body.instructions;
 
@@ -21237,7 +21237,7 @@ fdiv64(void *mem_ctx, builtin_available_predicate avail)
                      body.emit(assign(r11E2, body.constant(0u), 0x01));
 
                      /* IF CONDITION */
-                     ir_expression *const r11E6 = bit_and(swizzle_x(r1143), body.constant(4294901760u));
+                     ir_expression *const r11E6 = bit_and(swizzle_x(r1131), body.constant(4294901760u));
                      ir_expression *const r11E7 = equal(r11E6, body.constant(0u));
                      ir_if *f11E5 = new(mem_ctx) ir_if(operand(r11E7).val);
                      exec_list *const f11E5_parent_instructions = body.instructions;
@@ -21247,7 +21247,7 @@ fdiv64(void *mem_ctx, builtin_available_predicate avail)
 
                         body.emit(assign(r11E2, body.constant(16u), 0x01));
 
-                        body.emit(assign(r11E0, lshift(swizzle_x(r1143), body.constant(int(16))), 0x01));
+                        body.emit(assign(r11E0, lshift(swizzle_x(r1131), body.constant(int(16))), 0x01));
 
 
                      body.instructions = f11E5_parent_instructions;
@@ -21341,7 +21341,7 @@ fdiv64(void *mem_ctx, builtin_available_predicate avail)
                   body.emit(assign(r11C3, add(r11F4, body.constant(int(-11))), 0x01));
 
                   ir_variable *const r11F5 = body.make_temp(glsl_type::uint_type, "z1Ptr");
-                  body.emit(assign(r11F5, lshift(swizzle_y(r1131), r11C3), 0x01));
+                  body.emit(assign(r11F5, lshift(swizzle_x(r1143), r11C3), 0x01));
 
                   ir_variable *const r11F6 = body.make_temp(glsl_type::uint_type, "conditional_tmp");
                   /* IF CONDITION */
@@ -21358,10 +21358,10 @@ fdiv64(void *mem_ctx, builtin_available_predicate avail)
                      /* ELSE INSTRUCTIONS */
                      body.instructions = &f11F7->else_instructions;
 
-                     ir_expression *const r11F9 = lshift(swizzle_x(r1143), r11C3);
+                     ir_expression *const r11F9 = lshift(swizzle_x(r1131), r11C3);
                      ir_expression *const r11FA = neg(r11C3);
                      ir_expression *const r11FB = bit_and(r11FA, body.constant(int(31)));
-                     ir_expression *const r11FC = rshift(swizzle_y(r1131), r11FB);
+                     ir_expression *const r11FC = rshift(swizzle_x(r1143), r11FB);
                      body.emit(assign(r11F6, bit_or(r11F9, r11FC), 0x01));
 
 
@@ -21385,9 +21385,9 @@ fdiv64(void *mem_ctx, builtin_available_predicate avail)
 
                body.emit(assign(r1135, r11C0, 0x01));
 
-               body.emit(assign(r1136, r11C1, 0x01));
+               body.emit(assign(r1136, r11C1, 0x02));
 
-               body.emit(assign(r1136, r11C2, 0x02));
+               body.emit(assign(r1136, r11C2, 0x01));
 
 
             body.instructions = f11B4_parent_instructions;
@@ -21417,7 +21417,7 @@ fdiv64(void *mem_ctx, builtin_available_predicate avail)
                body.instructions = &f11FF->then_instructions;
 
                /* IF CONDITION */
-               ir_expression *const r1202 = bit_or(swizzle_x(r1140), swizzle_y(r1130));
+               ir_expression *const r1202 = bit_or(swizzle_x(r1130), swizzle_x(r1140));
                ir_expression *const r1203 = equal(r1202, body.constant(0u));
                ir_if *f1201 = new(mem_ctx) ir_if(operand(r1203).val);
                exec_list *const f1201_parent_instructions = body.instructions;
@@ -21427,9 +21427,9 @@ fdiv64(void *mem_ctx, builtin_available_predicate avail)
 
                   ir_variable *const r1204 = new(mem_ctx) ir_variable(glsl_type::uvec2_type, "z", ir_var_auto);
                   body.emit(r1204);
-                  body.emit(assign(r1204, lshift(r1134, body.constant(int(31))), 0x01));
+                  body.emit(assign(r1204, lshift(r1134, body.constant(int(31))), 0x02));
 
-                  body.emit(assign(r1204, body.constant(0u), 0x02));
+                  body.emit(assign(r1204, body.constant(0u), 0x01));
 
                   body.emit(assign(r1133, r1204, 0x03));
 
@@ -21440,24 +21440,24 @@ fdiv64(void *mem_ctx, builtin_available_predicate avail)
                   body.instructions = &f1201->else_instructions;
 
                   ir_variable *const r1205 = body.make_temp(glsl_type::uint_type, "aFrac0");
-                  body.emit(assign(r1205, swizzle_x(r1140), 0x01));
+                  body.emit(assign(r1205, swizzle_y(r1140), 0x01));
 
                   ir_variable *const r1206 = body.make_temp(glsl_type::uint_type, "aFrac1");
-                  body.emit(assign(r1206, swizzle_y(r1140), 0x01));
+                  body.emit(assign(r1206, swizzle_x(r1140), 0x01));
 
                   ir_variable *const r1207 = body.make_temp(glsl_type::uint_type, "zExpPtr");
                   body.emit(assign(r1207, r1141, 0x01));
 
                   ir_variable *const r1208 = body.make_temp(glsl_type::uint_type, "zFrac0Ptr");
-                  body.emit(assign(r1208, swizzle_x(r1140), 0x01));
+                  body.emit(assign(r1208, swizzle_y(r1140), 0x01));
 
                   ir_variable *const r1209 = body.make_temp(glsl_type::uint_type, "zFrac1Ptr");
-                  body.emit(assign(r1209, swizzle_y(r1140), 0x01));
+                  body.emit(assign(r1209, swizzle_x(r1140), 0x01));
 
                   ir_variable *const r120A = new(mem_ctx) ir_variable(glsl_type::int_type, "shiftCount", ir_var_auto);
                   body.emit(r120A);
                   /* IF CONDITION */
-                  ir_expression *const r120C = equal(swizzle_x(r1140), body.constant(0u));
+                  ir_expression *const r120C = equal(swizzle_x(r1130), body.constant(0u));
                   ir_if *f120B = new(mem_ctx) ir_if(operand(r120C).val);
                   exec_list *const f120B_parent_instructions = body.instructions;
 
@@ -21471,7 +21471,7 @@ fdiv64(void *mem_ctx, builtin_available_predicate avail)
                      ir_variable *const r120F = new(mem_ctx) ir_variable(glsl_type::uint_type, "shiftCount", ir_var_auto);
                      body.emit(r120F);
                      /* IF CONDITION */
-                     ir_expression *const r1211 = equal(swizzle_y(r1130), body.constant(0u));
+                     ir_expression *const r1211 = equal(swizzle_x(r1140), body.constant(0u));
                      ir_if *f1210 = new(mem_ctx) ir_if(operand(r1211).val);
                      exec_list *const f1210_parent_instructions = body.instructions;
 
@@ -21487,7 +21487,7 @@ fdiv64(void *mem_ctx, builtin_available_predicate avail)
                         body.emit(assign(r120F, body.constant(0u), 0x01));
 
                         /* IF CONDITION */
-                        ir_expression *const r1213 = bit_and(swizzle_y(r1130), body.constant(4294901760u));
+                        ir_expression *const r1213 = bit_and(swizzle_x(r1140), body.constant(4294901760u));
                         ir_expression *const r1214 = equal(r1213, body.constant(0u));
                         ir_if *f1212 = new(mem_ctx) ir_if(operand(r1214).val);
                         exec_list *const f1212_parent_instructions = body.instructions;
@@ -21497,7 +21497,7 @@ fdiv64(void *mem_ctx, builtin_available_predicate avail)
 
                            body.emit(assign(r120F, body.constant(16u), 0x01));
 
-                           body.emit(assign(r120D, lshift(swizzle_y(r1130), body.constant(int(16))), 0x01));
+                           body.emit(assign(r120D, lshift(swizzle_x(r1140), body.constant(int(16))), 0x01));
 
 
                         body.instructions = f1212_parent_instructions;
@@ -21599,16 +21599,16 @@ fdiv64(void *mem_ctx, builtin_available_predicate avail)
                         body.instructions = &f1222->then_instructions;
 
                         ir_expression *const r1224 = neg(r120A);
-                        body.emit(assign(r1208, rshift(swizzle_y(r1130), r1224), 0x01));
+                        body.emit(assign(r1208, rshift(swizzle_x(r1140), r1224), 0x01));
 
                         ir_expression *const r1225 = bit_and(r120A, body.constant(int(31)));
-                        body.emit(assign(r1209, lshift(swizzle_y(r1130), r1225), 0x01));
+                        body.emit(assign(r1209, lshift(swizzle_x(r1140), r1225), 0x01));
 
 
                         /* ELSE INSTRUCTIONS */
                         body.instructions = &f1222->else_instructions;
 
-                        body.emit(assign(r1208, lshift(swizzle_y(r1130), r120A), 0x01));
+                        body.emit(assign(r1208, lshift(swizzle_x(r1140), r120A), 0x01));
 
                         body.emit(assign(r1209, body.constant(0u), 0x01));
 
@@ -21632,7 +21632,7 @@ fdiv64(void *mem_ctx, builtin_available_predicate avail)
                      ir_variable *const r1229 = new(mem_ctx) ir_variable(glsl_type::uint_type, "shiftCount", ir_var_auto);
                      body.emit(r1229);
                      /* IF CONDITION */
-                     ir_expression *const r122B = equal(swizzle_x(r1140), body.constant(0u));
+                     ir_expression *const r122B = equal(swizzle_x(r1130), body.constant(0u));
                      ir_if *f122A = new(mem_ctx) ir_if(operand(r122B).val);
                      exec_list *const f122A_parent_instructions = body.instructions;
 
@@ -21648,7 +21648,7 @@ fdiv64(void *mem_ctx, builtin_available_predicate avail)
                         body.emit(assign(r1229, body.constant(0u), 0x01));
 
                         /* IF CONDITION */
-                        ir_expression *const r122D = bit_and(swizzle_x(r1140), body.constant(4294901760u));
+                        ir_expression *const r122D = bit_and(swizzle_x(r1130), body.constant(4294901760u));
                         ir_expression *const r122E = equal(r122D, body.constant(0u));
                         ir_if *f122C = new(mem_ctx) ir_if(operand(r122E).val);
                         exec_list *const f122C_parent_instructions = body.instructions;
@@ -21658,7 +21658,7 @@ fdiv64(void *mem_ctx, builtin_available_predicate avail)
 
                            body.emit(assign(r1229, body.constant(16u), 0x01));
 
-                           body.emit(assign(r1227, lshift(swizzle_x(r1140), body.constant(int(16))), 0x01));
+                           body.emit(assign(r1227, lshift(swizzle_x(r1130), body.constant(int(16))), 0x01));
 
 
                         body.instructions = f122C_parent_instructions;
@@ -21752,7 +21752,7 @@ fdiv64(void *mem_ctx, builtin_available_predicate avail)
                      body.emit(assign(r120A, add(r123B, body.constant(int(-11))), 0x01));
 
                      ir_variable *const r123C = body.make_temp(glsl_type::uint_type, "z1Ptr");
-                     body.emit(assign(r123C, lshift(swizzle_y(r1130), r120A), 0x01));
+                     body.emit(assign(r123C, lshift(swizzle_x(r1140), r120A), 0x01));
 
                      ir_variable *const r123D = body.make_temp(glsl_type::uint_type, "conditional_tmp");
                      /* IF CONDITION */
@@ -21769,10 +21769,10 @@ fdiv64(void *mem_ctx, builtin_available_predicate avail)
                         /* ELSE INSTRUCTIONS */
                         body.instructions = &f123E->else_instructions;
 
-                        ir_expression *const r1240 = lshift(swizzle_x(r1140), r120A);
+                        ir_expression *const r1240 = lshift(swizzle_x(r1130), r120A);
                         ir_expression *const r1241 = neg(r120A);
                         ir_expression *const r1242 = bit_and(r1241, body.constant(int(31)));
-                        ir_expression *const r1243 = rshift(swizzle_y(r1130), r1242);
+                        ir_expression *const r1243 = rshift(swizzle_x(r1140), r1242);
                         body.emit(assign(r123D, bit_or(r1240, r1243), 0x01));
 
 
@@ -21796,9 +21796,9 @@ fdiv64(void *mem_ctx, builtin_available_predicate avail)
 
                   body.emit(assign(r1137, r1207, 0x01));
 
-                  body.emit(assign(r1138, r1208, 0x01));
+                  body.emit(assign(r1138, r1208, 0x02));
 
-                  body.emit(assign(r1138, r1209, 0x02));
+                  body.emit(assign(r1138, r1209, 0x01));
 
 
                body.instructions = f1201_parent_instructions;
@@ -21823,30 +21823,30 @@ fdiv64(void *mem_ctx, builtin_available_predicate avail)
                body.emit(assign(r113F, add(r1246, body.constant(1021u)), 0x01));
 
                ir_variable *const r1247 = body.make_temp(glsl_type::uint_type, "z1Ptr");
-               body.emit(assign(r1247, lshift(swizzle_y(r1138), body.constant(int(11))), 0x01));
+               body.emit(assign(r1247, lshift(swizzle_x(r1138), body.constant(int(11))), 0x01));
 
                ir_variable *const r1248 = body.make_temp(glsl_type::uint_type, "conditional_tmp");
-               ir_expression *const r1249 = bit_or(swizzle_x(r1138), body.constant(1048576u));
+               ir_expression *const r1249 = bit_or(swizzle_y(r1138), body.constant(1048576u));
                ir_expression *const r124A = lshift(r1249, body.constant(int(11)));
-               ir_expression *const r124B = rshift(swizzle_y(r1138), body.constant(int(21)));
+               ir_expression *const r124B = rshift(swizzle_x(r1138), body.constant(int(21)));
                body.emit(assign(r1248, bit_or(r124A, r124B), 0x01));
 
-               body.emit(assign(r1138, r1248, 0x01));
+               body.emit(assign(r1138, r1248, 0x02));
 
-               body.emit(assign(r1138, r1247, 0x02));
+               body.emit(assign(r1138, r1247, 0x01));
 
                ir_variable *const r124C = body.make_temp(glsl_type::uint_type, "z1Ptr");
-               body.emit(assign(r124C, lshift(swizzle_y(r1136), body.constant(int(11))), 0x01));
+               body.emit(assign(r124C, lshift(swizzle_x(r1136), body.constant(int(11))), 0x01));
 
                ir_variable *const r124D = body.make_temp(glsl_type::uint_type, "conditional_tmp");
-               ir_expression *const r124E = bit_or(swizzle_x(r1136), body.constant(1048576u));
+               ir_expression *const r124E = bit_or(swizzle_y(r1136), body.constant(1048576u));
                ir_expression *const r124F = lshift(r124E, body.constant(int(11)));
-               ir_expression *const r1250 = rshift(swizzle_y(r1136), body.constant(int(21)));
+               ir_expression *const r1250 = rshift(swizzle_x(r1136), body.constant(int(21)));
                body.emit(assign(r124D, bit_or(r124F, r1250), 0x01));
 
-               body.emit(assign(r1136, r124D, 0x01));
+               body.emit(assign(r1136, r124D, 0x02));
 
-               body.emit(assign(r1136, r124C, 0x02));
+               body.emit(assign(r1136, r124C, 0x01));
 
                /* IF CONDITION */
                ir_expression *const r1252 = less(r124D, r1248);
@@ -21860,11 +21860,11 @@ fdiv64(void *mem_ctx, builtin_available_predicate avail)
                   /* THEN INSTRUCTIONS */
                   body.instructions = &f1251->then_instructions;
 
-                  body.emit(assign(r1138, rshift(r1248, body.constant(int(1))), 0x01));
+                  body.emit(assign(r1138, rshift(r1248, body.constant(int(1))), 0x02));
 
                   ir_expression *const r1257 = lshift(r1248, body.constant(int(31)));
                   ir_expression *const r1258 = rshift(r1247, body.constant(int(1)));
-                  body.emit(assign(r1138, bit_or(r1257, r1258), 0x02));
+                  body.emit(assign(r1138, bit_or(r1257, r1258), 0x01));
 
                   body.emit(assign(r113F, add(r113F, body.constant(1u)), 0x01));
 
@@ -21888,7 +21888,7 @@ fdiv64(void *mem_ctx, builtin_available_predicate avail)
                body.emit(assign(r125B, body.constant(0u), 0x01));
 
                /* IF CONDITION */
-               ir_expression *const r125F = lequal(r124D, swizzle_x(r1138));
+               ir_expression *const r125F = lequal(r124D, swizzle_y(r1138));
                ir_if *f125E = new(mem_ctx) ir_if(operand(r125F).val);
                exec_list *const f125E_parent_instructions = body.instructions;
 
@@ -21906,7 +21906,7 @@ fdiv64(void *mem_ctx, builtin_available_predicate avail)
                   ir_variable *const r1260 = body.make_temp(glsl_type::uint_type, "conditional_tmp");
                   /* IF CONDITION */
                   ir_expression *const r1262 = lshift(r125D, body.constant(int(16)));
-                  ir_expression *const r1263 = lequal(r1262, swizzle_x(r1138));
+                  ir_expression *const r1263 = lequal(r1262, swizzle_y(r1138));
                   ir_if *f1261 = new(mem_ctx) ir_if(operand(r1263).val);
                   exec_list *const f1261_parent_instructions = body.instructions;
 
@@ -21919,7 +21919,7 @@ fdiv64(void *mem_ctx, builtin_available_predicate avail)
                      /* ELSE INSTRUCTIONS */
                      body.instructions = &f1261->else_instructions;
 
-                     ir_expression *const r1264 = expr(ir_binop_div, swizzle_x(r1138), r125D);
+                     ir_expression *const r1264 = expr(ir_binop_div, swizzle_y(r1138), r125D);
                      body.emit(assign(r1260, lshift(r1264, body.constant(int(16))), 0x01));
 
 
@@ -21967,13 +21967,13 @@ fdiv64(void *mem_ctx, builtin_available_predicate avail)
                   ir_expression *const r1276 = expr(ir_unop_i2u, r1275);
                   body.emit(assign(r1265, add(r1265, r1276), 0x01));
 
-                  ir_expression *const r1277 = sub(swizzle_x(r1138), r1265);
-                  ir_expression *const r1278 = less(swizzle_y(r1138), r1267);
+                  ir_expression *const r1277 = sub(swizzle_y(r1138), r1265);
+                  ir_expression *const r1278 = less(swizzle_x(r1138), r1267);
                   ir_expression *const r1279 = expr(ir_unop_b2i, r1278);
                   ir_expression *const r127A = expr(ir_unop_i2u, r1279);
                   body.emit(assign(r125C, sub(r1277, r127A), 0x01));
 
-                  body.emit(assign(r125B, sub(swizzle_y(r1138), r1267), 0x01));
+                  body.emit(assign(r125B, sub(swizzle_x(r1138), r1267), 0x01));
 
                   /* LOOP BEGIN */
                   ir_loop *f127B = new(mem_ctx) ir_loop();
@@ -22141,19 +22141,19 @@ fdiv64(void *mem_ctx, builtin_available_predicate avail)
                body.emit(assign(r12B0, expr(ir_unop_i2u, r12B2), 0x01));
 
                ir_variable *const r12B3 = body.make_temp(glsl_type::uint_type, "assignment_tmp");
-               body.emit(assign(r12B3, sub(swizzle_y(r1138), r12AE), 0x01));
+               body.emit(assign(r12B3, sub(swizzle_x(r1138), r12AE), 0x01));
 
                ir_expression *const r12B4 = less(r12AE, r129E);
                ir_expression *const r12B5 = expr(ir_unop_b2i, r12B4);
                ir_expression *const r12B6 = expr(ir_unop_i2u, r12B5);
                ir_expression *const r12B7 = add(r129C, r12B6);
-               ir_expression *const r12B8 = sub(swizzle_x(r1138), r12B7);
+               ir_expression *const r12B8 = sub(swizzle_y(r1138), r12B7);
                ir_expression *const r12B9 = less(r12B3, r12B0);
                ir_expression *const r12BA = expr(ir_unop_b2i, r12B9);
                ir_expression *const r12BB = expr(ir_unop_i2u, r12BA);
                body.emit(assign(r12AF, sub(r12B8, r12BB), 0x01));
 
-               ir_expression *const r12BC = less(swizzle_y(r1138), r12AE);
+               ir_expression *const r12BC = less(swizzle_x(r1138), r12AE);
                ir_expression *const r12BD = expr(ir_unop_b2i, r12BC);
                ir_expression *const r12BE = expr(ir_unop_i2u, r12BD);
                body.emit(assign(r12AF, sub(r12AF, r12BE), 0x01));
@@ -22709,9 +22709,9 @@ fdiv64(void *mem_ctx, builtin_available_predicate avail)
                      ir_variable *const r1367 = new(mem_ctx) ir_variable(glsl_type::uvec2_type, "z", ir_var_auto);
                      body.emit(r1367);
                      ir_expression *const r1368 = lshift(r1134, body.constant(int(31)));
-                     body.emit(assign(r1367, add(r1368, body.constant(2146435072u)), 0x01));
+                     body.emit(assign(r1367, add(r1368, body.constant(2146435072u)), 0x02));
 
-                     body.emit(assign(r1367, body.constant(0u), 0x02));
+                     body.emit(assign(r1367, body.constant(0u), 0x01));
 
                      body.emit(assign(r1357, r1367, 0x03));
 
@@ -22972,9 +22972,9 @@ fdiv64(void *mem_ctx, builtin_available_predicate avail)
                   ir_expression *const r1399 = lshift(r1134, body.constant(int(31)));
                   ir_expression *const r139A = lshift(r1352, body.constant(int(20)));
                   ir_expression *const r139B = add(r1399, r139A);
-                  body.emit(assign(r1398, add(r139B, r1353), 0x01));
+                  body.emit(assign(r1398, add(r139B, r1353), 0x02));
 
-                  body.emit(assign(r1398, r1354, 0x02));
+                  body.emit(assign(r1398, r1354, 0x01));
 
                   body.emit(assign(r1357, r1398, 0x03));
 
@@ -23287,9 +23287,9 @@ fp32_to_fp64(void *mem_ctx, builtin_available_predicate avail)
          ir_variable *const r13CB = new(mem_ctx) ir_variable(glsl_type::uvec2_type, "z", ir_var_auto);
          body.emit(r13CB);
          ir_expression *const r13CC = lshift(r13C2, body.constant(int(31)));
-         body.emit(assign(r13CB, add(r13CC, body.constant(2146435072u)), 0x01));
+         body.emit(assign(r13CB, add(r13CC, body.constant(2146435072u)), 0x02));
 
-         body.emit(assign(r13CB, body.constant(0u), 0x02));
+         body.emit(assign(r13CB, body.constant(0u), 0x01));
 
          body.emit(assign(r13BC, r13CB, 0x03));
 
@@ -23467,9 +23467,9 @@ fp32_to_fp64(void *mem_ctx, builtin_available_predicate avail)
 
          ir_variable *const r13E8 = new(mem_ctx) ir_variable(glsl_type::uvec2_type, "z", ir_var_auto);
          body.emit(r13E8);
-         body.emit(assign(r13E8, lshift(r13C2, body.constant(int(31))), 0x01));
+         body.emit(assign(r13E8, lshift(r13C2, body.constant(int(31))), 0x02));
 
-         body.emit(assign(r13E8, body.constant(0u), 0x02));
+         body.emit(assign(r13E8, body.constant(0u), 0x01));
 
          body.emit(assign(r13BC, r13E8, 0x03));
 
@@ -23484,9 +23484,9 @@ fp32_to_fp64(void *mem_ctx, builtin_available_predicate avail)
          ir_expression *const r13EC = lshift(r13EB, body.constant(int(20)));
          ir_expression *const r13ED = add(r13EA, r13EC);
          ir_expression *const r13EE = rshift(r13BE, body.constant(int(3)));
-         body.emit(assign(r13E9, add(r13ED, r13EE), 0x01));
+         body.emit(assign(r13E9, add(r13ED, r13EE), 0x02));
 
-         body.emit(assign(r13E9, lshift(r13BE, body.constant(int(29))), 0x02));
+         body.emit(assign(r13E9, lshift(r13BE, body.constant(int(29))), 0x01));
 
          body.emit(assign(r13BC, r13E9, 0x03));
 
@@ -23818,16 +23818,16 @@ fp64_to_fp32(void *mem_ctx, builtin_available_predicate avail)
    body.emit(assign(r1437, body.constant(0u), 0x01));
 
    ir_variable *const r1438 = body.make_temp(glsl_type::uvec2_type, "vec_ctor");
-   body.emit(assign(r1438, bit_and(swizzle_x(r1435), body.constant(1048575u)), 0x01));
+   body.emit(assign(r1438, bit_and(swizzle_y(r1435), body.constant(1048575u)), 0x01));
 
-   body.emit(assign(r1438, swizzle_y(r1435), 0x02));
+   body.emit(assign(r1438, swizzle_x(r1435), 0x02));
 
    ir_variable *const r1439 = body.make_temp(glsl_type::uint_type, "extractFloat64Exp_retval");
-   ir_expression *const r143A = rshift(swizzle_x(r1435), body.constant(int(20)));
+   ir_expression *const r143A = rshift(swizzle_y(r1435), body.constant(int(20)));
    body.emit(assign(r1439, bit_and(r143A, body.constant(2047u)), 0x01));
 
    ir_variable *const r143B = body.make_temp(glsl_type::uint_type, "extractFloat64Sign_retval");
-   body.emit(assign(r143B, rshift(swizzle_x(r1435), body.constant(int(31))), 0x01));
+   body.emit(assign(r143B, rshift(swizzle_y(r1435), body.constant(int(31))), 0x01));
 
    /* IF CONDITION */
    ir_expression *const r143D = equal(r1439, body.constant(2047u));
@@ -23838,7 +23838,7 @@ fp64_to_fp32(void *mem_ctx, builtin_available_predicate avail)
       body.instructions = &f143C->then_instructions;
 
       /* IF CONDITION */
-      ir_expression *const r143F = bit_or(swizzle_x(r1438), swizzle_y(r1435));
+      ir_expression *const r143F = bit_or(swizzle_x(r1435), swizzle_x(r1438));
       ir_expression *const r1440 = nequal(r143F, body.constant(0u));
       ir_if *f143E = new(mem_ctx) ir_if(operand(r1440).val);
       exec_list *const f143E_parent_instructions = body.instructions;
@@ -23848,10 +23848,10 @@ fp64_to_fp32(void *mem_ctx, builtin_available_predicate avail)
 
          ir_expression *const r1441 = lshift(r143B, body.constant(int(31)));
          ir_expression *const r1442 = bit_or(r1441, body.constant(2143289344u));
-         ir_expression *const r1443 = bit_and(swizzle_x(r1438), body.constant(1048575u));
+         ir_expression *const r1443 = bit_and(swizzle_x(r1435), body.constant(1048575u));
          ir_expression *const r1444 = lshift(r1443, body.constant(int(3)));
          ir_expression *const r1445 = bit_or(r1442, r1444);
-         ir_expression *const r1446 = rshift(swizzle_y(r1435), body.constant(int(29)));
+         ir_expression *const r1446 = rshift(swizzle_x(r1438), body.constant(int(29)));
          body.emit(assign(r1436, bit_or(r1445, r1446), 0x01));
 
 
@@ -23875,16 +23875,16 @@ fp64_to_fp32(void *mem_ctx, builtin_available_predicate avail)
       body.emit(r1448);
       ir_variable *const r1449 = new(mem_ctx) ir_variable(glsl_type::uint_type, "z0", ir_var_auto);
       body.emit(r1449);
-      ir_expression *const r144A = lshift(swizzle_x(r1438), body.constant(int(10)));
-      ir_expression *const r144B = rshift(swizzle_y(r1435), body.constant(int(22)));
+      ir_expression *const r144A = lshift(swizzle_x(r1435), body.constant(int(10)));
+      ir_expression *const r144B = rshift(swizzle_x(r1438), body.constant(int(22)));
       ir_expression *const r144C = bit_or(r144A, r144B);
-      ir_expression *const r144D = lshift(swizzle_y(r1435), body.constant(int(10)));
+      ir_expression *const r144D = lshift(swizzle_x(r1438), body.constant(int(10)));
       ir_expression *const r144E = nequal(r144D, body.constant(0u));
       ir_expression *const r144F = expr(ir_unop_b2i, r144E);
       ir_expression *const r1450 = expr(ir_unop_i2u, r144F);
       body.emit(assign(r1448, bit_or(r144C, r1450), 0x01));
 
-      body.emit(assign(r1449, rshift(swizzle_x(r1438), body.constant(int(22))), 0x01));
+      body.emit(assign(r1449, rshift(swizzle_x(r1435), body.constant(int(22))), 0x01));
 
       body.emit(assign(r1437, r1448, 0x01));
 
