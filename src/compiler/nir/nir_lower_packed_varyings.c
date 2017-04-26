@@ -697,7 +697,6 @@ lower_packed_varyings(void *mem_ctx, unsigned locations_used,
    }
 }*/
 
-
 /**
  * Recursively pack or unpack the given varying (or portion of a varying) by
  * traversing all of its constituent vectors.
@@ -810,7 +809,7 @@ nir_lower_packed_vayings_block(nir_block *block,
 
       if (mode != nir_var_shader_in && mode != nir_var_shader_out)
          continue;
-      
+
       progress = true;
 
       /*TODO: If we lower a geometry shader, get the number of input vertices
