@@ -146,602 +146,95 @@
 
 #include "nir.h"
 #include "nir_builder.h"
-//#include "glsl_symbol_table.h"
-//#include "ir.h"
-//#include "ir_builder.h"
-//#include "ir_optimization.h"
-//#include "program/prog_instruction.h"
 
 struct lower_packed_varyings_state {
-   nir_builder builder;
-   int (*type_size)(const struct glsl_type *type);
-   void *mem_ctx;
+   nir_shader *shader;
+   struct exec_list new_ins;
+   struct exec_list new_outs;
    bool disable_varying_packing;
    bool xfb_enabled;
-   nir_variable_mode modes;
 };
 
+//#define SWIZZLE_ZWZW MAKE_SWIZZLE4(SWIZZLE_Z, SWIZZLE_W, SWIZZLE_Z, SWIZZLE_W)
 
-/**
- * Visitor that performs varying packing.  For each varying declared in the
- * shader, this visitor determines whether it needs to be packed.  If so, it
- * demotes it to an ordinary global, creates new packed varyings, and
- * generates assignments to convert between the original varying and the
- * packed varying.
- */
-/*class lower_packed_varyings_visitor
+static nir_variable *
+get_new_var(struct lower_packed_varyings_state *state, nir_variable *var,
+            const struct glsl_type *deref_type, unsigned off)
 {
-public:
-   lower_packed_varyings_visitor(void *mem_ctx,
-                                 unsigned locations_used,
-                                 const uint8_t *components,
-                                 ir_variable_mode mode,
-                                 unsigned gs_input_vertices,
-                                 exec_list *out_instructions,
-                                 exec_list *out_variables,
-                                 bool disable_varying_packing,
-                                 bool xfb_enabled);
+   struct exec_list *list;
 
-   void run(struct gl_linked_shader *shader);
+   if (var->data.mode == nir_var_shader_in) {
+      list = &state->new_ins;
+   } else {
+      assert(var->data.mode == nir_var_shader_out);
+      list = &state->new_outs;
+   }
 
-private:
-   void bitwise_assign_pack(ir_rvalue *lhs, ir_rvalue *rhs);
-   void bitwise_assign_unpack(ir_rvalue *lhs, ir_rvalue *rhs);
-   unsigned lower_rvalue(ir_rvalue *rvalue, unsigned fine_location,
-                         ir_variable *unpacked_var, const char *name,
-                         bool gs_input_toplevel, unsigned vertex_index);
-   unsigned lower_arraylike(ir_rvalue *rvalue, unsigned array_size,
-                            unsigned fine_location,
-                            ir_variable *unpacked_var, const char *name,
-                            bool gs_input_toplevel, unsigned vertex_index);
-   ir_dereference *get_packed_varying_deref(unsigned location,
-                                            ir_variable *unpacked_var,
-                                            const char *name,
-                                            unsigned vertex_index);
-   bool needs_lowering(ir_variable *var);
+   nir_foreach_variable(nvar, list) {
+      if (nvar->data.location == (var->data.location + off))
+         return nvar;
+   }
 
-   //
-   // Number of generic varying slots which are used by this shader.  This is
-   // used to allocate temporary intermediate data structures.  If any varying
-   // used by this shader has a location greater than or equal to
-   // VARYING_SLOT_VAR0 + locations_used, an assertion will fire.
-   //
-   const unsigned locations_used;
+   nir_variable *nvar;
+   if (state->shader->stage == MESA_SHADER_GEOMETRY) {
+      /* Geometry inputs are always arrays, so we need to lower arrays of arrays */
+      const struct glsl_type *ntype =
+         glsl_vector_type(GLSL_TYPE_ARRAY,
+                           glsl_get_vector_elements(deref_type));
+      nvar = nir_variable_create(state->shader, var->data.mode, ntype, NULL);
+   } else {
+      const struct glsl_type *ntype =
+         glsl_vector_type(glsl_get_base_type(deref_type),
+                           glsl_get_vector_elements(deref_type));
+      nvar = nir_variable_create(state->shader, var->data.mode, ntype, NULL);
+   }
 
-   const uint8_t* components;
+   nvar->name = ralloc_asprintf(nvar, "%s@%u", var->name, off);
+   nvar->data = var->data;
+   nvar->data.location += off;
 
-   //
-   // Array of pointers to the packed varyings that have been created for each
-   /// generic varying slot.  NULL entries in this array indicate varying slots
-   // for which a packed varying has not been created yet.
-   //
-   ir_variable **packed_varyings;
+   /* nir_variable_create is too clever for its own good: */
+   exec_node_remove(&nvar->node);
+   exec_node_self_link(&nvar->node);      /* no delinit() :-( */
 
-   //
-    // Type of varying which is being lowered in this pass (either
-    // ir_var_shader_in or ir_var_shader_out).
-    //
-   const ir_variable_mode mode;
+   exec_list_push_tail(list, &nvar->node);
 
-   //
-    // If we are currently lowering geometry shader inputs, the number of input
-    // vertices the geometry shader accepts.  Otherwise zero.
-    //
-   const unsigned gs_input_vertices;
+   /* remove existing var from input/output list: */
+   exec_node_remove(&var->node);
+   exec_node_self_link(&var->node);
 
-   //
-   // Exec list into which the visitor should insert the packing instructions.
-   // Caller provides this list; it should insert the instructions into the
-   // appropriate place in the shader once the visitor has finished running.
-    //
-   exec_list *out_instructions;
+   return nvar;
+}
 
-   //
-    // Exec list into which the visitor should insert any new variables.
-    //
-   exec_list *out_variables;
-
-   bool disable_varying_packing;
-   bool xfb_enabled;
-};*/
-
-
-
-#define SWIZZLE_ZWZW MAKE_SWIZZLE4(SWIZZLE_Z, SWIZZLE_W, SWIZZLE_Z, SWIZZLE_W)
-
-/**
- * Make an ir_assignment from \c rhs to \c lhs, performing appropriate
- * bitcasts if necessary to match up types.
- *
- * This function is called when packing varyings.
- */
-/*void
-lower_packed_varyings_visitor::bitwise_assign_pack(ir_rvalue *lhs,
-                                                   ir_rvalue *rhs)
+static unsigned
+get_deref_offset(struct lower_packed_varyings_state *state, nir_deref *tail, bool vs_in)
 {
-   if (lhs->type->base_type != rhs->type->base_type) {
-      // Since we only mix types in flat varyings, and we always store flat
-      // varyings as type ivec4, we need only produce conversions from (uint
-      // or float) to int.
-       //
-      assert(lhs->type->base_type == GLSL_TYPE_INT);
-      switch (rhs->type->base_type) {
-      case GLSL_TYPE_UINT:
-         rhs = new(this->mem_ctx)
-            ir_expression(ir_unop_u2i, lhs->type, rhs);
-         break;
-      case GLSL_TYPE_FLOAT:
-         rhs = new(this->mem_ctx)
-            ir_expression(ir_unop_bitcast_f2i, lhs->type, rhs);
-         break;
-      case GLSL_TYPE_DOUBLE:
-         assert(rhs->type->vector_elements <= 2);
-         if (rhs->type->vector_elements == 2) {
-            ir_variable *t = new(mem_ctx) ir_variable(lhs->type, "pack", ir_var_temporary);
+   unsigned offset = 0;
 
-            assert(lhs->type->vector_elements == 4);
-            this->out_variables->push_tail(t);
-            this->out_instructions->push_tail(
-                  assign(t, u2i(expr(ir_unop_unpack_double_2x32, swizzle_x(rhs->clone(mem_ctx, NULL)))), 0x3));
-            this->out_instructions->push_tail(
-                  assign(t,  u2i(expr(ir_unop_unpack_double_2x32, swizzle_y(rhs))), 0xc));
-            rhs = deref(t).val;
-         } else {
-            rhs = u2i(expr(ir_unop_unpack_double_2x32, rhs));
+   while (tail->child != NULL) {
+      const struct glsl_type *parent_type = tail->type;
+      tail = tail->child;
+
+      if (tail->deref_type == nir_deref_type_array) {
+         nir_deref_array *deref_array = nir_deref_as_array(tail);
+
+         /* indirect inputs/outputs should already be lowered! */
+         assert(deref_array->deref_array_type == nir_deref_array_type_direct);
+
+         unsigned size = glsl_count_attribute_slots(tail->type, vs_in);
+
+         offset += size * deref_array->base_offset;
+      } else if (tail->deref_type == nir_deref_type_struct) {
+         nir_deref_struct *deref_struct = nir_deref_as_struct(tail);
+
+         for (unsigned i = 0; i < deref_struct->index; i++) {
+            const struct glsl_type *ft = glsl_get_struct_field(parent_type, i);
+            offset += glsl_count_attribute_slots(ft, vs_in);
          }
-         break;
-      default:
-         assert(!"Unexpected type conversion while lowering varyings");
-         break;
-      }
-   }
-   this->out_instructions->push_tail(new (this->mem_ctx) ir_assignment(lhs, rhs));
-}*/
-
-
-/**
- * Make an ir_assignment from \c rhs to \c lhs, performing appropriate
- * bitcasts if necessary to match up types.
- *
- * This function is called when unpacking varyings.
- */
-/*void
-lower_packed_varyings_visitor::bitwise_assign_unpack(ir_rvalue *lhs,
-                                                     ir_rvalue *rhs)
-{
-   if (lhs->type->base_type != rhs->type->base_type) {
-      // Since we only mix types in flat varyings, and we always store flat
-      // varyings as type ivec4, we need only produce conversions from int to
-      // (uint or float).
-      ///
-      assert(rhs->type->base_type == GLSL_TYPE_INT);
-      switch (lhs->type->base_type) {
-      case GLSL_TYPE_UINT:
-         rhs = new(this->mem_ctx)
-            ir_expression(ir_unop_i2u, lhs->type, rhs);
-         break;
-      case GLSL_TYPE_FLOAT:
-         rhs = new(this->mem_ctx)
-            ir_expression(ir_unop_bitcast_i2f, lhs->type, rhs);
-         break;
-      case GLSL_TYPE_DOUBLE:
-         assert(lhs->type->vector_elements <= 2);
-         if (lhs->type->vector_elements == 2) {
-            ir_variable *t = new(mem_ctx) ir_variable(lhs->type, "unpack", ir_var_temporary);
-            assert(rhs->type->vector_elements == 4);
-            this->out_variables->push_tail(t);
-            this->out_instructions->push_tail(
-                  assign(t, expr(ir_unop_pack_double_2x32, i2u(swizzle_xy(rhs->clone(mem_ctx, NULL)))), 0x1));
-            this->out_instructions->push_tail(
-                  assign(t, expr(ir_unop_pack_double_2x32, i2u(swizzle(rhs->clone(mem_ctx, NULL), SWIZZLE_ZWZW, 2))), 0x2));
-            rhs = deref(t).val;
-         } else {
-            rhs = expr(ir_unop_pack_double_2x32, i2u(rhs));
-         }
-         break;
-      default:
-         assert(!"Unexpected type conversion while lowering varyings");
-         break;
-      }
-   }
-   this->out_instructions->push_tail(new(this->mem_ctx) ir_assignment(lhs, rhs));
-}*/
-
-
-/**
- * Recursively pack or unpack the given varying (or portion of a varying) by
- * traversing all of its constituent vectors.
- *
- * \param fine_location is the location where the first constituent vector
- * should be packed--the word "fine" indicates that this location is expressed
- * in multiples of a float, rather than multiples of a vec4 as is used
- * elsewhere in Mesa.
- *
- * \param gs_input_toplevel should be set to true if we are lowering geometry
- * shader inputs, and we are currently lowering the whole input variable
- * (i.e. we are lowering the array whose index selects the vertex).
- *
- * \param vertex_index: if we are lowering geometry shader inputs, and the
- * level of the array that we are currently lowering is *not* the top level,
- * then this indicates which vertex we are currently lowering.  Otherwise it
- * is ignored.
- *
- * \return the location where the next constituent vector (after this one)
- * should be packed.
- */
-/*unsigned
-lower_packed_varyings_visitor::lower_rvalue(ir_rvalue *rvalue,
-                                            unsigned fine_location,
-                                            ir_variable *unpacked_var,
-                                            const char *name,
-                                            bool gs_input_toplevel,
-                                            unsigned vertex_index)
-{
-   unsigned dmul = rvalue->type->is_64bit() ? 2 : 1;
-   // When gs_input_toplevel is set, we should be looking at a geometry shader
-   // input array.
-   //
-   assert(!gs_input_toplevel || rvalue->type->is_array());
-
-   if (rvalue->type->is_record()) {
-      for (unsigned i = 0; i < rvalue->type->length; i++) {
-         if (i != 0)
-            rvalue = rvalue->clone(this->mem_ctx, NULL);
-         const char *field_name = rvalue->type->fields.structure[i].name;
-         ir_dereference_record *dereference_record = new(this->mem_ctx)
-            ir_dereference_record(rvalue, field_name);
-         char *deref_name
-            = ralloc_asprintf(this->mem_ctx, "%s.%s", name, field_name);
-         fine_location = this->lower_rvalue(dereference_record, fine_location,
-                                            unpacked_var, deref_name, false,
-                                            vertex_index);
-      }
-      return fine_location;
-   } else if (rvalue->type->is_array()) {
-      // Arrays are packed/unpacked by considering each array element in
-      // sequence.
-      ///
-      return this->lower_arraylike(rvalue, rvalue->type->array_size(),
-                                   fine_location, unpacked_var, name,
-                                   gs_input_toplevel, vertex_index);
-   } else if (rvalue->type->is_matrix()) {
-      // Matrices are packed/unpacked by considering each column vector in
-      // sequence.
-      //
-      return this->lower_arraylike(rvalue, rvalue->type->matrix_columns,
-                                   fine_location, unpacked_var, name,
-                                   false, vertex_index);
-   } else if (rvalue->type->vector_elements * dmul +
-              fine_location % 4 > 4) {
-      // This vector is going to be "double parked" across two varying slots,
-      // so handle it as two separate assignments. For doubles, a dvec3/dvec4
-      // can end up being spread over 3 slots. However the second splitting
-      // will happen later, here we just always want to split into 2.
-      //
-      unsigned left_components, right_components;
-      unsigned left_swizzle_values[4] = { 0, 0, 0, 0 };
-      unsigned right_swizzle_values[4] = { 0, 0, 0, 0 };
-      char left_swizzle_name[4] = { 0, 0, 0, 0 };
-      char right_swizzle_name[4] = { 0, 0, 0, 0 };
-
-      left_components = 4 - fine_location % 4;
-      if (rvalue->type->is_64bit()) {
-         // We might actually end up with 0 left components!
-         left_components /= 2;
-      }
-      right_components = rvalue->type->vector_elements - left_components;
-
-      for (unsigned i = 0; i < left_components; i++) {
-         left_swizzle_values[i] = i;
-         left_swizzle_name[i] = "xyzw"[i];
-      }
-      for (unsigned i = 0; i < right_components; i++) {
-         right_swizzle_values[i] = i + left_components;
-         right_swizzle_name[i] = "xyzw"[i + left_components];
-      }
-      ir_swizzle *left_swizzle = new(this->mem_ctx)
-         ir_swizzle(rvalue, left_swizzle_values, left_components);
-      ir_swizzle *right_swizzle = new(this->mem_ctx)
-         ir_swizzle(rvalue->clone(this->mem_ctx, NULL), right_swizzle_values,
-                    right_components);
-      char *left_name
-         = ralloc_asprintf(this->mem_ctx, "%s.%s", name, left_swizzle_name);
-      char *right_name
-         = ralloc_asprintf(this->mem_ctx, "%s.%s", name, right_swizzle_name);
-      if (left_components)
-         fine_location = this->lower_rvalue(left_swizzle, fine_location,
-                                            unpacked_var, left_name, false,
-                                            vertex_index);
-      else
-         // Top up the fine location to the next slot
-         fine_location++;
-      return this->lower_rvalue(right_swizzle, fine_location, unpacked_var,
-                                right_name, false, vertex_index);
-   } else {
-      // No special handling is necessary; pack the rvalue into the
-      // varying.
-      //
-      unsigned swizzle_values[4] = { 0, 0, 0, 0 };
-      unsigned components = rvalue->type->vector_elements * dmul;
-      unsigned location = fine_location / 4;
-      unsigned location_frac = fine_location % 4;
-      for (unsigned i = 0; i < components; ++i)
-         swizzle_values[i] = i + location_frac;
-      ir_dereference *packed_deref =
-         this->get_packed_varying_deref(location, unpacked_var, name,
-                                        vertex_index);
-      ir_swizzle *swizzle = new(this->mem_ctx)
-         ir_swizzle(packed_deref, swizzle_values, components);
-      if (this->mode == ir_var_shader_out) {
-         this->bitwise_assign_pack(swizzle, rvalue);
-      } else {
-         this->bitwise_assign_unpack(rvalue, swizzle);
-      }
-      return fine_location + components;
-   }
-}*/
-
-/**
- * Recursively pack or unpack a varying for which we need to iterate over its
- * constituent elements, accessing each one using an ir_dereference_array.
- * This takes care of both arrays and matrices, since ir_dereference_array
- * treats a matrix like an array of its column vectors.
- *
- * \param gs_input_toplevel should be set to true if we are lowering geometry
- * shader inputs, and we are currently lowering the whole input variable
- * (i.e. we are lowering the array whose index selects the vertex).
- *
- * \param vertex_index: if we are lowering geometry shader inputs, and the
- * level of the array that we are currently lowering is *not* the top level,
- * then this indicates which vertex we are currently lowering.  Otherwise it
- * is ignored.
- */
-/*unsigned
-lower_packed_varyings_visitor::lower_arraylike(ir_rvalue *rvalue,
-                                               unsigned array_size,
-                                               unsigned fine_location,
-                                               ir_variable *unpacked_var,
-                                               const char *name,
-                                               bool gs_input_toplevel,
-                                               unsigned vertex_index)
-{
-   for (unsigned i = 0; i < array_size; i++) {
-      if (i != 0)
-         rvalue = rvalue->clone(this->mem_ctx, NULL);
-      ir_constant *constant = new(this->mem_ctx) ir_constant(i);
-      ir_dereference_array *dereference_array = new(this->mem_ctx)
-         ir_dereference_array(rvalue, constant);
-      if (gs_input_toplevel) {
-         // Geometry shader inputs are a special case.  Instead of storing
-         // each element of the array at a different location, all elements
-         // are at the same location, but with a different vertex index.
-         //
-         (void) this->lower_rvalue(dereference_array, fine_location,
-                                   unpacked_var, name, false, i);
-      } else {
-         char *subscripted_name
-            = ralloc_asprintf(this->mem_ctx, "%s[%d]", name, i);
-         fine_location =
-            this->lower_rvalue(dereference_array, fine_location,
-                               unpacked_var, subscripted_name,
-                               false, vertex_index);
-      }
-   }
-   return fine_location;
-}*/
-
-/**
- * Retrieve the packed varying corresponding to the given varying location.
- * If no packed varying has been created for the given varying location yet,
- * create it and add it to the shader before returning it.
- *
- * The newly created varying inherits its interpolation parameters from \c
- * unpacked_var.  Its base type is ivec4 if we are lowering a flat varying,
- * vec4 otherwise.
- *
- * \param vertex_index: if we are lowering geometry shader inputs, then this
- * indicates which vertex we are currently lowering.  Otherwise it is ignored.
- */
-/*ir_dereference *
-lower_packed_varyings_visitor::get_packed_varying_deref(
-      unsigned location, ir_variable *unpacked_var, const char *name,
-      unsigned vertex_index)
-{
-   unsigned slot = location - VARYING_SLOT_VAR0;
-   assert(slot < locations_used);
-   if (this->packed_varyings[slot] == NULL) {
-      char *packed_name = ralloc_asprintf(this->mem_ctx, "packed:%s", name);
-      const glsl_type *packed_type;
-      assert(components[slot] != 0);
-      if (unpacked_var->is_interpolation_flat())
-         packed_type = glsl_type::get_instance(GLSL_TYPE_INT, components[slot], 1);
-      else
-         packed_type = glsl_type::get_instance(GLSL_TYPE_FLOAT, components[slot], 1);
-      if (this->gs_input_vertices != 0) {
-         packed_type =
-            glsl_type::get_array_instance(packed_type,
-                                          this->gs_input_vertices);
-      }
-      ir_variable *packed_var = new(this->mem_ctx)
-         ir_variable(packed_type, packed_name, this->mode);
-      if (this->gs_input_vertices != 0) {
-         // Prevent update_array_sizes() from messing with the size of the
-         // array.
-         //
-         packed_var->data.max_array_access = this->gs_input_vertices - 1;
-      }
-      packed_var->data.centroid = unpacked_var->data.centroid;
-      packed_var->data.sample = unpacked_var->data.sample;
-      packed_var->data.patch = unpacked_var->data.patch;
-      packed_var->data.interpolation = packed_type == glsl_type::ivec4_type
-         ? unsigned(INTERP_MODE_FLAT) : unpacked_var->data.interpolation;
-      packed_var->data.location = location;
-      packed_var->data.precision = unpacked_var->data.precision;
-      packed_var->data.always_active_io = unpacked_var->data.always_active_io;
-      unpacked_var->insert_before(packed_var);
-      this->packed_varyings[slot] = packed_var;
-   } else {
-      // For geometry shader inputs, only update the packed variable name the
-      // first time we visit each component.
-      //
-      if (this->gs_input_vertices == 0 || vertex_index == 0) {
-         ir_variable *var = this->packed_varyings[slot];
-
-         if (var->is_name_ralloced())
-            ralloc_asprintf_append((char **) &var->name, ",%s", name);
-         else
-            var->name = ralloc_asprintf(var, "%s,%s", var->name, name);
       }
    }
 
-   ir_dereference *deref = new(this->mem_ctx)
-      ir_dereference_variable(this->packed_varyings[slot]);
-   if (this->gs_input_vertices != 0) {
-      // When lowering GS inputs, the packed variable is an array, so we need
-      // to dereference it using vertex_index.
-      //
-      ir_constant *constant = new(this->mem_ctx) ir_constant(vertex_index);
-      deref = new(this->mem_ctx) ir_dereference_array(deref, constant);
-   }
-   return deref;
-}*/
-
-/**
- * Visitor that splices varying packing code before every use of EmitVertex()
- * in a geometry shader.
- */
-/*class lower_packed_varyings_gs_splicer : public ir_hierarchical_visitor
-{
-public:
-   explicit lower_packed_varyings_gs_splicer(void *mem_ctx,
-                                             const exec_list *instructions);
-
-   virtual ir_visitor_status visit_leave(ir_emit_vertex *ev);
-
-private:
-
-   ///
-   // Instructions that should be spliced into place before each EmitVertex()
-   // call.
-   //
-   const exec_list *instructions;
-};
-
-
-lower_packed_varyings_gs_splicer::lower_packed_varyings_gs_splicer(
-      void *mem_ctx, const exec_list *instructions)
-   : mem_ctx(mem_ctx), instructions(instructions)
-{
-}
-
-
-ir_visitor_status
-lower_packed_varyings_gs_splicer::visit_leave(ir_emit_vertex *ev)
-{
-   foreach_in_list(ir_instruction, ir, this->instructions) {
-      ev->insert_before(ir->clone(this->mem_ctx, NULL));
-   }
-   return visit_continue;
-}*/
-
-/**
- * Visitor that splices varying packing code before every return.
- */
-/*class lower_packed_varyings_return_splicer : public ir_hierarchical_visitor
-{
-public:
-   explicit lower_packed_varyings_return_splicer(void *mem_ctx,
-                                                 const exec_list *instructions);
-
-   virtual ir_visitor_status visit_leave(ir_return *ret);
-
-private:
-
-   
-    // Instructions that should be spliced into place before each return.
-   const exec_list *instructions;
-};
-
-
-lower_packed_varyings_return_splicer::lower_packed_varyings_return_splicer(
-      void *mem_ctx, const exec_list *instructions)
-   : mem_ctx(mem_ctx), instructions(instructions)
-{
-}
-
-
-ir_visitor_status
-lower_packed_varyings_return_splicer::visit_leave(ir_return *ret)
-{
-   foreach_in_list(ir_instruction, ir, this->instructions) {
-      ret->insert_before(ir->clone(this->mem_ctx, NULL));
-   }
-   return visit_continue;
-}
-
-void
-lower_packed_varyings(void *mem_ctx, unsigned locations_used,
-                      const uint8_t *components,
-                      ir_variable_mode mode, unsigned gs_input_vertices,
-                      gl_linked_shader *shader, bool disable_varying_packing,
-                      bool xfb_enabled)
-{
-   foreach_in_list(ir_instruction, node, shader->ir) {
-      ir_variable *var = node->as_variable();
-      if (var == NULL)
-         continue;
-
-
-
-
-   }
-}*/
-
-/**
- * Recursively pack or unpack the given varying (or portion of a varying) by
- * traversing all of its constituent vectors.
- *
- * \param fine_location is the location where the first constituent vector
- * should be packed--the word "fine" indicates that this location is expressed
- * in multiples of a float, rather than multiples of a vec4 as is used
- * elsewhere in Mesa.
- *
- * \param gs_input_toplevel should be set to true if we are lowering geometry
- * shader inputs, and we are currently lowering the whole input variable
- * (i.e. we are lowering the array whose index selects the vertex).
- *
- * \param vertex_index: if we are lowering geometry shader inputs, and the
- * level of the array that we are currently lowering is *not* the top level,
- * then this indicates which vertex we are currently lowering.  Otherwise it
- * is ignored.
- *
- * \return the location where the next constituent vector (after this one)
- * should be packed.
- */
-nir_ssa_def *
-nir_lower_rvalue(rvalue, fine location, *unpacked_var, *name,gs_inpur_toplevel, vertex_index)
-{
-   nir_ssa_def *dmul = nir_bcsel(b,
-                                 glsl_type_is_64bit(rvalue),
-                                 nir_imm_int(b, 2),
-                                 nir_imm_int(b, 1));
-
-   if(rvalue->type->is_record()) {
-
-   } else if (rvalue->type->is_array()) {
-
-   } else if (rvalue->type->is_matrix()) {
-
-   } else if (rvalue->type->vector_elements * dmul + fine_location % 4 > 4) {
-
-   } else {
-      /* No special handling is necessary; pack the rvalue into the varying */
-      nir_ssa_def *swizzle_values;
-      nir_ssa_def *components;
-      nir_ssa_def *location = fine_location / 4;
-      nir_ssa_def *location_free = fine_location % 4;
-   }
-
+   return offset;
 }
 
 static bool
@@ -772,181 +265,126 @@ needs_lowering(nir_variable *var, struct lower_packed_varyings_state *state)
 }
 
 static bool
-nir_lower_packed_vayings_block(nir_block *block,
-                               struct lower_packed_varyings_state *state)
+nir_lower_packed_varyings_block(struct lower_packed_varyings_state *state,
+                                nir_block *block)
 {
    bool progress = false;
 
-   nir_builder *b = &state->builder;
-
-   nir_ssa_def *gs_input_vertices;
-
-   nir_foreach_instr_safe(instr, block) {
+   nir_foreach_instr(instr, block) {
       if (instr->type != nir_instr_type_intrinsic)
          continue;
 
-      nir_intrinsic_instr *intrin = nir_instr_as_intrinsic(instr);
+      nir_intrinsic_instr *intr = nir_instr_as_intrinsic(instr);
 
-      switch (intrin->intrinsic) {
-      case nir_intrinsic_load_var:
-      case nir_intrinsic_store_var:
-         /* We can lower the io for this nir instrinsic */
-         break;
-      default:
-         /* We can't lower the io for this nir instrinsic, so skip it */
+      if ((intr->intrinsic != nir_intrinsic_load_var) &&
+          (intr->intrinsic != nir_intrinsic_store_var))
          continue;
-      }
 
-      nir_variable *var = intrin->variables[0]->var;
+      nir_variable *var = intr->variables[0]->var;
       if (var == NULL)
          continue;
-      nir_variable_mode mode = var->data.mode;
 
-      if (/*var->data.mode != this->mode ||*/
-          var->data.location < VARYING_SLOT_VAR0 ||
+      if ((var->data.mode != nir_var_shader_in) &&
+          (var->data.mode != nir_var_shader_out))
+         continue;
+
+      if (var->data.location < VARYING_SLOT_VAR0 ||
           !needs_lowering(var, state))
          continue;
 
-      if (mode != nir_var_shader_in && mode != nir_var_shader_out)
-         continue;
-
-      progress = true;
-
-      /*TODO: If we lower a geometry shader, get the number of input vertices
-       *      the geometry shader accepts. Otherwise zero.
+      /* This lowering pass is only capable of packing floats and ints
+       * together when their interpolation mode is "flat".  Treat integers as
+       * being flat when the interpolation mode is none.
        */
-      if (mode == nir_var_shader_in && )
-         gs_input_vertices = ;
-      else
-         gs_input_vertices = 0;
-
-      nir_deref *deref = var;
-      nir_lower_rvalue(deref, var->data.location * 4 + var_>data.location_frac, var,
-                       var->name, gs_input_vertices != 0, 0);
-
-   }
-
-/*
-      // This lowering pass is only capable of packing floats and ints
-      // together when their interpolation mode is "flat".  Treat integers as
-      // being flat when the interpolation mode is none.
-      //
-      assert(var->data.interpolation == INTERP_MODE_FLAT ||
-             var->data.interpolation == INTERP_MODE_NONE ||
+      assert(var->data.interpolation = INTERP_MODE_FLAT ||
+             var->data.interpolation = INTERP_MODE_NONE ||
              !var->type->contains_integer());
 
-      // Clone the variable for program resource list before
-      // it gets modified and lost.
-      //
-      if (!shader->packed_varyings)
-         shader->packed_varyings = new (shader) exec_list;
+      bool vs_in = (state->shader->stage == MESA_SHADER_VERTEX) &&
+                   (var->data.mode == nir_var_shader_in);
+      if (glsl_count_attribute_slots(var->type, vs_in) == 1)
+         continue;
 
-      shader->packed_varyings->push_tail(var->clone(shader, NULL));
+      /* Transform the old varying into an ordinary global */
+      //var->data.mode = nir_var_global;
 
-      // Change the old varying into an ordinary global.
-      assert(var->data.mode != ir_var_temporary);
-      var->data.mode = ir_var_auto;
+      unsigned off = get_deref_offset(state, &intr->variables[0]->deref, vs_in);
+      const struct glsl_type *deref_type =
+         nir_deref_tail(&intr->variables[0]->deref)->type;
+      nir_variable *nvar = get_new_var(state, var, deref_type, off);
 
-      // Create a reference to the old varying.
-      ir_dereference_variable *deref
-         = new(this->mem_ctx) ir_dereference_variable(var);
+      /* and then re-write the load/store_var deref: */
+      intr->variables[0] = nir_deref_var_create(intr, nvar);
 
-      // Recursively pack or unpack it.
-      this->lower_rvalue(deref, var->data.location * 4 + var->data.location_frac, var,
-                         var->name, this->gs_input_vertices != 0, 0);*/
-/*
-      b->cursor = nir_before_instr(instr);
-
-      const bool per_vertex = nir_is_per_vertex_io(var, b->shader->stage);
-
-      nir_ssa_def *offset;
-      nir_ssa_def *vertex_index = NULL;
-      unsigned component_offset = var->data.location_frac;
-
-      offset = get_io_offset(b, intrin->variables[0],
-                             per_vertex ? &vertex_index : NULL,
-                             state->type_size, &component_offset);
-
-      nir_intrinsic_instr *replacement;
-
-      if (nir_intrinsic_infos[intrin->intrinsic].has_dest) {
-         if (intrin->dest.is_ssa) {
-            nir_ssa_dest_init(&replacement->instr, &replacement->dest,
-                              intrin->dest.ssa.num_components,
-                              intrin->dest.ssa.bit_size, NULL);
-            nir_ssa_def_rewrite_uses(&intrin->dest.ssa,
-                                     nir_src_for_ssa(&replacement->dest.ssa));
-         } else {
-            nir_dest_copy(&replacement->dest, &intrin->dest, state->mem_ctx);
-         }
-      }
-
-      nir_instr_insert_before(&intrin->instr, &replacement->instr);
-      nir_instr_remove(&intrin->instr);
+      progress = true;
    }
-*/
+
    return progress;
 }
 
 static bool
 nir_lower_packed_varyings_impl(nir_function_impl *impl,
-                  nir_variable_mode modes)
+                               struct lower_packed_varyings_state *state)
 {
    bool progress = false;
 
-   struct lower_packed_varyings_state state;
-
    nir_foreach_block(block, impl) {
-      progress |= nir_lower_packed_vayings_block(block, &state);
+      progress |= nir_lower_packed_varyings_block(state, block);
    }
 
-  /* if (mode == ir_var_shader_out) {
-      if (shader->Stage == MESA_SHADER_GEOMETRY) {
-         // For geometry shaders, outputs need to be lowered before each call
-         // to EmitVertex()
-         ///
-         lower_packed_varyings_gs_splicer splicer(mem_ctx, &new_instructions);
-
-         // Add all the variables in first. 
-         main_func_sig->body.get_head_raw()->insert_before(&new_variables);
-
-         // Now update all the EmitVertex instances 
-         splicer.run(instructions);
-      } else {
-         // For other shader types, outputs need to be lowered before each
-         // return statement and at the end of main()
-          //
-
-         lower_packed_varyings_return_splicer splicer(mem_ctx, &new_instructions);
-
-         main_func_sig->body.get_head_raw()->insert_before(&new_variables);
-
-         splicer.run(instructions);
-
-         // Lower outputs at the end of main() if the last instruction is not
-         // a return statement
-          //
-         if (((ir_instruction*)instructions->get_tail())->ir_type != ir_type_return) {
-            main_func_sig->body.append_list(&new_instructions);
-         }
-      }
-   } else {
-      // Shader inputs need to be lowered at the beginning of main()
-      main_func_sig->body.get_head_raw()->insert_before(&new_instructions);
-      main_func_sig->body.get_head_raw()->insert_before(&new_variables);
-   }*/
+   nir_metadata_preserve(impl, nir_metadata_block_index |
+                               nir_metadata_dominance);
    return progress;
 }
 
 bool
-nir_lower_packed_varyings(nir_shader *shader, nir_variable_mode modes)
+nir_lower_packed_varyings(nir_shader *shader, bool xfb_enabled)
 {
+   //nir_print_shader(shader, stderr);
+   printf("%s\n", __func__);
    bool progress = false;
+   struct lower_packed_varyings_state state;
+
+   state.shader = shader;
+   state.xfb_enabled = xfb_enabled;
+   exec_list_make_empty(&state.new_ins);
+   exec_list_make_empty(&state.new_outs);
 
    nir_foreach_function(function, shader) {
+
+      if (strcmp(function->name, "main"))
+         nir_function *main_func = function;
+
       if (function->impl)
-         progress |= nir_lower_packed_varyings_impl(function->impl, modes);
+         progress |= nir_lower_packed_varyings_impl(function->impl, &state);
    }
 
+//   if (mode == ir_var_shader_out) {
+//      if (state.shader->state == MESA_SHADER_GEOMETRY) {
+         /* For geometry shaders, outputs need to be lowered before each call
+          * to EmitVertex()
+          */
+
+         /* Add all the variables in first */
+
+         /* Now update all the EmitVertex instances */
+//      } else {
+         /* For other shader types, outputs need to be lowered before each
+          * return statement and at the end of main()
+          */
+
+         /* Lower outputs at the end of main() if the last instructions is not
+          * a return statement
+          */
+
+//      }
+
+//   } else {
+      /* move new in/out vars to shader's lists: */
+      exec_list_append(&shader->inputs, &state.new_ins);
+      exec_list_append(&shader->outputs, &state.new_outs);
+//   }
+
+   //nir_print_shader(shader, stderr);
    return progress;
 }

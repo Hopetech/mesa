@@ -72,6 +72,7 @@ brw_create_nir(struct brw_context *brw,
    const nir_shader_compiler_options *options =
       ctx->Const.ShaderCompilerOptions[stage].NirOptions;
    bool progress;
+   bool xfb_enabled = false;
    nir_shader *nir;
 
    /* First, lower the GLSL IR or Mesa IR to NIR */
@@ -111,6 +112,7 @@ brw_create_nir(struct brw_context *brw,
    //TODO: free GLSL IR ?? Maybe let a call to the linker handle this like normal
 
    //TODO: add a NIR varying packing pass her
+   NIR_PASS(progress, nir, nir_lower_packed_varyings, xfb_enabled);
 
    if (stage == MESA_SHADER_FRAGMENT) {
       static const struct nir_lower_wpos_ytransform_options wpos_options = {

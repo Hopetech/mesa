@@ -2425,7 +2425,7 @@ bool nir_lower_load_const_to_scalar(nir_shader *shader);
 bool nir_lower_phis_to_scalar(nir_shader *shader);
 void nir_lower_io_to_scalar(nir_shader *shader, nir_variable_mode mask);
 
-bool nir_lower_packed_varyings(nir_shader *shader, nir_variable_mode modes);
+bool nir_lower_packed_varyings(nir_shader *shader, bool xfb_enabled);
 bool nir_lower_samplers(nir_shader *shader,
                         const struct gl_shader_program *shader_program);
 
