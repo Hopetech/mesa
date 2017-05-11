@@ -33,8 +33,8 @@ fabs64(uvec2 a)
 bool
 is_nan(uvec2 a)
 {
-   return (0xFFE00000u <= (a.x<<1)) &&
-      ((a.y != 0u) || ((a.x & 0x000FFFFFu) != 0u));
+   return (0xFFE00000u <= (a.y<<1)) &&
+      ((a.x != 0u) || ((a.y & 0x000FFFFFu) != 0u));
 }
 
 /* Negate value of a Float64 :
@@ -54,7 +54,10 @@ fneg64(uvec2 a)
 uvec2
 extractFloat64Frac(uvec2 a)
 {
-   return uvec2(a.y & 0x000FFFFFu, a.x);
+   uvec2 frac;
+   frac.y = a.y & 0x000FFFFFu;
+   frac.x = a.x;
+   return frac;
 }
 
 /* Returns the exponent bits of the double-precision floating-point value `a'.*/
@@ -230,21 +233,22 @@ eq64(uint a0, uint a1, uint b0, uint b1)
 bool
 float64_is_signaling_nan(uvec2 a)
 {
-   return (((a.x>>19) & 0xFFFu) == 0xFFEu) &&
-      ((a.y != 0u) || ((a.x & 0x0007FFFFu) != 0u));
+   return (((a.y>>19) & 0xFFFu) == 0xFFEu) &&
+      ((a.x != 0u) || ((a.y & 0x0007FFFFu) != 0u));
 }
 
-/* Shifts the 64-bit value formed by concatenating `a.x' and `a.y' right by the
+/* Shifts the 64-bit value formed by concatenating `a0' and `a1' right by the
  * number of bits given in `count'.  If any nonzero bits are shifted off, they
  * are "jammed" into the least significant bit of the result by setting the
  * least significant bit to 1.  The value of `count' can be arbitrarily large;
  * in particular, if `count' is greater than 64, the result will be either 0
- * or 1, depending on whether the concatenation of `a.x' and `a.y' is zero or
+ * or 1, depending on whether the concatenation of `a0' and `a1' is zero or
  * nonzero.  The result is broken into two 32-bit pieces which are stored at
  * the locations pointed to by `z0Ptr' and `z1Ptr'.
  */
 void
-shift64RightJamming(uvec2 a,
+shift64RightJamming(uint a0,
+                    uint a1,
                     int count,
                     inout uint z0Ptr,
                     inout uint z1Ptr)
@@ -254,18 +258,18 @@ shift64RightJamming(uvec2 a,
    int negCount = (-count) & 31;
 
    if (count == 0) {
-      z1 = a.x;
-      z0 = a.y;
+      z1 = a1;
+      z0 = a0;
    } else if (count < 32) {
-      z1 = (a.y<<negCount) | (a.x>>count) | uint ((a.x<<negCount) != 0u);
-      z0 = a.y>>count;
+      z1 = (a0<<negCount) | (a1>>count) | uint ((a1<<negCount) != 0u);
+      z0 = a0>>count;
    } else {
       if (count == 32) {
-         z1 = a.y | uint(a.x != 0u);
+         z1 = a0 | uint(a1 != 0u);
       } else if (count < 64) {
-         z1 = (a.y>>(count & 31)) | uint(((a.y<<negCount) | a.x) != 0u);
+         z1 = (a0>>(count & 31)) | uint(((a0<<negCount) | a1) != 0u);
       } else {
-         z1 = uint((a.y | a.x) != 0u);
+         z1 = uint((a0 | a1) != 0u);
       }
       z0 = 0u;
    }
@@ -515,8 +519,8 @@ propagateFloat64NaN(uvec2 a, uvec2 b)
    bool aIsSignalingNaN = float64_is_signaling_nan(a);
    bool bIsNaN = is_nan(b);
    bool bIsSignalingNaN = float64_is_signaling_nan(b);
-   a.x |= 0x00080000u;
-   b.x |= 0x00080000u;
+   a.y |= 0x00080000u;
+   b.y |= 0x00080000u;
    if (aIsNaN)
       return (aIsSignalingNaN && bIsNaN) ? b : a;
    else
@@ -626,7 +630,7 @@ subFloat64Fracs(uvec2 a, uvec2 b, uint zSign)
          --expDiff;
       else
          bFrac.y |= 0x40000000u;
-      shift64RightJamming(bFrac, expDiff, bFrac.y, bFrac.x);
+      shift64RightJamming(bFrac.y, bFrac.x, expDiff, bFrac.y, bFrac.x);
       aFrac.y |= 0x40000000u;
       sub64(aFrac.y, aFrac.x, bFrac.y, bFrac.x, zFrac0, zFrac1);
       zExp = aExp;
@@ -643,7 +647,7 @@ subFloat64Fracs(uvec2 a, uvec2 b, uint zSign)
          ++expDiff;
       else
          aFrac.y |= 0x40000000u;
-      shift64RightJamming(aFrac, - expDiff, aFrac.y, aFrac.x);
+      shift64RightJamming(aFrac.y, aFrac.x, - expDiff, aFrac.y, aFrac.x);
       bFrac.y |= 0x40000000u;
       sub64(bFrac.y, bFrac.x, aFrac.y, aFrac.x, zFrac0, zFrac1);
       zExp = bExp;
@@ -1262,7 +1266,7 @@ fp64_to_fp32(uvec2 a)
       }
       return packFloat32(aSign, 0xFF, 0u);
    }
-   shift64RightJamming(aFrac, 22, allZero, zFrac);
+   shift64RightJamming(aFrac.y, aFrac.x, 22, allZero, zFrac);
    if (aExp != 0)
       zFrac |= 0x40000000u;
 
