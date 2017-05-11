@@ -717,9 +717,9 @@ fadd64(uvec2 a, uvec2 b)
 void
 mul32To64(uint a, uint b, inout uint z0Ptr, inout uint z1Ptr)
 {
-   uint aLow = a;
+   uint aLow = a & 0x0000FFFFu;
    uint aHigh = a>>16;
-   uint bLow = b;
+   uint bLow = b & 0x0000FFFFu;
    uint bHigh = b>>16;
    uint z1 = aLow * bLow;
    uint zMiddleA = aLow * bHigh;
@@ -794,7 +794,7 @@ normalizeFloat64Subnormal(uint aFrac0, uint aFrac1,
       }
       zExpPtr = -shiftCount - 31;
    } else {
-      shiftCount = int(countLeadingZeros32(aFrac0)) - 11;
+      shiftCount = countLeadingZeros32(aFrac0) - 11;
       shortShift64Left(aFrac0, aFrac1, shiftCount, zFrac0Ptr, zFrac1Ptr);
       zExpPtr = 1 - shiftCount;
    }
