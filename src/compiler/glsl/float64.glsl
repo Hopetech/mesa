@@ -967,7 +967,7 @@ estimateDiv64To32(uint a0, uint a1, uint b)
    z = (b0<<16 <= a0) ? 0xFFFF0000u : (a0 / b0)<<16;
    mul32To64(b, z, term0, term1);
    sub64(a0, a1, term0, term1, rem0, rem1);
-   while (rem0 < 0u) {
+   while (int(rem0) < 0) {
       z -= 0x10000u;
       b1 = b<<16;
       add64(rem0, rem1, b0, b1, rem0, rem1);
@@ -1067,7 +1067,7 @@ fdiv64(uvec2 a, uvec2 b)
    zFrac0 = estimateDiv64To32(aFrac.y, aFrac.x, bFrac.y);
    mul64By32To96(bFrac.y, bFrac.x, zFrac0, term0, term1, term2);
    sub96(aFrac.y, aFrac.x, 0u, term0, term1, term2, rem0, rem1, rem2);
-   while (rem0 < 0u) {
+   while (int(rem0) < 0) {
       --zFrac0;
       add96(rem0, rem1, rem2, 0u, bFrac.y, bFrac.x, rem0, rem1, rem2);
    }
@@ -1075,7 +1075,7 @@ fdiv64(uvec2 a, uvec2 b)
    if ((zFrac1 & 0x3FFu) <= 4u) {
       mul64By32To96(bFrac.y, bFrac.x, zFrac1, term1, term2, term3);
       sub96(rem1, rem2, 0u, term1, term2, term3, rem1, rem2, rem3);
-      while (rem1 < 0u) {
+      while (int(rem1) < 0) {
          --zFrac1;
          add96(rem1, rem2, rem3, 0u, bFrac.y, bFrac.x, rem1, rem2, rem3);
       }
@@ -1130,22 +1130,30 @@ fp32_to_fp64(uint a)
    uint aFrac = extractFloat32Frac(a);
    int aExp = extractFloat32Exp(a);
    uint aSign = extractFloat32Sign(a);
+   uint zFrac0 = 0u;
+   uint zFrac1 = 0u;
 
    if (aExp == 0xFF) {
-      if (aFrac != 0u)
-         return uvec2(((aSign<<31) | 0x7FF00000u | (aFrac>>3)), (aFrac<<29));
+      if (aFrac != 0u) {
+         uvec2 nan;
+         nan.x = 0u;
+         nan.y = a<<9;
+         shift64Right(nan.y, nan.x, 12, nan.y, nan.x);
+         nan.y |= ((aSign<<31) | 0x7FF80000u);
+         return nan;
+      }
       return packFloat64(aSign, 0x7FF, 0u, 0u);
     }
 
    if (aExp == 0) {
-      if (aFrac != 0u) {
-         normalizeFloat32Subnormal(aFrac, aExp, aFrac);
-         --aExp;
-      }
-      return packFloat64(aSign, 0, 0u, 0u);
+      if (aFrac != 0u)
+         return packFloat64(aSign, 0, 0u, 0u);
+      normalizeFloat32Subnormal(aFrac, aExp, aFrac);
+      --aExp;
    }
 
-   return packFloat64(aSign, aExp + 0x380, aFrac>>3, aFrac<<29);
+   shift64Right(aFrac, 0u, 3, zFrac0, zFrac1);
+   return packFloat64(aSign, aExp + 0x380, zFrac0, zFrac1);
 }
 
 /* Packs the sign `zSign', exponent `zExp', and significand `zFrac' into a
