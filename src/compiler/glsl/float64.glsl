@@ -1230,10 +1230,10 @@ roundAndPackFloat32(uint zSign, int zExp, uint zFrac)
    }
    roundBits = zFrac & 0x7Fu;
    if (0xFDu <= uint(zExp)) {
-      if ((0xFD < zExp) || ((zExp == 0xFD) && ((zFrac + roundIncrement) < 0u)))
+      if ((0xFD < zExp) || ((zExp == 0xFD) && (int(zFrac + roundIncrement) < 0)))
             return packFloat32(zSign, 0xFF, 0u) - uint(roundIncrement == 0u);
       if (zExp < 0) {
-         shift32RightJamming(zFrac, -int(zExp), zFrac);
+         shift32RightJamming(zFrac, -zExp, zFrac);
          zExp = 0;
          roundBits = zFrac & 0x7Fu;
       }
@@ -1261,8 +1261,8 @@ fp64_to_fp32(uvec2 a)
    uint aSign = extractFloat64Sign(a);
    if (aExp == 0x7FF) {
       if ((aFrac.y | aFrac.x) != 0u) {
-         return (aSign<<31) | 0x7FC00000u |
-            ((aFrac.y & 0x000FFFFFu)<<3) | (aFrac.x>>29);
+         shortShift64Left(a.y, a.x, 12, a.y, a.x);
+         return ((aSign<<31) | 0x7FC00000u | (a.y>>9));
       }
       return packFloat32(aSign, 0xFF, 0u);
    }
