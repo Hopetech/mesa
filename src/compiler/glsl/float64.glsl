@@ -1331,3 +1331,22 @@ fp64_to_int(uvec2 a)
       return bool(aSign) ? 0x80000000 : 0x7FFFFFFF;
    return z;
 }
+
+uvec2
+int_to_fp64(int a)
+{
+   uint zFrac0 = 0u;
+   uint zFrac1 = 0u;
+   if (a==0)
+      return packFloat64(0u, 0, 0u, 0u);
+   uint zSign = uint(a < 0);
+   uint absA = a < 0 ? uint(-a) : uint(a);
+   int shiftCount = countLeadingZeros32(absA) - 11;
+   if (0 <= shiftCount) {
+      zFrac0 = absA << shiftCount;
+      zFrac1 = 0u;
+   } else {
+      shift64Right(absA, 0u, -shiftCount, zFrac0, zFrac1);
+   }
+   return packFloat64(zSign, 0x412 - shiftCount, zFrac0, zFrac1);
+}
