@@ -403,6 +403,14 @@ lower_64bit_visitor::handle_rvalue(ir_rvalue **rvalue)
       }
       break;
 
+   case ir_unop_d2i:
+      if (lowering(D2I)) {
+         *rvalue =
+            handle_op(ir, "__builtin_fp64_to_int", generate_ir::fp64_to_int);
+         this->progress = true;
+      }
+      break;
+
    case ir_unop_f2d:
       if (lowering(F2D)) {
          *rvalue =
