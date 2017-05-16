@@ -1218,7 +1218,7 @@ roundAndPackFloat32(uint zSign, int zExp, uint zFrac)
 {
    bool roundNearestEven;
    uint roundIncrement;
-   uint roundBits;
+   int roundBits;
 
    roundNearestEven = FLOAT_ROUNDING_MODE == FLOAT_ROUND_NEAREST_EVEN;
    roundIncrement = 0x40u;
@@ -1236,18 +1236,18 @@ roundAndPackFloat32(uint zSign, int zExp, uint zFrac)
          }
       }
    }
-   roundBits = zFrac & 0x7Fu;
+   roundBits = int(zFrac) & 0x7F;
    if (0xFDu <= uint(zExp)) {
       if ((0xFD < zExp) || ((zExp == 0xFD) && (int(zFrac + roundIncrement) < 0)))
             return packFloat32(zSign, 0xFF, 0u) - uint(roundIncrement == 0u);
       if (zExp < 0) {
          shift32RightJamming(zFrac, -zExp, zFrac);
          zExp = 0;
-         roundBits = zFrac & 0x7Fu;
+         roundBits = int(zFrac) & 0x7F;
       }
    }
    zFrac = (zFrac + roundIncrement)>>7;
-   zFrac &= ~(uint((roundBits ^ 0x40u) == 0u) & uint(roundNearestEven));
+   zFrac &= ~(uint((roundBits ^ 0x40) == 0) & uint(roundNearestEven));
    if (zFrac == 0u)
       zExp = 0;
 
@@ -1281,6 +1281,14 @@ fp64_to_fp32(uvec2 a)
    return roundAndPackFloat32(aSign, aExp - 0x381, zFrac);
 }
 
+/* Returns the result of converting the double-precision floating-point value
+ * `a' to the 32-bit two's complement integer format.  The conversion is
+ * performed according to the IEEE Standard for Floating-Point Arithmetic---
+ * which means in particular that the conversion is rounded according to the
+ * current rounding mode.  If `a' is a NaN, the largest positive integer is
+ * returned.  Otherwise, if the conversion overflows, the largest integer with
+ * the same sign as `a' is returned.
+ */
 int
 fp64_to_int(uvec2 a)
 {
@@ -1332,6 +1340,10 @@ fp64_to_int(uvec2 a)
    return z;
 }
 
+/* Returns the result of converting the 32-bit two's complement integer `a'
+ * to the double-precision floating-point format.  The conversion is performed
+ * according to the IEEE Standard for Floating-Point Arithmetic.
+ */
 uvec2
 int_to_fp64(int a)
 {
