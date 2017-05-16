@@ -1146,7 +1146,7 @@ fp32_to_fp64(uint a)
     }
 
    if (aExp == 0) {
-      if (aFrac != 0u)
+      if (aFrac == 0u)
          return packFloat64(aSign, 0, 0u, 0u);
       normalizeFloat32Subnormal(aFrac, aExp, aFrac);
       --aExp;

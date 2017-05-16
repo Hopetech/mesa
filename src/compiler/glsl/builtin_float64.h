@@ -23345,7 +23345,7 @@ fp32_to_fp64(void *mem_ctx, builtin_available_predicate avail)
          body.instructions = &f1374->then_instructions;
 
          /* IF CONDITION */
-         ir_expression *const r1377 = nequal(r1364, body.constant(0u));
+         ir_expression *const r1377 = equal(r1364, body.constant(0u));
          ir_if *f1376 = new(mem_ctx) ir_if(operand(r1377).val);
          exec_list *const f1376_parent_instructions = body.instructions;
 
