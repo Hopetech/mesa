@@ -198,6 +198,74 @@ short_shl64(nir_builder *b, nir_ssa_def *src_hi, nir_ssa_def *src_lo,
                                                    nir_imm_int(b, 31)))));
 }
 
+/* Shifts the 64-bit value formed by concatenating `src_0' and `src_1' right by
+ * the number of bits given in `count'.  If any nonzero bits are shifted off,
+ * they are "jammed" into the least significant bit of the result by setting the
+ * least significant bit to 1.  The value of `count' can be arbitrarily large;
+ * in particular, if `count' is greater than 64, the result will be either 0
+ * or 1, depending on whether the concatenation of `src_0' and `src_1' is zero
+ * or nonzero.  The result is broken into two 32-bit pieces which are stored at
+ * the locations pointed to by `z0Ptr' and `z1Ptr'.
+ */
+static void
+shift64_right_jamming(nir_builder *b, nir_ssa_def *src_0, nir_ssa_def *src_1,
+                      nir_ssa_def *count,
+                      nir_ssa_def **z0Ptr, nir_ssa_def **z1Ptr)
+{
+   nir_ssa_def *neg_count = nir_iand(b, nir_ineg(b, count), nir_imm_int(b, 31));
+
+   nir_ssa_def *zero = nir_imm_int(b, 0);
+
+   nir_ssa_def *is_count_0 = nir_ieq(b, count, zero);
+   nir_ssa_def *is_count_lt32 = nir_ilt(b, count, nir_imm_int(b, 32));
+   nir_ssa_def *is_count_32 = nir_ieq(b, count, nir_imm_int(b, 32));
+   nir_ssa_def *is_count_lt64 = nir_ilt(b, count, nir_imm_int(b, 64));
+
+   *z0Ptr = nir_bcsel(b,
+                      is_count_0,
+                      src_0,
+                      nir_bcsel(b,
+                                is_count_lt32,
+                                nir_ushr(b, src_0, count),
+                                zero));
+
+   nir_ssa_def *z1_1 =
+      nir_ior(b,
+              nir_ishl(b, src_0, neg_count),
+              nir_ior(b,
+                      nir_ushr(b, src_1, count),
+                      nir_b2i(b, nir_ine(b,
+                                         nir_ishl(b, src_1, neg_count),
+                                         zero))));
+
+   nir_ssa_def *z1_2 = nir_ior(b, src_0, nir_b2i(b, nir_ine(b, src_1, zero)));
+
+   nir_ssa_def *z1_3 =
+      nir_ior(b,
+              nir_ushr(b, src_0, nir_iand(b, count, nir_imm_int(b, 31))),
+              nir_b2i(b,
+                      nir_ine(b,
+                              nir_ior(b, nir_ishl(b, src_0, neg_count), src_1),
+                              zero)));
+
+   nir_ssa_def *z1_4 = nir_b2i(b, nir_ine(b, nir_ior(b, src_0, src_1), zero));
+
+   *z1Ptr =
+      nir_bcsel(b,
+                is_count_0,
+                src_1,
+                nir_bcsel(b,
+                          is_count_lt32,
+                          z1_1,
+                          nir_bcsel(b,
+                                    is_count_32,
+                                    z1_2,
+                                    nir_bcsel(b,
+                                              is_count_lt64,
+                                              z1_3,
+                                              z1_4))));
+}
+
 /* Shifts the 96-bit value formed by concatenating `frac_0', `frac_1', and `frac_2'
  * right by 32 _plus_ the number of bits given in `count'.  The shifted result
  * is at most 64 nonzero bits; these are broken into two 32-bit pieces which are
@@ -434,6 +502,23 @@ add64(nir_builder *b,
    *z1Ptr = z;
    *z0Ptr = nir_iadd(b, nir_iadd(b, x_hi, y_hi),
                         nir_b2i(b, nir_ult(b, z, x_lo)));
+}
+
+/* Subtracts the 64-bit value formed by concatenating `y_hi' and `y_lo' from the
+ * 64-bit value formed by concatenating `x_hi' and `x_lo'.  Subtraction is modulo
+ * 2^64, so any borrow out (carry out) is lost.  The result is broken into two
+ * 32-bit pieces which are stored at the locations pointed to by `z0Ptr' and
+ * `z1Ptr'.
+ */
+static void
+sub64(nir_builder *b,
+      nir_ssa_def *x_hi, nir_ssa_def *x_lo,
+      nir_ssa_def *y_hi, nir_ssa_def *y_lo,
+      nir_ssa_def **z0Ptr, nir_ssa_def **z1Ptr)
+{
+   *z1Ptr = nir_isub(b, x_lo, y_lo);
+   *z0Ptr = nir_isub(b, nir_isub(b, x_hi, y_hi),
+                        nir_b2i(b, nir_ult(b, x_lo, y_lo)));
 }
 
 /* Multiplies `x' by `y' to obtain a 64-bit product.  The product is broken
@@ -675,6 +760,61 @@ round_pack_fp64(nir_builder *b,
                                                   increment, round_nearest_even))),
                 round_pack(b, z_si, z_exp, z_frac_0, z_frac_1, z_frac_2,
                               increment, round_nearest_even));
+}
+
+/* Takes an abstract floating-point value having sign `z_si', exponent `z_exp',
+ * and significand formed by the concatenation of `z_frac_hi' and `z_frac_lo',
+ * and returns the proper double-precision floating-point value corresponding
+ * to the abstract input.  This routine is just like `roundAndPackFloat64'
+ * except that the input significand has fewer bits and does not have to be
+ * normalized.  In all cases, `z_exp' must be 1 less than the "true" floating-
+ * point exponent.
+ */
+static nir_ssa_def *
+normalize_round_pack_fp64(nir_builder *b,
+                          nir_ssa_def *z_si,
+                          nir_ssa_def *z_exp,
+                          nir_ssa_def *z_frac_hi,
+                          nir_ssa_def *z_frac_lo)
+{
+   nir_ssa_def *zero = nir_imm_int(b, 0);
+   nir_ssa_def *thirtytwo = nir_imm_int(b, 32);
+   nir_ssa_def *is_z_frac_hi_zero = nir_ieq(b, z_frac_hi, zero);
+
+   z_frac_hi =
+      nir_bcsel(b, is_z_frac_hi_zero, z_frac_lo, z_frac_hi);
+
+   z_frac_lo =
+      nir_bcsel(b, is_z_frac_hi_zero, zero, z_frac_lo);
+
+   z_exp =
+      nir_bcsel(b, is_z_frac_hi_zero, nir_isub(b, z_exp, thirtytwo), z_exp);
+
+   nir_ssa_def *shift_count =
+      nir_isub(b, count_leading_zeros(b, z_frac_hi), nir_imm_int(b, 11));
+
+   z_exp = nir_isub(b, z_exp, shift_count);
+
+   nir_ssa_def *z_frac_hi_shl;
+   nir_ssa_def *z_frac_lo_shl;
+   nir_ssa_def *z_frac_tmp;
+
+   /* Case 0 <= shift_count */
+   short_shl64(b, z_frac_hi, z_frac_lo,
+                  shift_count,
+                  &z_frac_hi_shl, &z_frac_lo_shl);
+   nir_ssa_def *pack_shl =
+      round_pack_fp64(b, z_si, z_exp, z_frac_hi_shl, z_frac_lo_shl, zero);
+
+   /* Case shift_count < 0 */
+   shift64_extra_right_jamming(b, z_frac_hi, z_frac_lo,
+                                  zero,
+                                  nir_ineg(b, shift_count),
+                                  &z_frac_hi, &z_frac_lo, &z_frac_tmp);
+   nir_ssa_def *pack_shr =
+      round_pack_fp64(b, z_si, z_exp, z_frac_hi, z_frac_lo, z_frac_tmp);
+
+   return nir_bcsel(b, nir_ige(b, shift_count, zero), pack_shl, pack_shr);
 }
 
 static nir_ssa_def *
@@ -1304,6 +1444,357 @@ lower_fmul64(nir_builder *b, nir_ssa_def *x, nir_ssa_def *y)
                                                        y_exp)))));
 }
 
+static nir_ssa_def *
+add_frac(nir_builder *b,
+         nir_ssa_def *x_frac_hi,
+         nir_ssa_def *x_frac_lo,
+         nir_ssa_def *y_frac_hi,
+         nir_ssa_def *y_frac_lo,
+         nir_ssa_def *z_si,
+         nir_ssa_def *z_exp,
+         nir_ssa_def *z_frac_2)
+{
+   nir_ssa_def *z_frac_0;
+   nir_ssa_def *z_frac_0_tmp;
+   nir_ssa_def *z_frac_1;
+
+   x_frac_hi = nir_ior(b, x_frac_hi, nir_imm_int(b, 0x00100000));
+   add64(b, x_frac_hi, x_frac_lo, y_frac_hi, y_frac_lo, &z_frac_0, &z_frac_1);
+
+   z_frac_0_tmp = z_frac_0;
+
+   nir_ssa_def *without_shift =
+      round_pack_fp64(b, z_si, nir_isub(b, z_exp, nir_imm_int(b, 1)),
+                         z_frac_0, z_frac_1, z_frac_2);
+
+   shift64_extra_right_jamming(b, z_frac_0, z_frac_1, z_frac_2,
+                                  nir_imm_int(b, 1),
+                                  &z_frac_0, &z_frac_1, &z_frac_2);
+
+   nir_ssa_def *with_shift =
+      round_pack_fp64(b, z_si, z_exp, z_frac_0, z_frac_1, z_frac_2);
+
+   return nir_bcsel(b,
+                    nir_ult(b, z_frac_0_tmp, nir_imm_int(b, 0x00200000)),
+                    without_shift,
+                    with_shift);
+}
+
+/* Returns the result of adding the absolute values of the double-precision
+ * floating-point values `x' and `y'.  If `z_si' is 1, the sum is negated
+ * before being returned.  `z_si' is ignored if the result is a NaN.  The
+ * addition is performed according to the IEEE Standard for Floating-Point
+ * Arithmetic.
+ */
+static nir_ssa_def *
+add_frac_fp64(nir_builder *b, nir_ssa_def *z_si, nir_ssa_def *x, nir_ssa_def *y)
+{
+   nir_ssa_def *x_exp = get_exponent(b, x);
+   nir_ssa_def *x_frac_lo = get_frac_lo(b, x);
+   nir_ssa_def *x_frac_hi = get_frac_hi(b, x);
+   nir_ssa_def *y_exp = get_exponent(b, y);
+   nir_ssa_def *y_frac_lo = get_frac_lo(b, y);
+   nir_ssa_def *y_frac_hi = get_frac_hi(b, y);
+
+   nir_ssa_def *exp_diff = nir_isub(b, x_exp, y_exp);
+
+   nir_ssa_def *x_frac = nir_ior(b, x_frac_hi, x_frac_lo);
+   nir_ssa_def *y_frac = nir_ior(b, y_frac_hi, y_frac_lo);
+   nir_ssa_def *x_y_frac = nir_ior(b, x_frac, y_frac);
+
+   /* Result of NaN, Inf and subnormal addition */
+   /* NaN */
+   nir_ssa_def *propagate_nan = propagate_fp64_nan(b, x, y);
+
+   /* Zero */
+   nir_ssa_def *zero = nir_imm_int(b, 0);
+
+   /* Infinite */
+   nir_ssa_def *pack_inf_fp64 =
+      pack_fp64(b, z_si, nir_imm_int(b, 0x7FF), zero, zero);
+
+   /* Case (0 < exp_diff) && (y_exp == 0) */
+   nir_ssa_def *y_frac_hi_tmp;
+   nir_ssa_def *y_frac_lo_tmp;
+   nir_ssa_def *z_frac_0;
+   nir_ssa_def *z_frac_1;
+   nir_ssa_def *z_frac_2;
+   nir_ssa_def *exp_diff_tmp = nir_isub(b, exp_diff, nir_imm_int(b, 1));
+   shift64_extra_right_jamming(b, y_frac_hi, y_frac_lo, zero,
+                                  exp_diff_tmp,
+                                  &y_frac_hi_tmp, &y_frac_lo_tmp, &z_frac_2);
+
+   nir_ssa_def *case_1 =
+      add_frac(b, x_frac_hi, x_frac_lo,
+                  y_frac_hi_tmp, y_frac_lo_tmp,
+                  z_si, x_exp, z_frac_2);
+
+   /* Case (0 < exp_diff) && (y_exp != 0) */
+   y_frac_hi_tmp = nir_ior(b, y_frac_hi, nir_imm_int(b, 0x00100000));
+   shift64_extra_right_jamming(b, y_frac_hi_tmp, y_frac_lo, zero,
+                                  exp_diff,
+                                  &y_frac_hi_tmp, &y_frac_lo_tmp, &z_frac_2);
+
+   nir_ssa_def *case_2 =
+      add_frac(b, x_frac_hi, x_frac_lo,
+                  y_frac_hi_tmp, y_frac_lo_tmp,
+                  z_si, x_exp, z_frac_2);
+
+   /* Case (exp_diff < 0) && (x_exp == 0) */
+   nir_ssa_def *x_frac_hi_tmp = x_frac_hi;
+   nir_ssa_def *x_frac_lo_tmp = x_frac_lo;
+   exp_diff_tmp = exp_diff;
+   exp_diff_tmp = nir_iadd(b, exp_diff_tmp, nir_imm_int(b, 1));
+   shift64_extra_right_jamming(b, x_frac_hi, x_frac_lo, zero,
+                                  nir_ineg(b, exp_diff_tmp),
+                                  &x_frac_hi_tmp, &x_frac_lo_tmp, &z_frac_2);
+
+   nir_ssa_def *case_3 =
+      add_frac(b, x_frac_hi_tmp, x_frac_lo_tmp,
+                  y_frac_hi, y_frac_lo,
+                  z_si, y_exp, z_frac_2);
+
+   /* Case (exp_diff < 0) && (x_exp != 0) */
+   x_frac_hi_tmp = nir_ior(b, x_frac_hi, nir_imm_int(b, 0x00100000));
+   shift64_extra_right_jamming(b, x_frac_hi_tmp, x_frac_lo, zero,
+                                  nir_ineg(b, exp_diff),
+                                  &x_frac_hi_tmp, &x_frac_lo_tmp, &z_frac_2);
+
+   nir_ssa_def *case_4 =
+      add_frac(b, x_frac_hi_tmp, x_frac_lo_tmp,
+                  y_frac_hi, y_frac_lo,
+                  z_si, y_exp, z_frac_2);
+
+   /* Case (exp_diff == 0) && (x_exp != 0x7FF) */
+   add64(b, x_frac_hi, x_frac_lo, y_frac_hi, y_frac_lo, &z_frac_0, &z_frac_1);
+   nir_ssa_def *res = pack_fp64(b, z_si, zero, z_frac_0, z_frac_1);
+   z_frac_0 = nir_ior(b, z_frac_0, nir_imm_int(b, 0x00200000));
+
+   shift64_extra_right_jamming(b,
+                               z_frac_0, z_frac_1, zero,
+                               nir_imm_int(b, 1),
+                               &z_frac_0, &z_frac_1, &z_frac_2);
+
+   return
+      nir_bcsel(b,
+                nir_ilt(b, zero, exp_diff),
+                nir_bcsel(b,
+                          nir_ieq(b, x_exp, nir_imm_int(b, 0x7FF)),
+                          nir_bcsel(b, x_frac, propagate_nan, x),
+                          nir_bcsel(b,
+                                    nir_ieq(b, y_exp, zero),
+                                    case_1,
+                                    case_2)),
+                nir_bcsel(b,
+                          nir_ilt(b, exp_diff, zero),
+                          nir_bcsel(b,
+                                    nir_ieq(b, y_exp, nir_imm_int(b, 0x7FF)),
+                                    nir_bcsel(b,
+                                              y_frac,
+                                              propagate_nan,
+                                              pack_inf_fp64),
+                                    nir_bcsel(b,
+                                              nir_ieq(b, x_exp, zero),
+                                              case_3,
+                                              case_4)),
+                          nir_bcsel(b,
+                                    nir_ieq(b, x_exp, nir_imm_int(b, 0x7FF)),
+                                    nir_bcsel(b, x_y_frac, propagate_nan, x),
+                                    nir_bcsel(b,
+                                              nir_ieq(b, x_exp, zero),
+                                              res,
+                                              round_pack_fp64(b, z_si,
+                                                                 x_exp,
+                                                                 z_frac_0,
+                                                                 z_frac_1,
+                                                                 z_frac_2)))));
+}
+
+static nir_ssa_def *
+sub_frac_fp64(nir_builder *b, nir_ssa_def *z_si, nir_ssa_def *x, nir_ssa_def *y)
+{
+   nir_ssa_def *x_exp = get_exponent(b, x);
+   nir_ssa_def *x_frac_lo = get_frac_lo(b, x);
+   nir_ssa_def *x_frac_hi = get_frac_hi(b, x);
+   nir_ssa_def *y_exp = get_exponent(b, y);
+   nir_ssa_def *y_frac_lo = get_frac_lo(b, y);
+   nir_ssa_def *y_frac_hi = get_frac_hi(b, y);
+
+   nir_ssa_def *zero = nir_imm_int(b, 0);
+   nir_ssa_def *one = nir_imm_int(b, 1);
+   nir_ssa_def *ten = nir_imm_int(b, 10);
+   nir_ssa_def *eleven = nir_imm_int(b, 11);
+
+   nir_ssa_def *x_frac = nir_ior(b, x_frac_hi, x_frac_lo);
+   nir_ssa_def *y_frac = nir_ior(b, y_frac_hi, y_frac_lo);
+   nir_ssa_def *x_y_frac = nir_ior(b, x_frac, y_frac);
+
+   nir_ssa_def *z_frac_hi;
+   nir_ssa_def *z_frac_lo;
+   nir_ssa_def *y_frac_hi_tmp;
+   nir_ssa_def *y_frac_lo_tmp;
+
+   nir_ssa_def *exp_diff = nir_isub(b, x_exp, y_exp);
+   short_shl64(b, x_frac_hi, x_frac_lo, ten, &x_frac_hi, &x_frac_lo);
+   short_shl64(b, y_frac_hi, y_frac_lo, ten, &y_frac_hi, &y_frac_lo);
+
+   /* Result of NaN and Zero */
+   /* NaN */
+   nir_ssa_def *propagate_nan = propagate_fp64_nan(b, x, y);
+
+   nir_ssa_def *default_nan =
+      nir_pack_64_2x32_split(b, nir_imm_int(b, ~0), nir_imm_int(b, ~0));
+
+   /* Zero */
+   nir_ssa_def *pack_zero_fp64 = pack_fp64(b, zero, zero, zero, zero);
+
+   /* x exp bigger */
+   /* if (y_exp == 0) */
+   shift64_right_jamming(b, y_frac_hi, y_frac_lo,
+                            nir_isub(b, exp_diff, one),
+                            &y_frac_hi_tmp, &y_frac_lo_tmp);
+   nir_ssa_def *x_frac_hi_ior =
+      nir_ior(b, x_frac_hi, nir_imm_int(b, 0x40000000));
+   sub64(b, x_frac_hi_ior, x_frac_lo,
+            y_frac_hi_tmp, y_frac_lo_tmp,
+            &z_frac_hi, &z_frac_lo);
+   nir_ssa_def *case_1 =
+      normalize_round_pack_fp64(b, z_si,
+                                   nir_isub(b, x_exp, eleven),
+                                   z_frac_hi, z_frac_lo);
+
+   /* if (y_exp != 0) */
+   nir_ssa_def *y_frac_hi_ior =
+      nir_ior(b, y_frac_hi, nir_imm_int(b, 0x40000000));
+   shift64_right_jamming(b, y_frac_hi_ior, y_frac_lo,
+                            exp_diff,
+                            &y_frac_hi_tmp, &y_frac_lo_tmp);
+   sub64(b, x_frac_hi_ior, x_frac_lo,
+            y_frac_hi_tmp, y_frac_lo_tmp,
+            &z_frac_hi, &z_frac_lo);
+   nir_ssa_def *case_2 =
+      normalize_round_pack_fp64(b, z_si,
+                                   nir_isub(b, x_exp, eleven),
+                                   z_frac_hi, z_frac_lo);
+
+   nir_ssa_def *x_exp_bigger =
+      nir_bcsel(b,
+                nir_ieq(b, x_exp, nir_imm_int(b, 0x7FF)),
+                nir_bcsel(b, x_frac, propagate_nan, x),
+                nir_bcsel(b, nir_ieq(b, y_exp, zero), case_1, case_2));
+
+   /* y exp bigger */
+   /* x_exp < y_exp */
+   nir_ssa_def *x_frac_hi_tmp;
+   nir_ssa_def *x_frac_lo_tmp;
+
+   /* if (x_exp == 0) */
+   shift64_right_jamming(b, x_frac_hi, x_frac_lo,
+                            nir_ineg(b, nir_iadd(b, exp_diff, one)),
+                            &x_frac_hi_tmp, &x_frac_lo_tmp);
+   sub64(b, y_frac_hi_ior, y_frac_lo,
+            x_frac_hi_tmp, x_frac_lo_tmp,
+            &z_frac_hi, &z_frac_lo);
+   nir_ssa_def *case_3 =
+      normalize_round_pack_fp64(b, nir_ixor(b, z_si, one),
+                                   nir_isub(b, y_exp, eleven),
+                                   z_frac_hi, z_frac_lo);
+
+   /* if (x_exp != 0) */
+   shift64_right_jamming(b, x_frac_hi_ior, x_frac_lo,
+                            nir_ineg(b, exp_diff),
+                            &x_frac_hi_tmp, &x_frac_lo_tmp);
+   sub64(b, y_frac_hi_ior, y_frac_lo,
+            x_frac_hi_tmp, x_frac_lo_tmp,
+            &z_frac_hi, &z_frac_lo);
+   nir_ssa_def *case_4 =
+      normalize_round_pack_fp64(b, nir_ixor(b, z_si, one),
+                                   nir_isub(b, y_exp, eleven),
+                                   z_frac_hi, z_frac_lo);
+
+   nir_ssa_def *y_exp_bigger =
+      nir_bcsel(b,
+                nir_ieq(b, y_exp, nir_imm_int(b, 0x7FF)),
+                nir_bcsel(b, y_frac,
+                             propagate_nan,
+                             pack_fp64(b,
+                                       nir_ixor(b, z_si, one),
+                                       nir_imm_int(b, 0x7FF),
+                                       zero,
+                                       zero)),
+                nir_bcsel(b, nir_ieq(b, x_exp, zero), case_3, case_4));
+
+   /* x bigger */
+   /* x_frac_hi > y_frac_hi or x_frac_lo > y_frac_lo */
+   sub64(b, x_frac_hi, x_frac_lo, y_frac_hi, y_frac_lo, &z_frac_hi, &z_frac_lo);
+   nir_ssa_def *x_bigger =
+      nir_bcsel(b,
+                nir_ieq(b, x_exp, zero),
+                normalize_round_pack_fp64(b,
+                                          z_si,
+                                          nir_imm_int(b, -10),
+                                          z_frac_hi, z_frac_lo),
+                normalize_round_pack_fp64(b,
+                                          z_si,
+                                          nir_isub(b, x_exp, eleven),
+                                          z_frac_hi, z_frac_lo));
+
+   /* y bigger */
+   /* x_frac_hi < y_frac_lo or x_frac_lo < y_frac_lo */
+   sub64(b, y_frac_hi, y_frac_lo, x_frac_hi, x_frac_lo, &z_frac_hi, &z_frac_lo);
+   nir_ssa_def *y_bigger =
+      nir_bcsel(b,
+                nir_ieq(b, x_exp, zero),
+                normalize_round_pack_fp64(b,
+                                          nir_ixor(b, z_si, one),
+                                          nir_imm_int(b, -10),
+                                          z_frac_hi, z_frac_lo),
+                normalize_round_pack_fp64(b,
+                                          nir_ixor(b, z_si, one),
+                                          nir_isub(b, y_exp, eleven),
+                                          z_frac_hi, z_frac_lo));
+
+   /* Select the value to return */
+   return
+      nir_bcsel(b,
+                nir_ilt(b, zero, exp_diff),
+                x_exp_bigger,
+                nir_bcsel(b,
+                          nir_ilt(b, exp_diff, zero),
+                          y_exp_bigger,
+                          nir_bcsel(b,
+                                    nir_ieq(b, x_exp, nir_imm_int(b, 0x7FF)),
+                                    nir_bcsel(b,
+                                              nir_i2b(b, x_y_frac),
+                                              propagate_nan,
+                                              default_nan),
+                                    nir_bcsel(b,
+                                              nir_ult(b, y_frac_hi, x_frac_hi),
+                                              x_bigger,
+                                              nir_bcsel(b,
+                                                        nir_ult(b, x_frac_hi, y_frac_hi),
+                                                        y_bigger,
+                                                        nir_bcsel(b,
+                                                                  nir_ult(b, y_frac_lo, x_frac_lo),
+                                                                  x_bigger,
+                                                                  nir_bcsel(b,
+                                                                            nir_ult(b, x_frac_lo, y_frac_lo),
+                                                                            y_bigger,
+                                                                            pack_zero_fp64)))))));
+}
+
+static nir_ssa_def *
+lower_fadd64(nir_builder *b, nir_ssa_def *x, nir_ssa_def *y)
+{
+   nir_ssa_def *x_si = get_sign(b, x);
+   nir_ssa_def *y_si = get_sign(b, y);
+
+   return nir_bcsel(b,
+                    nir_ieq(b, x_si, y_si),
+                    add_frac_fp64(b, x_si, x, y),
+                    sub_frac_fp64(b, x_si, x, y));
+}
+
 static bool
 lower_doubles_instr(nir_alu_instr *instr, nir_lower_doubles_options options)
 {
@@ -1387,6 +1878,11 @@ lower_doubles_instr(nir_alu_instr *instr, nir_lower_doubles_options options)
          return false;
       break;
 
+   case nir_op_fadd:
+      if (!(options & nir_lower_dadd))
+         return false;
+      break;
+
    default:
       return false;
    }
@@ -1463,6 +1959,13 @@ lower_doubles_instr(nir_alu_instr *instr, nir_lower_doubles_options options)
       nir_ssa_def *src1 = nir_fmov_alu(&bld, instr->src[1],
                                       instr->dest.dest.ssa.num_components);
       result = lower_fmul64(&bld, src, src1);
+   }
+      break;
+
+   case nir_op_fadd: {
+      nir_ssa_def *src1 = nir_fmov_alu(&bld, instr->src[1],
+                                      instr->dest.dest.ssa.num_components);
+      result = lower_fadd64(&bld, src, src1);
    }
       break;
 

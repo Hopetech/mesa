@@ -586,7 +586,8 @@ brw_nir_optimize(nir_shader *nir, const struct brw_compiler *compiler,
                              nir_lower_dsign |
                              nir_lower_deq |
                              nir_lower_dlt |
-                             nir_lower_dmul);
+                             nir_lower_dmul |
+                             nir_lower_dadd);
       OPT(nir_lower_64bit_pack);
    } while (progress);
 

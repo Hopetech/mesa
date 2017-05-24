@@ -2716,7 +2716,8 @@ typedef enum {
    nir_lower_dsign = (1 << 11),
    nir_lower_deq = (1 << 12),
    nir_lower_dlt = (1 << 13),
-   nir_lower_dmul = (1 << 14)
+   nir_lower_dmul = (1 << 14),
+   nir_lower_dadd = (1 << 15)
 } nir_lower_doubles_options;
 
 bool nir_lower_doubles(nir_shader *shader, nir_lower_doubles_options options);
