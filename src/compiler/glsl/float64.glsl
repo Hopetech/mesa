@@ -1298,3 +1298,62 @@ fp64_to_fp32(uvec2 a)
 
    return uintBitsToFloat(roundAndPackFloat32(aSign, aExp - 0x381, zFrac));
 }
+
+/* Returns the result of converting the double-precision floating-point value
+ * `a' to the 32-bit two's complement integer format.  The conversion is
+ * performed according to the IEEE Standard for Floating-Point Arithmetic---
+ * which means in particular that the conversion is rounded according to the
+ * current rounding mode.  If `a' is a NaN, the largest positive integer is
+ * returned.  Otherwise, if the conversion overflows, the largest integer with
+ * the same sign as `a' is returned.
+ */
+int
+fp64_to_int(uvec2 a)
+{
+   uvec2 aFrac = extractFloat64Frac(a);
+   int aExp = extractFloat64Exp(a);
+   uint aSign = extractFloat64Sign(a);
+
+   int z;
+   uint absZ = 0u;
+   uint aFracExtra = 0u;
+   int shiftCount = aExp - 0x413;
+   if (0 <= shiftCount) {
+      if (0x41E < aExp) {
+         if ((aExp == 0x7FF) && ((aFrac.y | aFrac.x) != 0u))
+            aSign = 0u;
+         return (aSign != 0u) ? 0x80000000 : 0x7FFFFFFF;
+      }
+      shortShift64Left(aFrac.y | 0x00100000u, aFrac.x, shiftCount, absZ, aFracExtra);
+      if (0x80000000u < absZ)
+         return (aSign != 0u) ? 0x80000000 : 0x7FFFFFFF;
+   } else {
+      aFrac.x = uint(aFrac.x != 0u);
+      if (aExp < 0x3FE) {
+         aFracExtra = uint(aExp) | aFrac.y | aFrac.x;
+         absZ = 0u;
+      } else {
+            aFrac.y |= 0x00100000u;
+            aFracExtra = (aFrac.y << (shiftCount & 31)) | aFrac.x;
+            absZ = aFrac.y >> (- shiftCount);
+      }
+   }
+   if (FLOAT_ROUNDING_MODE == FLOAT_ROUND_NEAREST_EVEN) {
+      if (int(aFracExtra) < 0) {
+         ++absZ;
+         if ((aFracExtra << 1) == 0u)
+            absZ &= ~1u;
+      }
+      z = (aSign != 0u) ? - int(absZ) : int(absZ);
+   } else {
+      aFracExtra = uint(aFracExtra != 0u);
+      if (aSign != 0u) {
+         z = -int(absZ + (uint(FLOAT_ROUNDING_MODE == FLOAT_ROUND_DOWN) & aFracExtra));
+      } else {
+         z = int(absZ + (uint(FLOAT_ROUNDING_MODE == FLOAT_ROUND_UP) & aFracExtra));
+      }
+   }
+   if (bool(aSign ^ uint(z < 0)) && bool(z))
+      return bool(aSign) ? 0x80000000 : 0x7FFFFFFF;
+   return z;
+}

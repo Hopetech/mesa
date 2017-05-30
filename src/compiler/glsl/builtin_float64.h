@@ -31652,3 +31652,379 @@ fp64_to_fp32(void *mem_ctx, builtin_available_predicate avail)
    sig->replace_parameters(&sig_parameters);
    return sig;
 }
+ir_function_signature *
+fp64_to_int(void *mem_ctx, builtin_available_predicate avail)
+{
+   ir_function_signature *const sig =
+      new(mem_ctx) ir_function_signature(glsl_type::int_type, avail);
+   ir_factory body(&sig->body, mem_ctx);
+   sig->is_defined = true;
+
+   exec_list sig_parameters;
+
+   ir_variable *const r1A02 = new(mem_ctx) ir_variable(glsl_type::uvec2_type, "a", ir_var_function_in);
+   sig_parameters.push_tail(r1A02);
+   ir_variable *const r1A03 = body.make_temp(glsl_type::bool_type, "execute_flag");
+   body.emit(assign(r1A03, body.constant(true), 0x01));
+
+   ir_variable *const r1A04 = body.make_temp(glsl_type::int_type, "return_value");
+   ir_variable *const r1A05 = new(mem_ctx) ir_variable(glsl_type::uint_type, "aFracExtra", ir_var_auto);
+   body.emit(r1A05);
+   ir_variable *const r1A06 = new(mem_ctx) ir_variable(glsl_type::uint_type, "absZ", ir_var_auto);
+   body.emit(r1A06);
+   ir_variable *const r1A07 = new(mem_ctx) ir_variable(glsl_type::uint_type, "aSign", ir_var_auto);
+   body.emit(r1A07);
+   ir_variable *const r1A08 = new(mem_ctx) ir_variable(glsl_type::uvec2_type, "aFrac", ir_var_auto);
+   body.emit(r1A08);
+   ir_variable *const r1A09 = new(mem_ctx) ir_variable(glsl_type::uvec2_type, "frac", ir_var_auto);
+   body.emit(r1A09);
+   body.emit(assign(r1A09, bit_and(swizzle_y(r1A02), body.constant(1048575u)), 0x02));
+
+   body.emit(assign(r1A09, swizzle_x(r1A02), 0x01));
+
+   body.emit(assign(r1A08, r1A09, 0x03));
+
+   ir_variable *const r1A0A = body.make_temp(glsl_type::int_type, "extractFloat64Exp_retval");
+   ir_expression *const r1A0B = rshift(swizzle_y(r1A02), body.constant(int(20)));
+   ir_expression *const r1A0C = bit_and(r1A0B, body.constant(2047u));
+   body.emit(assign(r1A0A, expr(ir_unop_u2i, r1A0C), 0x01));
+
+   body.emit(assign(r1A07, rshift(swizzle_y(r1A02), body.constant(int(31))), 0x01));
+
+   body.emit(assign(r1A06, body.constant(0u), 0x01));
+
+   body.emit(assign(r1A05, body.constant(0u), 0x01));
+
+   ir_variable *const r1A0D = body.make_temp(glsl_type::int_type, "assignment_tmp");
+   body.emit(assign(r1A0D, add(r1A0A, body.constant(int(-1043))), 0x01));
+
+   /* IF CONDITION */
+   ir_expression *const r1A0F = lequal(body.constant(int(0)), r1A0D);
+   ir_if *f1A0E = new(mem_ctx) ir_if(operand(r1A0F).val);
+   exec_list *const f1A0E_parent_instructions = body.instructions;
+
+      /* THEN INSTRUCTIONS */
+      body.instructions = &f1A0E->then_instructions;
+
+      /* IF CONDITION */
+      ir_expression *const r1A11 = less(body.constant(int(1054)), r1A0A);
+      ir_if *f1A10 = new(mem_ctx) ir_if(operand(r1A11).val);
+      exec_list *const f1A10_parent_instructions = body.instructions;
+
+         /* THEN INSTRUCTIONS */
+         body.instructions = &f1A10->then_instructions;
+
+         /* IF CONDITION */
+         ir_expression *const r1A13 = equal(r1A0A, body.constant(int(2047)));
+         ir_expression *const r1A14 = bit_or(swizzle_y(r1A09), swizzle_x(r1A02));
+         ir_expression *const r1A15 = nequal(r1A14, body.constant(0u));
+         ir_expression *const r1A16 = logic_and(r1A13, r1A15);
+         ir_if *f1A12 = new(mem_ctx) ir_if(operand(r1A16).val);
+         exec_list *const f1A12_parent_instructions = body.instructions;
+
+            /* THEN INSTRUCTIONS */
+            body.instructions = &f1A12->then_instructions;
+
+            body.emit(assign(r1A07, body.constant(0u), 0x01));
+
+
+         body.instructions = f1A12_parent_instructions;
+         body.emit(f1A12);
+
+         /* END IF */
+
+         ir_variable *const r1A17 = body.make_temp(glsl_type::int_type, "conditional_tmp");
+         /* IF CONDITION */
+         ir_expression *const r1A19 = nequal(r1A07, body.constant(0u));
+         ir_if *f1A18 = new(mem_ctx) ir_if(operand(r1A19).val);
+         exec_list *const f1A18_parent_instructions = body.instructions;
+
+            /* THEN INSTRUCTIONS */
+            body.instructions = &f1A18->then_instructions;
+
+            body.emit(assign(r1A17, body.constant(int(-2147483648)), 0x01));
+
+
+            /* ELSE INSTRUCTIONS */
+            body.instructions = &f1A18->else_instructions;
+
+            body.emit(assign(r1A17, body.constant(int(2147483647)), 0x01));
+
+
+         body.instructions = f1A18_parent_instructions;
+         body.emit(f1A18);
+
+         /* END IF */
+
+         body.emit(assign(r1A04, r1A17, 0x01));
+
+         body.emit(assign(r1A03, body.constant(false), 0x01));
+
+
+         /* ELSE INSTRUCTIONS */
+         body.instructions = &f1A10->else_instructions;
+
+         ir_variable *const r1A1A = body.make_temp(glsl_type::uint_type, "a0");
+         body.emit(assign(r1A1A, bit_or(swizzle_y(r1A09), body.constant(1048576u)), 0x01));
+
+         ir_variable *const r1A1B = body.make_temp(glsl_type::uint_type, "z1Ptr");
+         body.emit(assign(r1A1B, lshift(swizzle_x(r1A02), r1A0D), 0x01));
+
+         ir_variable *const r1A1C = body.make_temp(glsl_type::uint_type, "conditional_tmp");
+         /* IF CONDITION */
+         ir_expression *const r1A1E = equal(r1A0D, body.constant(int(0)));
+         ir_if *f1A1D = new(mem_ctx) ir_if(operand(r1A1E).val);
+         exec_list *const f1A1D_parent_instructions = body.instructions;
+
+            /* THEN INSTRUCTIONS */
+            body.instructions = &f1A1D->then_instructions;
+
+            body.emit(assign(r1A1C, r1A1A, 0x01));
+
+
+            /* ELSE INSTRUCTIONS */
+            body.instructions = &f1A1D->else_instructions;
+
+            ir_expression *const r1A1F = lshift(r1A1A, r1A0D);
+            ir_expression *const r1A20 = neg(r1A0D);
+            ir_expression *const r1A21 = bit_and(r1A20, body.constant(int(31)));
+            ir_expression *const r1A22 = rshift(swizzle_x(r1A02), r1A21);
+            body.emit(assign(r1A1C, bit_or(r1A1F, r1A22), 0x01));
+
+
+         body.instructions = f1A1D_parent_instructions;
+         body.emit(f1A1D);
+
+         /* END IF */
+
+         body.emit(assign(r1A06, r1A1C, 0x01));
+
+         body.emit(assign(r1A05, r1A1B, 0x01));
+
+         /* IF CONDITION */
+         ir_expression *const r1A24 = less(body.constant(2147483648u), r1A1C);
+         ir_if *f1A23 = new(mem_ctx) ir_if(operand(r1A24).val);
+         exec_list *const f1A23_parent_instructions = body.instructions;
+
+            /* THEN INSTRUCTIONS */
+            body.instructions = &f1A23->then_instructions;
+
+            ir_variable *const r1A25 = body.make_temp(glsl_type::int_type, "conditional_tmp");
+            /* IF CONDITION */
+            ir_expression *const r1A27 = nequal(r1A07, body.constant(0u));
+            ir_if *f1A26 = new(mem_ctx) ir_if(operand(r1A27).val);
+            exec_list *const f1A26_parent_instructions = body.instructions;
+
+               /* THEN INSTRUCTIONS */
+               body.instructions = &f1A26->then_instructions;
+
+               body.emit(assign(r1A25, body.constant(int(-2147483648)), 0x01));
+
+
+               /* ELSE INSTRUCTIONS */
+               body.instructions = &f1A26->else_instructions;
+
+               body.emit(assign(r1A25, body.constant(int(2147483647)), 0x01));
+
+
+            body.instructions = f1A26_parent_instructions;
+            body.emit(f1A26);
+
+            /* END IF */
+
+            body.emit(assign(r1A04, r1A25, 0x01));
+
+            body.emit(assign(r1A03, body.constant(false), 0x01));
+
+
+         body.instructions = f1A23_parent_instructions;
+         body.emit(f1A23);
+
+         /* END IF */
+
+
+      body.instructions = f1A10_parent_instructions;
+      body.emit(f1A10);
+
+      /* END IF */
+
+
+      /* ELSE INSTRUCTIONS */
+      body.instructions = &f1A0E->else_instructions;
+
+      ir_expression *const r1A28 = nequal(swizzle_x(r1A02), body.constant(0u));
+      ir_expression *const r1A29 = expr(ir_unop_b2i, r1A28);
+      body.emit(assign(r1A08, expr(ir_unop_i2u, r1A29), 0x01));
+
+      /* IF CONDITION */
+      ir_expression *const r1A2B = less(r1A0A, body.constant(int(1022)));
+      ir_if *f1A2A = new(mem_ctx) ir_if(operand(r1A2B).val);
+      exec_list *const f1A2A_parent_instructions = body.instructions;
+
+         /* THEN INSTRUCTIONS */
+         body.instructions = &f1A2A->then_instructions;
+
+         ir_expression *const r1A2C = expr(ir_unop_i2u, r1A0A);
+         ir_expression *const r1A2D = bit_or(r1A2C, swizzle_y(r1A09));
+         body.emit(assign(r1A05, bit_or(r1A2D, swizzle_x(r1A08)), 0x01));
+
+         body.emit(assign(r1A06, body.constant(0u), 0x01));
+
+
+         /* ELSE INSTRUCTIONS */
+         body.instructions = &f1A2A->else_instructions;
+
+         body.emit(assign(r1A08, bit_or(swizzle_y(r1A09), body.constant(1048576u)), 0x02));
+
+         ir_expression *const r1A2E = bit_and(r1A0D, body.constant(int(31)));
+         ir_expression *const r1A2F = lshift(swizzle_y(r1A08), r1A2E);
+         body.emit(assign(r1A05, bit_or(r1A2F, swizzle_x(r1A08)), 0x01));
+
+         ir_expression *const r1A30 = neg(r1A0D);
+         body.emit(assign(r1A06, rshift(swizzle_y(r1A08), r1A30), 0x01));
+
+
+      body.instructions = f1A2A_parent_instructions;
+      body.emit(f1A2A);
+
+      /* END IF */
+
+
+   body.instructions = f1A0E_parent_instructions;
+   body.emit(f1A0E);
+
+   /* END IF */
+
+   /* IF CONDITION */
+   ir_if *f1A31 = new(mem_ctx) ir_if(operand(r1A03).val);
+   exec_list *const f1A31_parent_instructions = body.instructions;
+
+      /* THEN INSTRUCTIONS */
+      body.instructions = &f1A31->then_instructions;
+
+      /* IF CONDITION */
+      ir_expression *const r1A33 = expr(ir_unop_u2i, r1A05);
+      ir_expression *const r1A34 = less(r1A33, body.constant(int(0)));
+      ir_if *f1A32 = new(mem_ctx) ir_if(operand(r1A34).val);
+      exec_list *const f1A32_parent_instructions = body.instructions;
+
+         /* THEN INSTRUCTIONS */
+         body.instructions = &f1A32->then_instructions;
+
+         body.emit(assign(r1A06, add(r1A06, body.constant(1u)), 0x01));
+
+         /* IF CONDITION */
+         ir_expression *const r1A36 = lshift(r1A05, body.constant(int(1)));
+         ir_expression *const r1A37 = equal(r1A36, body.constant(0u));
+         ir_if *f1A35 = new(mem_ctx) ir_if(operand(r1A37).val);
+         exec_list *const f1A35_parent_instructions = body.instructions;
+
+            /* THEN INSTRUCTIONS */
+            body.instructions = &f1A35->then_instructions;
+
+            body.emit(assign(r1A06, bit_and(r1A06, body.constant(4294967294u)), 0x01));
+
+
+         body.instructions = f1A35_parent_instructions;
+         body.emit(f1A35);
+
+         /* END IF */
+
+
+      body.instructions = f1A32_parent_instructions;
+      body.emit(f1A32);
+
+      /* END IF */
+
+      ir_variable *const r1A38 = body.make_temp(glsl_type::int_type, "conditional_tmp");
+      /* IF CONDITION */
+      ir_expression *const r1A3A = nequal(r1A07, body.constant(0u));
+      ir_if *f1A39 = new(mem_ctx) ir_if(operand(r1A3A).val);
+      exec_list *const f1A39_parent_instructions = body.instructions;
+
+         /* THEN INSTRUCTIONS */
+         body.instructions = &f1A39->then_instructions;
+
+         ir_expression *const r1A3B = expr(ir_unop_u2i, r1A06);
+         body.emit(assign(r1A38, neg(r1A3B), 0x01));
+
+
+         /* ELSE INSTRUCTIONS */
+         body.instructions = &f1A39->else_instructions;
+
+         body.emit(assign(r1A38, expr(ir_unop_u2i, r1A06), 0x01));
+
+
+      body.instructions = f1A39_parent_instructions;
+      body.emit(f1A39);
+
+      /* END IF */
+
+      /* IF CONDITION */
+      ir_expression *const r1A3D = less(r1A38, body.constant(int(0)));
+      ir_expression *const r1A3E = expr(ir_unop_b2i, r1A3D);
+      ir_expression *const r1A3F = expr(ir_unop_i2u, r1A3E);
+      ir_expression *const r1A40 = bit_xor(r1A07, r1A3F);
+      ir_expression *const r1A41 = expr(ir_unop_u2i, r1A40);
+      ir_expression *const r1A42 = expr(ir_unop_i2b, r1A41);
+      ir_expression *const r1A43 = expr(ir_unop_i2b, r1A38);
+      ir_expression *const r1A44 = logic_and(r1A42, r1A43);
+      ir_if *f1A3C = new(mem_ctx) ir_if(operand(r1A44).val);
+      exec_list *const f1A3C_parent_instructions = body.instructions;
+
+         /* THEN INSTRUCTIONS */
+         body.instructions = &f1A3C->then_instructions;
+
+         ir_variable *const r1A45 = body.make_temp(glsl_type::int_type, "conditional_tmp");
+         /* IF CONDITION */
+         ir_expression *const r1A47 = expr(ir_unop_u2i, r1A07);
+         ir_expression *const r1A48 = expr(ir_unop_i2b, r1A47);
+         ir_if *f1A46 = new(mem_ctx) ir_if(operand(r1A48).val);
+         exec_list *const f1A46_parent_instructions = body.instructions;
+
+            /* THEN INSTRUCTIONS */
+            body.instructions = &f1A46->then_instructions;
+
+            body.emit(assign(r1A45, body.constant(int(-2147483648)), 0x01));
+
+
+            /* ELSE INSTRUCTIONS */
+            body.instructions = &f1A46->else_instructions;
+
+            body.emit(assign(r1A45, body.constant(int(2147483647)), 0x01));
+
+
+         body.instructions = f1A46_parent_instructions;
+         body.emit(f1A46);
+
+         /* END IF */
+
+         body.emit(assign(r1A04, r1A45, 0x01));
+
+         body.emit(assign(r1A03, body.constant(false), 0x01));
+
+
+         /* ELSE INSTRUCTIONS */
+         body.instructions = &f1A3C->else_instructions;
+
+         body.emit(assign(r1A04, r1A38, 0x01));
+
+         body.emit(assign(r1A03, body.constant(false), 0x01));
+
+
+      body.instructions = f1A3C_parent_instructions;
+      body.emit(f1A3C);
+
+      /* END IF */
+
+
+   body.instructions = f1A31_parent_instructions;
+   body.emit(f1A31);
+
+   /* END IF */
+
+   body.emit(ret(r1A04));
+
+   sig->replace_parameters(&sig_parameters);
+   return sig;
+}
