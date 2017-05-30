@@ -5,6 +5,7 @@
  */
 
 #version 130
+#extension GL_ARB_shader_bit_encoding : enable
 
 /* Software IEEE floating-point rounding mode.
  * GLSL spec section "4.7.1 Range and Precision":
@@ -1099,4 +1100,76 @@ fdiv64(uvec2 a, uvec2 b)
    }
    shift64ExtraRightJamming(zFrac0, zFrac1, 0u, 11, zFrac0, zFrac1, zFrac2);
    return roundAndPackFloat64(zSign, zExp, zFrac0, zFrac1, zFrac2);
+}
+
+/* Normalizes the subnormal single-precision floating-point value represented
+ * by the denormalized significand `aFrac'.  The normalized exponent and
+ * significand are stored at the locations pointed to by `zExpPtr' and
+ * `zFracPtr', respectively.
+ */
+void
+normalizeFloat32Subnormal(uint aFrac,
+                          inout int zExpPtr,
+                          inout uint zFracPtr)
+{
+   int shiftCount = countLeadingZeros32(aFrac) - 8;
+   zFracPtr = aFrac<<shiftCount;
+   zExpPtr = 1 - shiftCount;
+}
+
+/* Returns the fraction bits of the single-precision floating-point value `a'.*/
+uint
+extractFloat32Frac(uint a)
+{
+   return a & 0x007FFFFFu;
+}
+
+/* Returns the exponent bits of the single-precision floating-point value `a'.*/
+int
+extractFloat32Exp(uint a)
+{
+   return int((a>>23) & 0xFFu);
+}
+
+/* Returns the sign bit of the single-precision floating-point value `a'.*/
+uint
+extractFloat32Sign(uint a)
+{
+   return a>>31;
+}
+
+/* Returns the result of converting the single-precision floating-point value
+ * `a' to the double-precision floating-point format.
+ */
+uvec2
+fp32_to_fp64(float f)
+{
+   uint a = floatBitsToUint(f);
+   uint aFrac = extractFloat32Frac(a);
+   int aExp = extractFloat32Exp(a);
+   uint aSign = extractFloat32Sign(a);
+   uint zFrac0 = 0u;
+   uint zFrac1 = 0u;
+
+   if (aExp == 0xFF) {
+      if (aFrac != 0u) {
+         uvec2 nan;
+         nan.x = 0u;
+         nan.y = a<<9;
+         shift64Right(nan.y, nan.x, 12, nan.y, nan.x);
+         nan.y |= ((aSign<<31) | 0x7FF80000u);
+         return nan;
+      }
+      return packFloat64(aSign, 0x7FF, 0u, 0u);
+    }
+
+   if (aExp == 0) {
+      if (aFrac == 0u)
+         return packFloat64(aSign, 0, 0u, 0u);
+      normalizeFloat32Subnormal(aFrac, aExp, aFrac);
+      --aExp;
+   }
+
+   shift64Right(aFrac, 0u, 3, zFrac0, zFrac1);
+   return packFloat64(aSign, aExp + 0x380, zFrac0, zFrac1);
 }

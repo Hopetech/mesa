@@ -3357,8 +3357,8 @@ builtin_builder::create_builtins()
                 generate_ir::fmul64(mem_ctx, integer_functions_supported),
                 NULL);
 
-   add_function("__builtin_fdiv64",
-                generate_ir::fdiv64(mem_ctx, integer_functions_supported),
+   add_function("__builtin_fp32_to_fp64",
+                generate_ir::fp32_to_fp64(mem_ctx, integer_functions_supported),
                 NULL);
 
 #undef F
