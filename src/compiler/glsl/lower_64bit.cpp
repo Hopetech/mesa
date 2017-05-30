@@ -167,6 +167,19 @@ lower_64bit_instructions(exec_list *instructions,
    return v.progress;
 }
 
+bool
+lower_64bit_integer_instructions(exec_list *instructions,
+                                 unsigned what_to_lower)
+{
+   return lower_64bit_instructions(instructions, what_to_lower);
+}
+
+bool
+lower_64bit_double_instructions(exec_list *instructions,
+                                 unsigned what_to_lower)
+{
+   return lower_64bit_instructions(instructions, what_to_lower);
+}
 
 /**
  * Expand individual 64-bit values to uvec2 values
@@ -416,6 +429,14 @@ lower_64bit_visitor::handle_rvalue(ir_rvalue **rvalue)
    assert(ir != NULL);
 
    switch (ir->operation) {
+
+   case ir_unop_abs:
+      if (lowering(ABS64)) {
+         if (ir->type->base_type == GLSL_TYPE_DOUBLE)
+            *rvalue = handle_op(ir, "__builtin_fabs64", generate_ir::fabs64);
+      }
+      break;
+
    case ir_unop_sign:
       if (lowering(SIGN64)) {
          if (ir->type->is_integer_64())

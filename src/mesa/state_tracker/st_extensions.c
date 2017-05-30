@@ -1254,7 +1254,8 @@ void st_init_extensions(struct pipe_screen *screen,
    }
 #endif
 
-   if (screen->get_param(screen, PIPE_CAP_DOUBLES)) {
+   if (screen->get_param(screen, PIPE_CAP_DOUBLES) ||
+       consts->GLSLVersion >= 130) {
       extensions->ARB_gpu_shader_fp64 = GL_TRUE;
       extensions->ARB_vertex_attrib_64bit = GL_TRUE;
    }

@@ -55,11 +55,14 @@
 #define DIV_TO_MUL_RCP            (FDIV_TO_MUL_RCP | DDIV_TO_MUL_RCP)
 #define SQRT_TO_ABS_SQRT          0x200000
 
-/* Opertaions for lower_64bit_integer_instructions() */
+/* Operations for lower_64bit_integer_instructions()
+ * and lower_64bit_double_instructions()
+ */
 #define MUL64                     (1U << 0)
 #define SIGN64                    (1U << 1)
 #define DIV64                     (1U << 2)
 #define MOD64                     (1U << 3)
+#define ABS64                     (1U << 4)
 
 /**
  * \see class lower_packing_builtins_visitor
@@ -179,5 +182,8 @@ ir_variable *compare_index_block(ir_builder::ir_factory &body,
 
 bool lower_64bit_instructions(exec_list *instructions,
                               unsigned what_to_lower);
+
+bool lower_64bit_double_instructions(exec_list *instructions,
+                                      unsigned what_to_lower);
 
 #endif /* GLSL_IR_OPTIMIZATION_H */

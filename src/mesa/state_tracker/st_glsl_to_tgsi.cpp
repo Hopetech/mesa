@@ -7031,6 +7031,15 @@ st_link_shader(struct gl_context *ctx, struct gl_shader_program *prog)
       if (!pscreen->get_param(pscreen, PIPE_CAP_INT64_DIVMOD))
          lower_64bit_instructions(ir, DIV64 | MOD64);
 
+      /* Enable double lowering if the hardware doesn't support doubles.
+       * The lowering requires GLSL >= 130.
+       */
+      if (!pscreen->get_param(pscreen, PIPE_CAP_DOUBLES) &&
+            ctx->Const.GLSLVersion >= 130) {
+         unsigned lower_inst = ABS64;
+         lower_64bit_double_instructions(ir, lower_inst);
+      }
+
       if (ctx->Extensions.ARB_shading_language_packing) {
          unsigned lower_inst = LOWER_PACK_SNORM_2x16 |
                                LOWER_UNPACK_SNORM_2x16 |
