@@ -411,7 +411,9 @@ lower_64bit_visitor::handle_rvalue(ir_rvalue **rvalue)
 
    case ir_binop_div:
       if (lowering(DIV64)) {
-         if (ir->type->base_type == GLSL_TYPE_UINT64) {
+         if (ir->type->base_type == GLSL_TYPE_DOUBLE) {
+            *rvalue = handle_op(ir, "__builtin_fdiv64", generate_ir::fdiv64);
+         } else if (ir->type->base_type == GLSL_TYPE_UINT64) {
             *rvalue = handle_op(ir, "__builtin_udiv64", generate_ir::udiv64);
          } else {
             *rvalue = handle_op(ir, "__builtin_idiv64", generate_ir::idiv64);
