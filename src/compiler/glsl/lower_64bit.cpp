@@ -456,6 +456,13 @@ lower_64bit_visitor::handle_rvalue(ir_rvalue **rvalue)
       }
       break;
 
+   case ir_binop_sub:
+      if (lowering(SUB64)) {
+         if (ir->type->base_type == GLSL_TYPE_DOUBLE)
+            *rvalue = handle_op(ir, "__builtin_fsub64", generate_ir::fsub64);
+      }
+      break;
+
    default:
       break;
    }
