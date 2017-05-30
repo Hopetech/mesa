@@ -71,6 +71,7 @@
 #define SUB64                     (1U << 10)
 #define F2D                       (1U << 11)
 #define D2F                       (1U << 12)
+#define D2I                       (1U << 13)
 
 /**
  * \see class lower_packing_builtins_visitor
