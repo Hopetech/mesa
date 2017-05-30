@@ -92,3 +92,53 @@ feq64(uvec2 a, uvec2 b)
    return (a.x == b.x) &&
       ((a.y == b.y) || ((a.x == 0u) && (((a.y | b.y)<<1) == 0u)));
 }
+
+/* Returns the sign bit of the double-precision floating-point value `a'.*/
+uint
+extractFloat64Sign(uvec2 a)
+{
+   return (a.y>>31);
+}
+
+/* Returns true if the 64-bit value formed by concatenating `a0' and `a1' is less
+ * than or equal to the 64-bit value formed by concatenating `b0' and `b1'.
+ * Otherwise, returns false.
+ */
+bool
+le64(uint a0, uint a1, uint b0, uint b1)
+{
+   return (a0 < b0) || ((a0 == b0) && (a1 <= b1));
+}
+
+/* Returns true if the double-precision floating-point value `a' is less than or
+ * equal to the corresponding value `b', and false otherwise.  The comparison is
+ * performed according to the IEEE Standard for Floating-Point Arithmetic.
+ */
+bool
+fle64(uvec2 a, uvec2 b)
+{
+   uint aSign;
+   uint bSign;
+   uvec2 aFrac;
+   uvec2 bFrac;
+   bool isaNaN;
+   bool isbNaN;
+
+   aFrac = extractFloat64Frac(a);
+   bFrac = extractFloat64Frac(b);
+   isaNaN = (extractFloat64Exp(a) == 0x7FF) &&
+      ((aFrac.y | aFrac.x) != 0u);
+   isbNaN = (extractFloat64Exp(b) == 0x7FF) &&
+      ((bFrac.y | bFrac.x) != 0u);
+
+   if (isaNaN || isbNaN)
+      return false;
+
+   aSign = extractFloat64Sign(a);
+   bSign = extractFloat64Sign(b);
+   if (aSign != bSign)
+      return (aSign != 0u) || (((((a.y | b.y)<<1)) | a.x | b.x) == 0u);
+
+   return (aSign != 0u) ? le64(b.y, b.x, a.y, a.x)
+      : le64(a.y, a.x, b.y, b.x);
+}
