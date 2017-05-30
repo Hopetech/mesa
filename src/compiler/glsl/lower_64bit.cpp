@@ -22,7 +22,7 @@
  */
 
 /**
- * \file lower_int64.cpp
+ * \file lower_64bit.cpp
  *
  * Lower 64-bit operations to 32-bit operations.  Each 64-bit value is lowered
  * to a uvec2.  For each operation that can be lowered, there is a function
@@ -132,7 +132,7 @@ private:
 #define lowering(x) (this->lower & x)
 
 bool
-lower_64bit_integer_instructions(exec_list *instructions,
+lower_64bit_instructions(exec_list *instructions,
                                  unsigned what_to_lower)
 {
    if (instructions->is_empty())
@@ -163,6 +163,19 @@ lower_64bit_integer_instructions(exec_list *instructions,
    return v.progress;
 }
 
+bool
+lower_64bit_integer_instructions(exec_list *instructions,
+                                 unsigned what_to_lower)
+{
+   return lower_64bit_instructions(instructions, what_to_lower);
+}
+
+bool
+lower_64bit_double_instructions(exec_list *instructions,
+                                 unsigned what_to_lower)
+{
+   return lower_64bit_instructions(instructions, what_to_lower);
+}
 
 /**
  * Expand individual 64-bit values to uvec2 values
@@ -200,18 +213,21 @@ lower_64bit::expand_source(ir_factory &body,
                            ir_rvalue *val,
                            ir_variable **expanded_src)
 {
-   assert(val->type->is_integer_64());
+   assert(val->type->is_integer_64() || val->type->is_double());
 
    ir_variable *const temp = body.make_temp(val->type, "tmp");
 
    body.emit(assign(temp, val));
 
    const ir_expression_operation unpack_opcode =
-      val->type->base_type == GLSL_TYPE_UINT64
-      ? ir_unop_unpack_uint_2x32 : ir_unop_unpack_int_2x32;
+      val->type->base_type == GLSL_TYPE_DOUBLE
+      ? ir_unop_unpack_double_2x32 :
+      (val->type->base_type == GLSL_TYPE_UINT64
+      ? ir_unop_unpack_uint_2x32 : ir_unop_unpack_int_2x32);
 
    const glsl_type *const type =
-      val->type->base_type == GLSL_TYPE_UINT64
+      (val->type->base_type == GLSL_TYPE_UINT64 ||
+      val->type->base_type == GLSL_TYPE_DOUBLE)
       ? glsl_type::uvec2_type : glsl_type::ivec2_type;
 
    unsigned i;
@@ -235,8 +251,10 @@ lower_64bit::compact_destination(ir_factory &body,
                                  ir_variable *result[4])
 {
    const ir_expression_operation pack_opcode =
-      type->base_type == GLSL_TYPE_UINT64
-      ? ir_unop_pack_uint_2x32 : ir_unop_pack_int_2x32;
+      type->base_type == GLSL_TYPE_DOUBLE
+      ? ir_unop_pack_double_2x32 :
+      (type->base_type == GLSL_TYPE_UINT64
+      ? ir_unop_pack_uint_2x32 : ir_unop_pack_int_2x32);
 
    ir_variable *const compacted_result =
       body.make_temp(type, "compacted_64bit_result");
@@ -263,7 +281,12 @@ lower_64bit::lower_op_to_function_call(ir_instruction *base_ir,
    exec_list instructions;
    unsigned source_components = 0;
    const glsl_type *const result_type =
-      ir->type->base_type == GLSL_TYPE_UINT64
+      ir->type->base_type == GLSL_TYPE_BOOL
+      ? glsl_type::bool_type :
+      ir->type->base_type == GLSL_TYPE_FLOAT
+      ? glsl_type::float_type :
+      (ir->type->base_type == GLSL_TYPE_UINT64 ||
+       ir->type->base_type == GLSL_TYPE_DOUBLE)
       ? glsl_type::uvec2_type : glsl_type::ivec2_type;
 
    ir_factory body(&instructions, mem_ctx);
@@ -293,7 +316,11 @@ lower_64bit::lower_op_to_function_call(ir_instruction *base_ir,
       body.emit(c);
    }
 
-   ir_rvalue *const rv = compact_destination(body, ir->type, dst);
+   ir_rvalue *rv;
+   if (ir->type->is_64bit())
+      rv = compact_destination(body, ir->type, dst);
+   else
+      rv = new(mem_ctx) ir_dereference_variable(dst[0]);
 
    /* Move all of the nodes from instructions between base_ir and the
     * instruction before it.
@@ -318,7 +345,8 @@ lower_64bit_visitor::handle_op(ir_expression *ir,
                                function_generator generator)
 {
    for (unsigned i = 0; i < ir->num_operands; i++)
-      if (!ir->operands[i]->type->is_integer_64())
+      if (!ir->operands[i]->type->is_integer_64() &&
+          !ir->operands[i]->type->is_double())
          return ir;
 
    /* Get a handle to the correct ir_function_signature for the core
@@ -353,6 +381,14 @@ lower_64bit_visitor::handle_rvalue(ir_rvalue **rvalue)
    assert(ir != NULL);
 
    switch (ir->operation) {
+
+   case ir_unop_abs:
+      if (lowering(ABS64)) {
+         if (ir->type->base_type == GLSL_TYPE_DOUBLE)
+            *rvalue = handle_op(ir, "__builtin_fabs64", generate_ir::fabs64);
+      }
+      break;
+
    case ir_unop_sign:
       if (lowering(SIGN64)) {
          *rvalue = handle_op(ir, "__builtin_sign64", generate_ir::sign64);
