@@ -709,3 +709,19 @@ fadd64(uvec2 a, uvec2 b)
    else
       return subFloat64Fracs(a, b, aSign);
 }
+
+/* Returns the result of subtracting the double-precision floating-point values
+ * `a' and `b'.  The operation is performed according to the IEEE Standard for
+ * Floating-Point Arithmetic.
+ */
+uvec2
+fsub64(uvec2 a, uvec2 b)
+{
+   uint aSign = extractFloat64Sign(a);
+   uint bSign = extractFloat64Sign(b);
+
+   if (aSign == bSign)
+      return subFloat64Fracs(a, b, aSign);
+   else
+      return addFloat64Fracs(a, b, aSign);
+}
