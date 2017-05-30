@@ -66,6 +66,7 @@
 #define NEG64                     (1U << 5)
 #define EQ64                      (1U << 6)
 #define LE64                      (1U << 7)
+#define LT64                      (1U << 8)
 
 /**
  * \see class lower_packing_builtins_visitor
