@@ -452,7 +452,11 @@ lower_64bit_visitor::handle_rvalue(ir_rvalue **rvalue)
 
    case ir_binop_mul:
       if (lowering(MUL64)) {
-         *rvalue = handle_op(ir, "__builtin_umul64", generate_ir::umul64);
+         if (ir->type->base_type == GLSL_TYPE_DOUBLE) {
+            *rvalue = handle_op(ir, "__builtin_fmul64", generate_ir::fmul64);
+         } else {
+            *rvalue = handle_op(ir, "__builtin_umul64", generate_ir::umul64);
+         }
       }
       break;
 
