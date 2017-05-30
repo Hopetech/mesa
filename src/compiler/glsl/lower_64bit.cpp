@@ -437,6 +437,13 @@ lower_64bit_visitor::handle_rvalue(ir_rvalue **rvalue)
       }
       break;
 
+   case ir_unop_neg:
+      if (lowering(NEG64)) {
+         if (ir->type->base_type == GLSL_TYPE_DOUBLE)
+            *rvalue = handle_op(ir, "__builtin_fneg64", generate_ir::fneg64);
+      }
+      break;
+
    case ir_unop_sign:
       if (lowering(SIGN64)) {
          if (ir->type->is_integer_64())
