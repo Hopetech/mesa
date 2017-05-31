@@ -1380,3 +1380,13 @@ int_to_fp64(int a)
    }
    return packFloat64(zSign, 0x412 - shiftCount, zFrac0, zFrac1);
 }
+
+/* Returns true if the double-precision floating-point value `a' is greater than
+ * the corresponding value `b', and false otherwise.  The comparison is performed
+ * according to the IEEE Standard for Floating-Point Arithmetic.
+ */
+bool
+fgt64(uvec2 a, uvec2 b)
+{
+   return flt64(b, a);
+}

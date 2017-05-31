@@ -32362,3 +32362,140 @@ int_to_fp64(void *mem_ctx, builtin_available_predicate avail)
    sig->replace_parameters(&sig_parameters);
    return sig;
 }
+ir_function_signature *
+fgt64(void *mem_ctx, builtin_available_predicate avail)
+{
+   ir_function_signature *const sig =
+      new(mem_ctx) ir_function_signature(glsl_type::bool_type, avail);
+   ir_factory body(&sig->body, mem_ctx);
+   sig->is_defined = true;
+
+   exec_list sig_parameters;
+
+   ir_variable *const r1A83 = new(mem_ctx) ir_variable(glsl_type::uvec2_type, "a", ir_var_function_in);
+   sig_parameters.push_tail(r1A83);
+   ir_variable *const r1A84 = new(mem_ctx) ir_variable(glsl_type::uvec2_type, "b", ir_var_function_in);
+   sig_parameters.push_tail(r1A84);
+   ir_variable *const r1A85 = body.make_temp(glsl_type::bool_type, "return_value");
+   ir_variable *const r1A86 = new(mem_ctx) ir_variable(glsl_type::bool_type, "isbNaN", ir_var_auto);
+   body.emit(r1A86);
+   ir_variable *const r1A87 = new(mem_ctx) ir_variable(glsl_type::bool_type, "isaNaN", ir_var_auto);
+   body.emit(r1A87);
+   ir_variable *const r1A88 = new(mem_ctx) ir_variable(glsl_type::uvec2_type, "frac", ir_var_auto);
+   body.emit(r1A88);
+   body.emit(assign(r1A88, bit_and(swizzle_y(r1A84), body.constant(1048575u)), 0x02));
+
+   body.emit(assign(r1A88, swizzle_x(r1A84), 0x01));
+
+   ir_variable *const r1A89 = new(mem_ctx) ir_variable(glsl_type::uvec2_type, "frac", ir_var_auto);
+   body.emit(r1A89);
+   body.emit(assign(r1A89, bit_and(swizzle_y(r1A83), body.constant(1048575u)), 0x02));
+
+   body.emit(assign(r1A89, swizzle_x(r1A83), 0x01));
+
+   ir_expression *const r1A8A = rshift(swizzle_y(r1A84), body.constant(int(20)));
+   ir_expression *const r1A8B = bit_and(r1A8A, body.constant(2047u));
+   ir_expression *const r1A8C = expr(ir_unop_u2i, r1A8B);
+   ir_expression *const r1A8D = equal(r1A8C, body.constant(int(2047)));
+   ir_expression *const r1A8E = bit_or(swizzle_y(r1A88), swizzle_x(r1A84));
+   ir_expression *const r1A8F = nequal(r1A8E, body.constant(0u));
+   body.emit(assign(r1A87, logic_and(r1A8D, r1A8F), 0x01));
+
+   ir_expression *const r1A90 = rshift(swizzle_y(r1A83), body.constant(int(20)));
+   ir_expression *const r1A91 = bit_and(r1A90, body.constant(2047u));
+   ir_expression *const r1A92 = expr(ir_unop_u2i, r1A91);
+   ir_expression *const r1A93 = equal(r1A92, body.constant(int(2047)));
+   ir_expression *const r1A94 = bit_or(swizzle_y(r1A89), swizzle_x(r1A83));
+   ir_expression *const r1A95 = nequal(r1A94, body.constant(0u));
+   body.emit(assign(r1A86, logic_and(r1A93, r1A95), 0x01));
+
+   /* IF CONDITION */
+   ir_expression *const r1A97 = logic_or(r1A87, r1A86);
+   ir_if *f1A96 = new(mem_ctx) ir_if(operand(r1A97).val);
+   exec_list *const f1A96_parent_instructions = body.instructions;
+
+      /* THEN INSTRUCTIONS */
+      body.instructions = &f1A96->then_instructions;
+
+      body.emit(assign(r1A85, body.constant(false), 0x01));
+
+
+      /* ELSE INSTRUCTIONS */
+      body.instructions = &f1A96->else_instructions;
+
+      ir_variable *const r1A98 = body.make_temp(glsl_type::uint_type, "extractFloat64Sign_retval");
+      body.emit(assign(r1A98, rshift(swizzle_y(r1A84), body.constant(int(31))), 0x01));
+
+      ir_variable *const r1A99 = body.make_temp(glsl_type::uint_type, "extractFloat64Sign_retval");
+      body.emit(assign(r1A99, rshift(swizzle_y(r1A83), body.constant(int(31))), 0x01));
+
+      /* IF CONDITION */
+      ir_expression *const r1A9B = nequal(r1A98, r1A99);
+      ir_if *f1A9A = new(mem_ctx) ir_if(operand(r1A9B).val);
+      exec_list *const f1A9A_parent_instructions = body.instructions;
+
+         /* THEN INSTRUCTIONS */
+         body.instructions = &f1A9A->then_instructions;
+
+         ir_expression *const r1A9C = nequal(r1A98, body.constant(0u));
+         ir_expression *const r1A9D = bit_or(swizzle_y(r1A84), swizzle_y(r1A83));
+         ir_expression *const r1A9E = lshift(r1A9D, body.constant(int(1)));
+         ir_expression *const r1A9F = bit_or(r1A9E, swizzle_x(r1A84));
+         ir_expression *const r1AA0 = bit_or(r1A9F, swizzle_x(r1A83));
+         ir_expression *const r1AA1 = nequal(r1AA0, body.constant(0u));
+         body.emit(assign(r1A85, logic_and(r1A9C, r1AA1), 0x01));
+
+
+         /* ELSE INSTRUCTIONS */
+         body.instructions = &f1A9A->else_instructions;
+
+         ir_variable *const r1AA2 = body.make_temp(glsl_type::bool_type, "conditional_tmp");
+         /* IF CONDITION */
+         ir_expression *const r1AA4 = nequal(r1A98, body.constant(0u));
+         ir_if *f1AA3 = new(mem_ctx) ir_if(operand(r1AA4).val);
+         exec_list *const f1AA3_parent_instructions = body.instructions;
+
+            /* THEN INSTRUCTIONS */
+            body.instructions = &f1AA3->then_instructions;
+
+            ir_expression *const r1AA5 = less(swizzle_y(r1A83), swizzle_y(r1A84));
+            ir_expression *const r1AA6 = equal(swizzle_y(r1A83), swizzle_y(r1A84));
+            ir_expression *const r1AA7 = less(swizzle_x(r1A83), swizzle_x(r1A84));
+            ir_expression *const r1AA8 = logic_and(r1AA6, r1AA7);
+            body.emit(assign(r1AA2, logic_or(r1AA5, r1AA8), 0x01));
+
+
+            /* ELSE INSTRUCTIONS */
+            body.instructions = &f1AA3->else_instructions;
+
+            ir_expression *const r1AA9 = less(swizzle_y(r1A84), swizzle_y(r1A83));
+            ir_expression *const r1AAA = equal(swizzle_y(r1A84), swizzle_y(r1A83));
+            ir_expression *const r1AAB = less(swizzle_x(r1A84), swizzle_x(r1A83));
+            ir_expression *const r1AAC = logic_and(r1AAA, r1AAB);
+            body.emit(assign(r1AA2, logic_or(r1AA9, r1AAC), 0x01));
+
+
+         body.instructions = f1AA3_parent_instructions;
+         body.emit(f1AA3);
+
+         /* END IF */
+
+         body.emit(assign(r1A85, r1AA2, 0x01));
+
+
+      body.instructions = f1A9A_parent_instructions;
+      body.emit(f1A9A);
+
+      /* END IF */
+
+
+   body.instructions = f1A96_parent_instructions;
+   body.emit(f1A96);
+
+   /* END IF */
+
+   body.emit(ret(r1A85));
+
+   sig->replace_parameters(&sig_parameters);
+   return sig;
+}
