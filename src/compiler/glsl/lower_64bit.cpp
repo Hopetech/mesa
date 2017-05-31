@@ -430,6 +430,14 @@ lower_64bit_visitor::handle_rvalue(ir_rvalue **rvalue)
       }
       break;
 
+   case ir_unop_sqrt:
+      if (lowering(SQRT64)) {
+         if (ir->type->base_type == GLSL_TYPE_DOUBLE)
+            *rvalue = handle_op(ir, "__builtin_fsqrt64", generate_ir::fsqrt64);
+         this->progress = true;
+      }
+      break;
+
    case ir_binop_add:
       if (lowering(ADD64)) {
          if (ir->type->base_type == GLSL_TYPE_DOUBLE)

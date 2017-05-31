@@ -75,6 +75,7 @@
 #define I2D                       (1U << 14)
 #define GT64                      (1U << 15)
 #define FMA64                     (1U << 16)
+#define SQRT64                    (1U << 17)
 
 /**
  * \see class lower_packing_builtins_visitor
