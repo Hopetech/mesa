@@ -1390,3 +1390,9 @@ fgt64(uvec2 a, uvec2 b)
 {
    return flt64(b, a);
 }
+
+uvec2
+ffma64(uvec2 a, uvec2 b, uvec2 c)
+{
+   return fadd64(fmul64(a, b), c);
+}
