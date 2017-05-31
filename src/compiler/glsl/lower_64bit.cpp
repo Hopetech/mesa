@@ -505,6 +505,14 @@ lower_64bit_visitor::handle_rvalue(ir_rvalue **rvalue)
       }
       break;
 
+   case ir_triop_fma:
+      if (lowering(FMA64)) {
+         if (ir->type->base_type == GLSL_TYPE_DOUBLE)
+            *rvalue = handle_op(ir, "__builtin_ffma64", generate_ir::ffma64);
+         this->progress = true;
+      }
+      break;
+
    default:
       break;
    }
