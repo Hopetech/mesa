@@ -1396,3 +1396,193 @@ ffma64(uvec2 a, uvec2 b, uvec2 c)
 {
    return fadd64(fmul64(a, b), c);
 }
+
+/*
+uint
+sqrtOddAdjustments(int index)
+{
+   uint res = 0u;
+   if (index == 0)
+      res = 0x0004u;
+   if (index == 1)
+      res = 0x0022u;
+   if (index == 2)
+      res = 0x005Du;
+   if (index == 3)
+      res = 0x00B1u;
+   if (index == 4)
+      res = 0x011Du;
+   if (index == 5)
+      res = 0x019Fu;
+   if (index == 6)
+      res = 0x0236u;
+   if (index == 7)
+      res = 0x02E0u;
+   if (index == 8)
+      res = 0x039Cu;
+   if (index == 9)
+      res = 0x0468u;
+   if (index == 10)
+      res = 0x0545u;
+   if (index == 11)
+      res = 0x631u;
+   if (index == 12)
+      res = 0x072Bu;
+   if (index == 13)
+      res = 0x0832u;
+   if (index == 14)
+      res = 0x0946u;
+   if (index == 15)
+      res = 0x0A67u;
+
+   return res;
+}
+
+uint
+sqrtEvenAdjustments(int index)
+{
+   uint res = 0u;
+   if (index == 0)
+      res = 0x0A2Du;
+   if (index == 1)
+      res = 0x08AFu;
+   if (index == 2)
+      res = 0x075Au;
+   if (index == 3)
+      res = 0x0629u;
+   if (index == 4)
+      res = 0x051Au;
+   if (index == 5)
+      res = 0x0429u;
+   if (index == 6)
+      res = 0x0356u;
+   if (index == 7)
+      res = 0x029Eu;
+   if (index == 8)
+      res = 0x0200u;
+   if (index == 9)
+      res = 0x0179u;
+   if (index == 10)
+      res = 0x0109u;
+   if (index == 11)
+      res = 0x00AFu;
+   if (index == 12)
+      res = 0x0068u;
+   if (index == 13)
+      res = 0x0034u;
+   if (index == 14)
+      res = 0x0012u;
+   if (index == 15)
+      res = 0x0002u;
+
+   return res;
+}
+*/
+/* Returns an approximation to the square root of the 32-bit significand given
+ * by `a'.  Considered as an integer, `a' must be at least 2^31.  If bit 0 of
+ * `aExp' (the least significant bit) is 1, the integer returned approximates
+ * 2^31*sqrt(`a'/2^31), where `a' is considered an integer.  If bit 0 of `aExp'
+ * is 0, the integer returned approximates 2^31*sqrt(`a'/2^30).  In either
+ * case, the approximation returned lies strictly within +/-2 of the exact
+ * value.
+ */
+/*uint estimateSqrt32(int aExp, uint a)
+{
+   uint z;
+
+   int index = int(a>>27 & 15u);
+   if ((aExp & 1) != 0) {
+      z = 0x4000u + (a>>17) - sqrtOddAdjustments(index);
+      z = ((a / z)<<14) + (z<<15);
+      a >>= 1;
+   } else {
+      z = 0x8000u + (a>>17) - sqrtEvenAdjustments(index);
+      z = a / z + z;
+      z = (0x20000u <= z) ? 0xFFFF8000u : (z<<15);
+      if (z <= a)
+         return uint(((int(a))>>1));
+   }
+   return ((estimateDiv64To32(a, 0u, z))>>1) + (z>>1);
+}*/
+
+/* Returns the square root of the double-precision floating-point value `a'.
+ * The operation is performed according to the IEEE Standard for Floating-Point
+ * Arithmetic.
+ */
+uvec2
+fsqrt64(uvec2 a)
+{
+/*
+   uint zFrac0 = 0u;
+   uint zFrac1 = 0u;
+   uint zFrac2 = 0u;
+   uint doubleZFrac0 = 0u;
+   uint rem0 = 0u;
+   uint rem1 = 0u;
+   uint rem2 = 0u;
+   uint rem3 = 0u;
+   uint term0 = 0u;
+   uint term1 = 0u;
+   uint term2 = 0u;
+   uint term3 = 0u;
+   uvec2 default_nan;
+   default_nan.y = 0xFFFFFFFFu;
+   default_nan.x = 0xFFFFFFFFu;
+
+   uvec2 aFrac = extractFloat64Frac(a);
+   int aExp = extractFloat64Exp(a);
+   uint aSign = extractFloat64Sign(a);
+   if (aExp == 0x7FF) {
+      if ((aFrac.y | aFrac.x) != 0u)
+         return propagateFloat64NaN(a, a);
+      if (aSign == 0u)
+         return a;
+      return default_nan;
+   }
+   if (aSign != 0u) {
+      if ((uint(aExp) | aFrac.y | aFrac.x) == 0u)
+         return a;
+      return default_nan;
+   }
+   if (aExp == 0) {
+      if ((aFrac.y | aFrac.x) == 0u)
+         return packFloat64(0u, 0, 0u, 0u);
+      normalizeFloat64Subnormal(aFrac.y, aFrac.x, aExp, aFrac.y, aFrac.x);
+   }
+   int zExp = ((aExp - 0x3FF)>>1) + 0x3FE;
+   aFrac.y |= 0x00100000u;
+   shortShift64Left(aFrac.y, aFrac.x, 11, term0, term1);
+   zFrac0 = (estimateSqrt32(aExp, term0)>>1) + 1u;
+   if (zFrac0 == 0u)
+      zFrac0 = 0x7FFFFFFFu;
+   doubleZFrac0 = zFrac0 + zFrac0;
+   shortShift64Left(aFrac.y, aFrac.x, 9 - (aExp & 1), aFrac.y, aFrac.x);
+   mul32To64(zFrac0, zFrac0, term0, term1);
+   sub64(aFrac.y, aFrac.x, term0, term1, rem0, rem1);
+   while (int(rem0) < 0) {
+      --zFrac0;
+      doubleZFrac0 -= 2u;
+      add64(rem0, rem1, 0u, doubleZFrac0 | 1u, rem0, rem1);
+   }
+   zFrac1 = estimateDiv64To32(rem1, 0u, doubleZFrac0);
+   if ((zFrac1 & 0x1FFu) <= 5u) {
+      if (zFrac1 == 0u)
+         zFrac1 = 1u;
+      mul32To64(doubleZFrac0, zFrac1, term1, term2);
+      sub64(rem1, 0u, term1, term2, rem1, rem2);
+      mul32To64(zFrac1, zFrac1, term2, term3);
+      sub96(rem1, rem2, 0u, 0u, term2, term3, rem1, rem2, rem3);
+      while (int(rem1) < 0) {
+         --zFrac1;
+         shortShift64Left(0u, zFrac1, 1, term2, term3);
+         term3 |= 1u;
+         term2 |= doubleZFrac0;
+         add96(rem1, rem2, rem3, 0u, term2, term3, rem1, rem2, rem3);
+      }
+      zFrac1 |= uint((rem1 | rem2 | rem3) != 0u);
+   }
+   shift64ExtraRightJamming(zFrac0, zFrac1, 0u, 10, zFrac0, zFrac1, zFrac2);
+   return roundAndPackFloat64(0u, zExp, zFrac0, zFrac1, zFrac2);
+*/
+   return fp32_to_fp64(sqrt(fp64_to_fp32(a)));
+}
