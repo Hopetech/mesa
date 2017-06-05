@@ -572,22 +572,34 @@ brw_nir_optimize(nir_shader *nir, const struct brw_compiler *compiler,
       }
       OPT(nir_opt_remove_phis);
       OPT(nir_opt_undef);
-      OPT(nir_lower_doubles, nir_lower_drcp |
-                             nir_lower_dsqrt |
-                             nir_lower_drsq |
-                             nir_lower_dtrunc |
-                             nir_lower_dfloor |
-                             nir_lower_dceil |
-                             nir_lower_dfract |
-                             nir_lower_dround_even |
-                             nir_lower_dmod |
-                             nir_lower_dabs |
-                             nir_lower_dneg |
-                             nir_lower_dsign |
-                             nir_lower_deq |
-                             nir_lower_dlt |
-                             nir_lower_dmul |
-                             nir_lower_dadd);
+      if (compiler->devinfo->gen == 6) {
+         OPT(nir_lower_doubles, nir_lower_drcp |
+                                nir_lower_dsqrt |
+                                nir_lower_drsq |
+                                nir_lower_dtrunc |
+                                nir_lower_dfloor |
+                                nir_lower_dceil |
+                                nir_lower_dfract |
+                                nir_lower_dround_even |
+                                nir_lower_dmod |
+                                nir_lower_dabs |
+                                nir_lower_dneg |
+                                nir_lower_dsign |
+                                nir_lower_deq |
+                                nir_lower_dlt |
+                                nir_lower_dmul |
+                                nir_lower_dadd);
+      } else {
+         OPT(nir_lower_doubles, nir_lower_drcp |
+                                nir_lower_dsqrt |
+                                nir_lower_drsq |
+                                nir_lower_dtrunc |
+                                nir_lower_dfloor |
+                                nir_lower_dceil |
+                                nir_lower_dfract |
+                                nir_lower_dround_even |
+                                nir_lower_dmod);
+      }
       OPT(nir_lower_64bit_pack);
    } while (progress);
 
