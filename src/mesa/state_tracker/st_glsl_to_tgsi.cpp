@@ -4915,6 +4915,78 @@ glsl_to_tgsi_visitor::get_last_temp_write(int *last_writes)
  *
  * which allows for dead code elimination on TEMP[1]'s writes.
  */
+#define DEFAULT_LEVELS 8
+
+class per_level_info {
+
+   struct per_level_range {
+      int32_t min_temp_idx;
+      int32_t max_temp_idx;
+   } *lvls;
+
+   void *mem_ctx;
+   int num_alloced_levels;
+   int level;
+   int max_temps;
+public:
+
+   per_level_info(void *mem_ctx_in, int max_temps_in) {
+      num_alloced_levels = DEFAULT_LEVELS;
+      max_temps = max_temps_in;
+      mem_ctx = mem_ctx_in;
+      level = 0;
+      lvls = (struct per_level_range *)reralloc_array_size(mem_ctx,
+                                                           NULL,
+                                                           sizeof(struct per_level_range),
+                                                           num_alloced_levels);
+      lvls[0].min_temp_idx = max_temps;
+      lvls[0].max_temp_idx = 0;
+   }
+
+   ~per_level_info() {
+      ralloc_free(lvls);
+   }
+
+   int get_level(void) {
+      return level;
+   }
+
+   void push_level(void) {
+      level++;
+      if (level >= num_alloced_levels) {
+         num_alloced_levels += 4;
+         lvls = (struct per_level_range *)reralloc_array_size(mem_ctx,
+                                                              (void *)lvls,
+                                                              sizeof(struct per_level_range),
+                                                              num_alloced_levels);
+      }
+      lvls[level].min_temp_idx = max_temps;
+      lvls[level].max_temp_idx = 0;
+   }
+
+   void pop_level(void) {
+      if (lvls[level - 1].min_temp_idx > lvls[level].min_temp_idx)
+         lvls[level - 1].min_temp_idx = lvls[level].min_temp_idx;
+      if (lvls[level - 1].max_temp_idx < lvls[level].max_temp_idx)
+         lvls[level - 1].max_temp_idx = lvls[level].max_temp_idx;
+      level--;
+   }
+
+   void get_level_range(int32_t *min, int32_t *max)
+   {
+      *min = lvls[level].min_temp_idx;
+      *max = lvls[level].max_temp_idx;
+   }
+
+   void update_level_range(int32_t idx)
+   {
+      if (idx < lvls[level].min_temp_idx)
+         lvls[level].min_temp_idx = idx;
+      if ((idx + 1) > lvls[level].max_temp_idx)
+         lvls[level].max_temp_idx = idx + 1;
+   }
+};
+
 void
 glsl_to_tgsi_visitor::copy_propagate(void)
 {
@@ -4922,7 +4994,9 @@ glsl_to_tgsi_visitor::copy_propagate(void)
                                                   glsl_to_tgsi_instruction *,
                                                   this->next_temp * 4);
    int *acp_level = rzalloc_array(mem_ctx, int, this->next_temp * 4);
-   int level = 0;
+   class per_level_info lvl_info(mem_ctx, this->next_temp);
+   int min_lvl, max_lvl;
+   int level;
 
    foreach_in_list(glsl_to_tgsi_instruction, inst, &this->instructions) {
       assert(inst->dst[0].file != PROGRAM_TEMPORARY
@@ -4946,13 +5020,12 @@ glsl_to_tgsi_visitor::copy_propagate(void)
          for (int i = 0; i < 4; i++) {
             int src_chan = GET_SWZ(inst->src[r].swizzle, i);
             glsl_to_tgsi_instruction *copy_chan = acp[acp_base + src_chan];
-
             if (!copy_chan) {
                good = false;
                break;
             }
 
-            assert(acp_level[acp_base + src_chan] <= level);
+            assert(acp_level[acp_base + src_chan] <= lvl_info.get_level());
 
             if (!first) {
                first = copy_chan;
@@ -4997,7 +5070,7 @@ glsl_to_tgsi_visitor::copy_propagate(void)
 
       case TGSI_OPCODE_IF:
       case TGSI_OPCODE_UIF:
-         ++level;
+         lvl_info.push_level();
          break;
 
       case TGSI_OPCODE_ENDIF:
@@ -5005,7 +5078,9 @@ glsl_to_tgsi_visitor::copy_propagate(void)
          /* Clear all channels written inside the block from the ACP, but
           * leaving those that were not touched.
           */
-         for (int r = 0; r < this->next_temp; r++) {
+         lvl_info.get_level_range(&min_lvl, &max_lvl);
+         level = lvl_info.get_level();
+         for (int r = min_lvl; r < max_lvl; r++) {
             for (int c = 0; c < 4; c++) {
                if (!acp[4 * r + c])
                   continue;
@@ -5014,8 +5089,11 @@ glsl_to_tgsi_visitor::copy_propagate(void)
                   acp[4 * r + c] = NULL;
             }
          }
-         if (inst->op == TGSI_OPCODE_ENDIF)
-            --level;
+         lvl_info.pop_level();
+
+         if (inst->op != TGSI_OPCODE_ENDIF)
+            lvl_info.push_level();
+
          break;
 
       default:
@@ -5033,7 +5111,8 @@ glsl_to_tgsi_visitor::copy_propagate(void)
                /* Any output might be written, so no copy propagation
                 * from outputs across this instruction.
                 */
-               for (int r = 0; r < this->next_temp; r++) {
+               lvl_info.get_level_range(&min_lvl, &max_lvl);
+               for (int r = min_lvl; r < max_lvl; r++) {
                   for (int c = 0; c < 4; c++) {
                      if (!acp[4 * r + c])
                         continue;
@@ -5053,7 +5132,8 @@ glsl_to_tgsi_visitor::copy_propagate(void)
                }
 
                /* Clear where it's used as src. */
-               for (int r = 0; r < this->next_temp; r++) {
+               lvl_info.get_level_range(&min_lvl, &max_lvl);
+               for (int r = min_lvl; r < max_lvl; r++) {
                   for (int c = 0; c < 4; c++) {
                      if (!acp[4 * r + c])
                         continue;
@@ -5087,12 +5167,15 @@ glsl_to_tgsi_visitor::copy_propagate(void)
           !inst->src[0].reladdr2 &&
           !inst->src[0].negate &&
           !inst->src[0].abs) {
+         level = lvl_info.get_level();
          for (int i = 0; i < 4; i++) {
             if (inst->dst[0].writemask & (1 << i)) {
                acp[4 * inst->dst[0].index + i] = inst;
                acp_level[4 * inst->dst[0].index + i] = level;
             }
          }
+
+         lvl_info.update_level_range(inst->dst[0].index);
       }
    }
 
@@ -5133,8 +5216,10 @@ glsl_to_tgsi_visitor::eliminate_dead_code(void)
                                                      glsl_to_tgsi_instruction *,
                                                      this->next_temp * 4);
    int *write_level = rzalloc_array(mem_ctx, int, this->next_temp * 4);
-   int level = 0;
+   int level;
    int removed = 0;
+   int min_lvl, max_lvl;
+   class per_level_info lvl_info(mem_ctx, this->next_temp);
 
    foreach_in_list(glsl_to_tgsi_instruction, inst, &this->instructions) {
       assert(inst->dst[0].file != PROGRAM_TEMPORARY
@@ -5161,7 +5246,9 @@ glsl_to_tgsi_visitor::eliminate_dead_code(void)
          /* Promote the recorded level of all channels written inside the
           * preceding if or else block to the level above the if/else block.
           */
-         for (int r = 0; r < this->next_temp; r++) {
+         lvl_info.get_level_range(&min_lvl, &max_lvl);
+         level = lvl_info.get_level();
+         for (int r = min_lvl; r < max_lvl; r++) {
             for (int c = 0; c < 4; c++) {
                if (!writes[4 * r + c])
                   continue;
@@ -5176,7 +5263,8 @@ glsl_to_tgsi_visitor::eliminate_dead_code(void)
 
       case TGSI_OPCODE_IF:
       case TGSI_OPCODE_UIF:
-         ++level;
+         lvl_info.push_level();
+
          /* fallthrough to default case to mark the condition as read */
       default:
          /* Continuing the block, clear any channels from the write array that
@@ -5255,6 +5343,8 @@ glsl_to_tgsi_visitor::eliminate_dead_code(void)
       for (unsigned i = 0; i < ARRAY_SIZE(inst->dst); i++) {
          if (inst->dst[i].file == PROGRAM_TEMPORARY &&
              !inst->dst[i].reladdr) {
+            level = lvl_info.get_level();
+
             for (int c = 0; c < 4; c++) {
                if (inst->dst[i].writemask & (1 << c)) {
                   if (writes[4 * inst->dst[i].index + c]) {
@@ -5265,6 +5355,7 @@ glsl_to_tgsi_visitor::eliminate_dead_code(void)
                   }
                   writes[4 * inst->dst[i].index + c] = inst;
                   write_level[4 * inst->dst[i].index + c] = level;
+                  lvl_info.update_level_range(inst->dst[i].index);
                }
             }
          }
