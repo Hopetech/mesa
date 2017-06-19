@@ -7033,23 +7033,23 @@ st_link_shader(struct gl_context *ctx, struct gl_shader_program *prog)
       /* Enable double lowering if the hardware doesn't support doubles.
        * The lowering requires GLSL >= 130.
        */
-      if (!pscreen->get_param(pscreen, PIPE_CAP_DOUBLES) &&
-            ctx->Const.GLSLVersion >= 130) {
+      if (1/*!pscreen->get_param(pscreen, PIPE_CAP_DOUBLES) &&
+            ctx->Const.GLSLVersion >= 130*/) {
          unsigned lower_inst = ABS64 |
                                NEG64 |
                                EQ64 |
                                LE64 |
                                LT64 |
                                ADD64 |
-                               SUB64 |
+                               /*SUB64 |*/
                                MUL64 |
-                               DIV64 |
+                               /*DIV64 |*/
                                F2D |
                                D2F |
                                D2I |
                                I2D |
                                GT64 |
-                               FMA64 |
+                               /*FMA64 |*/
                                SQRT64;
          lower_64bit_double_instructions(ir, lower_inst);
       }
