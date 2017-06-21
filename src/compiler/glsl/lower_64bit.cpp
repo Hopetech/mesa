@@ -424,6 +424,13 @@ lower_64bit_visitor::handle_rvalue(ir_rvalue **rvalue)
       }
       break;
 
+   case ir_unop_u2d:
+      if (lowering(U2D)) {
+         if (ir->type->base_type == GLSL_TYPE_DOUBLE)
+            *rvalue = handle_op(ir, "__builtin_uint_to_fp64", generate_ir::uint_to_fp64);
+      }
+      break;
+
    case ir_unop_sign:
       if (lowering(SIGN64)) {
          *rvalue = handle_op(ir, "__builtin_sign64", generate_ir::sign64);
