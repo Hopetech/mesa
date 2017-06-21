@@ -1586,3 +1586,20 @@ fsqrt64(uvec2 a)
 */
    return fp32_to_fp64(sqrt(fp64_to_fp32(a)));
 }
+
+uvec2
+uint_to_fp64(uint a)
+{
+   if (a == 0u)
+      return uvec2(0u, 0u);
+
+   int shiftDist = countLeadingZeros32(a) + 21;
+
+   uint aHigh = 0u;
+   uint aLow = 0u;
+
+   aHigh = a >> (32 - shiftDist);
+   aLow = a << shiftDist;
+
+   return packFloat64(0u, 0x432- shiftDist, aHigh, aLow);
+}
