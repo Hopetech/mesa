@@ -52,7 +52,7 @@ using namespace ir_builder;
 
 namespace lower_64bit {
 void expand_source(ir_factory &, ir_rvalue *val, ir_variable **expanded_src);
-
+void extract_source(ir_factory &, ir_rvalue *val, ir_variable **extracted_src);
 ir_dereference_variable *compact_destination(ir_factory &,
                                              const glsl_type *type,
                                              ir_variable *result[4]);
@@ -121,7 +121,7 @@ private:
    ir_factory added_functions;
 
    ir_rvalue *handle_op(ir_expression *ir, const char *function_name,
-                        function_generator generator);
+                        function_generator generator, bool conv_to_double = false);
 };
 
 } /* anonymous namespace */
@@ -242,6 +242,24 @@ lower_64bit::expand_source(ir_factory &body,
       expanded_src[i] = expanded_src[0];
 }
 
+void
+lower_64bit::extract_source(ir_factory &body,
+                            ir_rvalue *val,
+                            ir_variable **extracted_src)
+{
+   ir_variable *const temp = body.make_temp(val->type, "tmp");
+
+   body.emit(assign(temp, val));
+   unsigned i;
+   for (i = 0; i < val->type->vector_elements; i++) {
+      extracted_src[i] = body.make_temp(val->type->get_scalar_type(), "extracted_source");
+
+      body.emit(assign(extracted_src[i], swizzle(temp, i, 1)));
+   }
+
+   for (/* empty */; i < 4; i++)
+      extracted_src[i] = extracted_src[0];
+}
 /**
  * Convert a series of uvec2 results into a single 64-bit integer vector
  */
@@ -292,7 +310,10 @@ lower_64bit::lower_op_to_function_call(ir_instruction *base_ir,
    ir_factory body(&instructions, mem_ctx);
 
    for (unsigned i = 0; i < num_operands; i++) {
-      expand_source(body, ir->operands[i], src[i]);
+      if (ir->operands[i]->type->is_64bit())
+         expand_source(body, ir->operands[i], src[i]);
+      else
+         extract_source(body, ir->operands[i], src[i]);
 
       if (ir->operands[i]->type->vector_elements > source_components)
          source_components = ir->operands[i]->type->vector_elements;
@@ -342,12 +363,15 @@ lower_64bit::lower_op_to_function_call(ir_instruction *base_ir,
 ir_rvalue *
 lower_64bit_visitor::handle_op(ir_expression *ir,
                                const char *function_name,
-                               function_generator generator)
+                               function_generator generator,
+                               bool conv_to_double)
 {
-   for (unsigned i = 0; i < ir->num_operands; i++)
-      if (!ir->operands[i]->type->is_integer_64() &&
-          !ir->operands[i]->type->is_double())
-         return ir;
+   if (conv_to_double == false) {
+      for (unsigned i = 0; i < ir->num_operands; i++)
+         if (!ir->operands[i]->type->is_integer_64() &&
+             !ir->operands[i]->type->is_double())
+            return ir;
+   }
 
    /* Get a handle to the correct ir_function_signature for the core
     * operation.
@@ -413,14 +437,14 @@ lower_64bit_visitor::handle_rvalue(ir_rvalue **rvalue)
    case ir_unop_f2d:
       if (lowering(F2D)) {
          if (ir->type->base_type == GLSL_TYPE_DOUBLE)
-            *rvalue = handle_op(ir, "__builtin_fp32_to_fp64", generate_ir::fp32_to_fp64);
+            *rvalue = handle_op(ir, "__builtin_fp32_to_fp64", generate_ir::fp32_to_fp64, true);
       }
       break;
 
    case ir_unop_i2d:
       if (lowering(I2D)) {
          if (ir->type->base_type == GLSL_TYPE_DOUBLE)
-            *rvalue = handle_op(ir, "__builtin_int_to_fp64", generate_ir::int_to_fp64);
+            *rvalue = handle_op(ir, "__builtin_int_to_fp64", generate_ir::int_to_fp64, true);
       }
       break;
 
@@ -434,7 +458,7 @@ lower_64bit_visitor::handle_rvalue(ir_rvalue **rvalue)
    case ir_unop_u2d:
       if (lowering(U2D)) {
          if (ir->type->base_type == GLSL_TYPE_DOUBLE)
-            *rvalue = handle_op(ir, "__builtin_uint_to_fp64", generate_ir::uint_to_fp64);
+            *rvalue = handle_op(ir, "__builtin_uint_to_fp64", generate_ir::uint_to_fp64, true);
       }
       break;
 
