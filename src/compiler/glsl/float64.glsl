@@ -1603,3 +1603,46 @@ uint_to_fp64(uint a)
 
    return packFloat64(0u, 0x432- shiftDist, aHigh, aLow);
 }
+
+uint
+roundToUint(uint zSign, uint zFrac0, uint zFrac1)
+{
+   bool roundNearEven = FLOAT_ROUNDING_MODE == FLOAT_ROUND_NEAREST_EVEN;
+   uint roundIncrement = 0x800u;
+   uint z;
+
+   add64(zFrac0, zFrac1, 0u, roundIncrement, zFrac0, zFrac1);
+
+   if ((zFrac0 & 0xFFFFF000u) != 0u)
+      return (zSign != 0u) ? 0u : ~0u;
+
+   z = (zFrac1 >> 12) | ((zFrac0 & 0x00000FFFu) << 20);
+   z &= ~ uint(!bool((zFrac1 & 0xFFFu) ^ 0x800u)) & uint(roundNearEven);
+   if ((zSign != 0u) && (z != 0u))
+      return (zSign != 0u) ? 0u : ~0u;
+   return z;
+}
+
+uint
+fp64_to_uint(uvec2 a)
+{
+   uvec2 aFrac = extractFloat64Frac(a);
+   int aExp = extractFloat64Exp(a);
+   uint aSign = extractFloat64Sign(a);
+
+   if (aSign != 0u)
+      return 0u;
+
+   if ((aExp == 0x7FF) && ((aFrac.y | aFrac.x) != 0u))
+      return 0xFFFFFFFFu;
+
+   if (aExp != 0)
+      aFrac.y |= 0x00100000u;
+
+   int shiftDist = 0x427 - aExp;
+   if (0 < shiftDist)
+      shift64RightJamming(aFrac.y, aFrac.x, shiftDist, aFrac.y, aFrac.x);
+
+   return roundToUint(aSign, aFrac.y, aFrac.x);
+
+}
