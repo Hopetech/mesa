@@ -77,6 +77,7 @@
 #define FMA64                     (1U << 16)
 #define SQRT64                    (1U << 17)
 #define U2D                       (1U << 18)
+#define D2U                       (1U << 19)
 
 /**
  * \see class lower_packing_builtins_visitor
