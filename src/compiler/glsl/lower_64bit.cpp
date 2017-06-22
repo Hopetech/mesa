@@ -56,6 +56,9 @@ void extract_source(ir_factory &, ir_rvalue *val, ir_variable **extracted_src);
 ir_dereference_variable *compact_destination(ir_factory &,
                                              const glsl_type *type,
                                              ir_variable *result[4]);
+ir_dereference_variable *merge_destination(ir_factory &,
+                                           const glsl_type *type,
+                                           ir_variable *result[4]);
 
 ir_rvalue *lower_op_to_function_call(ir_instruction *base_ir,
                                      ir_expression *ir,
@@ -287,6 +290,24 @@ lower_64bit::compact_destination(ir_factory &body,
    return new(mem_ctx) ir_dereference_variable(compacted_result);
 }
 
+ir_dereference_variable *
+lower_64bit::merge_destination(ir_factory &body,
+                               const glsl_type *type,
+                               ir_variable *result[4])
+{
+   ir_variable *const merged_result =
+      body.make_temp(type, "merged_result");
+
+   for (unsigned i = 0; i < type->vector_elements; i++) {
+      body.emit(assign(merged_result,
+                       result[i],
+                       1U << i));
+   }
+
+   void *const mem_ctx = ralloc_parent(merged_result);
+   return new(mem_ctx) ir_dereference_variable(merged_result);
+}
+
 ir_rvalue *
 lower_64bit::lower_op_to_function_call(ir_instruction *base_ir,
                                        ir_expression *ir,
@@ -298,14 +319,16 @@ lower_64bit::lower_op_to_function_call(ir_instruction *base_ir,
    void *const mem_ctx = ralloc_parent(ir);
    exec_list instructions;
    unsigned source_components = 0;
-   const glsl_type *const result_type =
-      ir->type->base_type == GLSL_TYPE_BOOL
-      ? glsl_type::bool_type :
-      ir->type->base_type == GLSL_TYPE_FLOAT
-      ? glsl_type::float_type :
-      (ir->type->base_type == GLSL_TYPE_UINT64 ||
-       ir->type->base_type == GLSL_TYPE_DOUBLE)
-      ? glsl_type::uvec2_type : glsl_type::ivec2_type;
+   const glsl_type *result_type;
+
+   if (ir->type->is_64bit()) {
+      if (ir->type->base_type == GLSL_TYPE_UINT64 ||
+          ir->type->base_type == GLSL_TYPE_DOUBLE)
+         result_type = glsl_type::uvec2_type;
+      else
+         result_type = glsl_type::ivec2_type;
+   } else
+      result_type = ir->type->get_scalar_type();
 
    ir_factory body(&instructions, mem_ctx);
 
@@ -341,7 +364,7 @@ lower_64bit::lower_op_to_function_call(ir_instruction *base_ir,
    if (ir->type->is_64bit())
       rv = compact_destination(body, ir->type, dst);
    else
-      rv = new(mem_ctx) ir_dereference_variable(dst[0]);
+      rv = merge_destination(body, ir->type, dst);
 
    /* Move all of the nodes from instructions between base_ir and the
     * instruction before it.
