@@ -360,7 +360,7 @@ lower_64bit::lower_op_to_function_call(ir_instruction *base_ir,
                                        ir_expression *ir,
                                        ir_function_signature *callee)
 {
-   const unsigned num_operands = ir->num_operands;
+   unsigned num_operands = ir->num_operands;
    ir_variable *src[4][4];
    ir_variable *dst[4];
    void *const mem_ctx = ralloc_parent(ir);
@@ -389,6 +389,16 @@ lower_64bit::lower_op_to_function_call(ir_instruction *base_ir,
          source_components = ir->operands[i]->type->vector_elements;
    }
 
+   if (ir->operation == ir_unop_d2b) {
+      for (unsigned i = 0; i < source_components; i++) {
+	 src[1][i] = body.make_temp(glsl_type::uvec2_type, "zero");
+
+	 body.emit(assign(src[1][i], body.constant(0u), 1));
+	 body.emit(assign(src[1][i], body.constant(0u), 2));
+      }
+      num_operands++;
+   }
+
    for (unsigned i = 0; i < source_components; i++) {
       dst[i] = body.make_temp(result_type, "expanded_64bit_result");
 
@@ -405,6 +415,10 @@ lower_64bit::lower_op_to_function_call(ir_instruction *base_ir,
                                               &parameters);
 
       body.emit(c);
+
+      if (ir->operation == ir_unop_d2b)
+	 body.emit(assign(dst[i], logic_not(dst[i])));
+
    }
 
    ir_rvalue *rv;
@@ -498,6 +512,13 @@ lower_64bit_visitor::handle_rvalue(ir_rvalue **rvalue)
       if (lowering(D2I)) {
          if (ir->type->base_type == GLSL_TYPE_INT)
             *rvalue = handle_op(ir, "__builtin_fp64_to_int", generate_ir::fp64_to_int);
+      }
+      break;
+
+   case ir_unop_d2b:
+      if (lowering(D2I)) {
+         if (ir->type->base_type == GLSL_TYPE_BOOL)
+            *rvalue = handle_op(ir, "__builtin_feq64", generate_ir::feq64);
       }
       break;
 
