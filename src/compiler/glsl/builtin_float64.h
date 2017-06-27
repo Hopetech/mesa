@@ -31905,30 +31905,16 @@ fp64_to_int(void *mem_ctx, builtin_available_predicate avail)
       /* IF CONDITION */
       ir_expression *const r1A33 = expr(ir_unop_u2i, r1A05);
       ir_expression *const r1A34 = less(r1A33, body.constant(int(0)));
-      ir_if *f1A32 = new(mem_ctx) ir_if(operand(r1A34).val);
+      ir_expression *const r1A35 = lshift(r1A05, body.constant(int(1)));
+      ir_expression *const r1A36 = equal(r1A35, body.constant(0u));
+      ir_expression *const r1A37 = logic_and(r1A34, r1A36);
+      ir_if *f1A32 = new(mem_ctx) ir_if(operand(r1A37).val);
       exec_list *const f1A32_parent_instructions = body.instructions;
 
          /* THEN INSTRUCTIONS */
          body.instructions = &f1A32->then_instructions;
 
-         body.emit(assign(r1A06, add(r1A06, body.constant(1u)), 0x01));
-
-         /* IF CONDITION */
-         ir_expression *const r1A36 = lshift(r1A05, body.constant(int(1)));
-         ir_expression *const r1A37 = equal(r1A36, body.constant(0u));
-         ir_if *f1A35 = new(mem_ctx) ir_if(operand(r1A37).val);
-         exec_list *const f1A35_parent_instructions = body.instructions;
-
-            /* THEN INSTRUCTIONS */
-            body.instructions = &f1A35->then_instructions;
-
-            body.emit(assign(r1A06, bit_and(r1A06, body.constant(4294967294u)), 0x01));
-
-
-         body.instructions = f1A35_parent_instructions;
-         body.emit(f1A35);
-
-         /* END IF */
+         body.emit(assign(r1A06, bit_and(r1A06, body.constant(4294967294u)), 0x01));
 
 
       body.instructions = f1A32_parent_instructions;

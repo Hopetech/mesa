@@ -1338,21 +1338,20 @@ fp64_to_int(uvec2 a)
             absZ = aFrac.y >> (- shiftCount);
       }
    }
-   if (FLOAT_ROUNDING_MODE == FLOAT_ROUND_NEAREST_EVEN) {
-      if (int(aFracExtra) < 0) {
-         ++absZ;
-         if ((aFracExtra << 1) == 0u)
-            absZ &= ~1u;
-      }
-      z = (aSign != 0u) ? - int(absZ) : int(absZ);
-   } else {
-      aFracExtra = uint(aFracExtra != 0u);
-      if (aSign != 0u) {
-         z = -int(absZ + (uint(FLOAT_ROUNDING_MODE == FLOAT_ROUND_DOWN) & aFracExtra));
-      } else {
-         z = int(absZ + (uint(FLOAT_ROUNDING_MODE == FLOAT_ROUND_UP) & aFracExtra));
-      }
+
+   /*
+    * In the GLSL Spec section 5.4.1 Conversion and Scalar Constructors:
+    * When constructors are used to convert any floating-point type to
+    * an integer type, the fractional part of the
+    * floating-point value is dropped. It is undefined to convert
+    * a negative floating-point value to an uint.
+    */
+   if (int(aFracExtra) < 0) {
+      if ((aFracExtra << 1) == 0u)
+         absZ &= ~1u;
    }
+   z = (aSign != 0u) ? - int(absZ) : int(absZ);
+
    if (bool(aSign ^ uint(z < 0)) && bool(z))
       return bool(aSign) ? 0x80000000 : 0x7FFFFFFF;
    return z;
