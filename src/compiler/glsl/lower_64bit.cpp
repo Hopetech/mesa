@@ -645,7 +645,7 @@ lower_64bit_visitor::handle_rvalue(ir_rvalue **rvalue)
             *rvalue = handle_op(ir, "__builtin_fsub64", generate_ir::fsub64);
       }
       break;
-
+/*
    case ir_triop_fma:
       if (lowering(FMA64)) {
          if (ir->type->base_type == GLSL_TYPE_DOUBLE)
@@ -653,7 +653,7 @@ lower_64bit_visitor::handle_rvalue(ir_rvalue **rvalue)
          this->progress = true;
       }
       break;
-
+*/
    case ir_binop_all_equal:
    case ir_binop_any_nequal:
       if (lowering(EQ64)) {
