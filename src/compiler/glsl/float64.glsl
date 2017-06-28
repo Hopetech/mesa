@@ -1396,7 +1396,6 @@ ffma64(uvec2 a, uvec2 b, uvec2 c)
    return fadd64(fmul64(a, b), c);
 }*/
 
-/*
 uint
 sqrtOddAdjustments(int index)
 {
@@ -1476,7 +1475,7 @@ sqrtEvenAdjustments(int index)
 
    return res;
 }
-*/
+
 /* Returns an approximation to the square root of the 32-bit significand given
  * by `a'.  Considered as an integer, `a' must be at least 2^31.  If bit 0 of
  * `aExp' (the least significant bit) is 1, the integer returned approximates
@@ -1485,7 +1484,7 @@ sqrtEvenAdjustments(int index)
  * case, the approximation returned lies strictly within +/-2 of the exact
  * value.
  */
-/*uint estimateSqrt32(int aExp, uint a)
+uint estimateSqrt32(int aExp, uint a)
 {
    uint z;
 
@@ -1499,10 +1498,10 @@ sqrtEvenAdjustments(int index)
       z = a / z + z;
       z = (0x20000u <= z) ? 0xFFFF8000u : (z<<15);
       if (z <= a)
-         return uint(((int(a))>>1));
+         return uint(int(a)>>1);
    }
    return ((estimateDiv64To32(a, 0u, z))>>1) + (z>>1);
-}*/
+}
 
 /* Returns the square root of the double-precision floating-point value `a'.
  * The operation is performed according to the IEEE Standard for Floating-Point
@@ -1511,7 +1510,6 @@ sqrtEvenAdjustments(int index)
 uvec2
 fsqrt64(uvec2 a)
 {
-/*
    uint zFrac0 = 0u;
    uint zFrac1 = 0u;
    uint zFrac2 = 0u;
@@ -1582,8 +1580,8 @@ fsqrt64(uvec2 a)
    }
    shift64ExtraRightJamming(zFrac0, zFrac1, 0u, 10, zFrac0, zFrac1, zFrac2);
    return roundAndPackFloat64(0u, zExp, zFrac0, zFrac1, zFrac2);
-*/
-   return fp32_to_fp64(sqrt(fp64_to_fp32(a)));
+
+//   return fp32_to_fp64(sqrt(fp64_to_fp32(a)));
 }
 
 uvec2
