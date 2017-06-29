@@ -1584,6 +1584,28 @@ fsqrt64(uvec2 a)
 //   return fp32_to_fp64(sqrt(fp64_to_fp32(a)));
 }
 
+void
+shift64Left(uint a0, uint a1, int count, inout uint z0Ptr, inout uint z1Ptr)
+{
+   uint z0;
+   uint z1;
+   int negCount = (- count) & 31;
+
+   if (count == 0) {
+      z0 = a0;
+      z1 = a1;
+   } else if (count < 32) {
+      z0 = (a0 << count) | (a1 >> negCount);
+      z1 = a1 << count;
+   } else {
+      z0 = (count < 64) ? (a1 << count - 32) : 0u;
+      z1 = 0u;
+   }
+
+   z0Ptr = z0;
+   z1Ptr = z1;
+}
+
 uvec2
 uint_to_fp64(uint a)
 {
@@ -1594,11 +1616,9 @@ uint_to_fp64(uint a)
 
    uint aHigh = 0u;
    uint aLow = 0u;
+   shift64Left(0u, a, shiftDist, aHigh, aLow);
 
-   aHigh = a >> (32 - shiftDist);
-   aLow = a << shiftDist;
-
-   return packFloat64(0u, 0x432- shiftDist, aHigh, aLow);
+   return packFloat64(0u, 0x432 - shiftDist, aHigh, aLow);
 }
 
 uint
