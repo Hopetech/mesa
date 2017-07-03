@@ -391,10 +391,10 @@ lower_64bit::lower_op_to_function_call(ir_instruction *base_ir,
 
    if (ir->operation == ir_unop_d2b) {
       for (unsigned i = 0; i < source_components; i++) {
-	 src[1][i] = body.make_temp(glsl_type::uvec2_type, "zero");
+         src[1][i] = body.make_temp(glsl_type::uvec2_type, "zero");
 
-	 body.emit(assign(src[1][i], body.constant(0u), 1));
-	 body.emit(assign(src[1][i], body.constant(0u), 2));
+         body.emit(assign(src[1][i], body.constant(0u), 1));
+         body.emit(assign(src[1][i], body.constant(0u), 2));
       }
       num_operands++;
    }
@@ -657,9 +657,9 @@ lower_64bit_visitor::handle_rvalue(ir_rvalue **rvalue)
    case ir_binop_all_equal:
    case ir_binop_any_nequal:
       if (lowering(EQ64)) {
-	 if (ir->operands[0]->type->base_type == GLSL_TYPE_DOUBLE) {
+	      if (ir->operands[0]->type->base_type == GLSL_TYPE_DOUBLE) {
             *rvalue = handle_op(ir, "__builtin_feq64", generate_ir::feq64);
-	 }
+         }
       }
       break;
    default:
