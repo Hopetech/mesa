@@ -133,6 +133,9 @@ fceil64(void *mem_ctx, builtin_available_predicate avail);
 ir_function_signature *
 ffract64(void *mem_ctx, builtin_available_predicate avail);
 
+ir_function_signature *
+fmod64(void *mem_ctx, builtin_available_predicate avail);
+
 }
 
 #endif /* BULITIN_FUNCTIONS_H */

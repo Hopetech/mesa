@@ -1701,3 +1701,12 @@ ffract64(uvec2 a)
 {
    return fsub64(a, ffloor64(a));
 }
+
+uvec2
+fmod64(uvec2 x, uvec2 y)
+{
+   uvec2 floor = ffloor64(fdiv64(x, y));
+   uvec2 mod = fsub64(x,fmul64(y, floor));
+
+   return (!feq64(mod, y)) ? mod : uvec2(0u, 0u);
+}
