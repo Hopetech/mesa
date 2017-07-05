@@ -1695,3 +1695,9 @@ fceil64(uvec2 a)
 
    return (negative || feq64(a, tr)) ? tr : fadd64(tr, one);
 }
+
+uvec2
+ffract64(uvec2 a)
+{
+   return fsub64(a, ffloor64(a));
+}

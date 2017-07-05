@@ -3405,6 +3405,10 @@ builtin_builder::create_builtins()
                 generate_ir::fceil64(mem_ctx, integer_functions_supported),
                 NULL);
 
+   add_function("__builtin_ffract64",
+                generate_ir::ffract64(mem_ctx, integer_functions_supported),
+                NULL);
+
 #undef F
 #undef FI
 #undef FIUD_VEC
