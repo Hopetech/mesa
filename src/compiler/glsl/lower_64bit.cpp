@@ -536,6 +536,12 @@ lower_64bit_visitor::handle_rvalue(ir_rvalue **rvalue)
       }
       break;
 
+   case ir_unop_floor:
+      if (lowering(FL64)) {
+         *rvalue = handle_op(ir, "__builtin_ffloor64", generate_ir::ffloor64);
+      }
+      break;
+
    case ir_unop_i2d:
       if (lowering(I2D)) {
          if (ir->type->base_type == GLSL_TYPE_DOUBLE)
