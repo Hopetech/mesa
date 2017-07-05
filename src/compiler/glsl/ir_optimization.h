@@ -80,6 +80,7 @@
 #define D2U                       (1U << 19)
 #define TR64                      (1U << 20)
 #define FL64                      (1U << 21)
+#define CE64                      (1U << 22)
 
 /**
  * \see class lower_packing_builtins_visitor

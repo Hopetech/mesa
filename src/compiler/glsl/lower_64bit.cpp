@@ -501,6 +501,12 @@ lower_64bit_visitor::handle_rvalue(ir_rvalue **rvalue)
       }
       break;
 
+   case ir_unop_ceil:
+      if (lowering(CE64)) {
+         *rvalue = handle_op(ir, "__builtin_fceil64", generate_ir::fceil64);
+      }
+      break;
+
    case ir_unop_d2f:
       if (lowering(D2F)) {
          if (ir->type->base_type == GLSL_TYPE_FLOAT)
