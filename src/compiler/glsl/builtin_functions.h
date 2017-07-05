@@ -124,6 +124,9 @@ fp64_to_uint(void *mem_ctx, builtin_available_predicate avail);
 ir_function_signature *
 ftrunc64(void *mem_ctx, builtin_available_predicate avail);
 
+ir_function_signature *
+ffloor64(void *mem_ctx, builtin_available_predicate avail);
+
 }
 
 #endif /* BULITIN_FUNCTIONS_H */

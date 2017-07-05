@@ -1675,3 +1675,13 @@ ftrunc64(uvec2 a)
       return z;
    }
 }
+
+uvec2
+ffloor64(uvec2 a)
+{
+   uvec2 tr = ftrunc64(a);
+   bool negative = bool(extractFloat64Sign(a));
+   uvec2 one = uvec2(0u, 0x3FF00000u);
+
+   return (!negative || feq64(a, tr)) ? tr : fsub64(tr, one);
+}
