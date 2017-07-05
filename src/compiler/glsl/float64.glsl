@@ -1653,3 +1653,25 @@ fp64_to_uint(uvec2 a)
 
    return z;
 }
+
+uvec2
+ftrunc64(uvec2 a)
+{
+   int aExp = extractFloat64Exp(a);
+
+   int unbiasedExp = aExp - 1023;
+
+   if (unbiasedExp < 0)
+      return uvec2(0u, 0u);
+   else if (unbiasedExp > 52)
+      return a;
+   else {
+      uvec2 z;
+      int fracBits = 52 - unbiasedExp;
+      uint maskLo = (fracBits >= 32) ? 0u : (~0u << fracBits);
+      uint maskHi = (fracBits < 33) ? ~0u : (~0u << (fracBits - 32));
+      z.x = maskLo & a.x;
+      z.y = maskHi & a.y;
+      return z;
+   }
+}
