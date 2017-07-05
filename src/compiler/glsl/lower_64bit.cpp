@@ -571,6 +571,12 @@ lower_64bit_visitor::handle_rvalue(ir_rvalue **rvalue)
       }
       break;
 
+   case ir_unop_trunc:
+      if (lowering(TR64)) {
+         *rvalue = handle_op(ir, "__builtin_ftrunc64", generate_ir::ftrunc64);
+      }
+      break;
+
    case ir_binop_add:
       if (lowering(ADD64)) {
          if (ir->type->base_type == GLSL_TYPE_DOUBLE)

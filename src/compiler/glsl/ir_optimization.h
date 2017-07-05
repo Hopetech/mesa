@@ -78,6 +78,7 @@
 #define SQRT64                    (1U << 17)
 #define U2D                       (1U << 18)
 #define D2U                       (1U << 19)
+#define TR64                      (1U << 20)
 
 /**
  * \see class lower_packing_builtins_visitor
