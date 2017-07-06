@@ -1314,46 +1314,32 @@ fp64_to_int(uvec2 a)
    int aExp = extractFloat64Exp(a);
    uint aSign = extractFloat64Sign(a);
 
-   int z;
    uint absZ = 0u;
    uint aFracExtra = 0u;
+   int z;
    int shiftCount = aExp - 0x413;
+
    if (0 <= shiftCount) {
       if (0x41E < aExp) {
-         if ((aExp == 0x7FF) && ((aFrac.y | aFrac.x) != 0u))
+         if ((aExp == 0x7FF) && bool(aFrac.y | aFrac.x))
             aSign = 0u;
-         return (aSign != 0u) ? 0x80000000 : 0x7FFFFFFF;
+         return bool(aSign) ? 0x80000000 : 0x7FFFFFFF;
       }
       shortShift64Left(aFrac.y | 0x00100000u, aFrac.x, shiftCount, absZ, aFracExtra);
-      if (0x80000000u < absZ)
-         return (aSign != 0u) ? 0x80000000 : 0x7FFFFFFF;
    } else {
-      aFrac.x = uint(aFrac.x != 0u);
-      if (aExp < 0x3FE) {
-         aFracExtra = uint(aExp) | aFrac.y | aFrac.x;
-         absZ = 0u;
-      } else {
-            aFrac.y |= 0x00100000u;
-            aFracExtra = (aFrac.y << (shiftCount & 31)) | aFrac.x;
-            absZ = aFrac.y >> (- shiftCount);
-      }
+      if (aExp < 0x3FF)
+         return 0;
+
+      aFrac.y |= 0x00100000u;
+      aFracExtra = ( aFrac.y << (shiftCount & 31)) | aFrac.x;
+      absZ = aFrac.y >> (- shiftCount);
    }
 
-   /*
-    * In the GLSL Spec section 5.4.1 Conversion and Scalar Constructors:
-    * When constructors are used to convert any floating-point type to
-    * an integer type, the fractional part of the
-    * floating-point value is dropped. It is undefined to convert
-    * a negative floating-point value to an uint.
-    */
-   if (int(aFracExtra) < 0) {
-      if ((aFracExtra << 1) == 0u)
-         absZ &= ~1u;
-   }
    z = (aSign != 0u) ? - int(absZ) : int(absZ);
 
    if (bool(aSign ^ uint(z < 0)) && bool(z))
       return bool(aSign) ? 0x80000000 : 0x7FFFFFFF;
+
    return z;
 }
 
