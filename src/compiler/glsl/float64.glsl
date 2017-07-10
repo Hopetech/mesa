@@ -1382,11 +1382,11 @@ int_to_fp64(int a)
  * the corresponding value `b', and false otherwise.  The comparison is performed
  * according to the IEEE Standard for Floating-Point Arithmetic.
  */
-bool
+/*bool
 fgt64(uvec2 a, uvec2 b)
 {
    return flt64(b, a);
-}
+}*/
 
 /*uvec2
 ffma64(uvec2 a, uvec2 b, uvec2 c)

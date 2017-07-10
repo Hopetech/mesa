@@ -106,8 +106,8 @@ fp64_to_int(void *mem_ctx, builtin_available_predicate avail);
 ir_function_signature *
 int_to_fp64(void *mem_ctx, builtin_available_predicate avail);
 
-ir_function_signature *
-fgt64(void *mem_ctx, builtin_available_predicate avail);
+//ir_function_signature *
+//fgt64(void *mem_ctx, builtin_available_predicate avail);
 
 //ir_function_signature *
 //ffma64(void *mem_ctx, builtin_available_predicate avail);

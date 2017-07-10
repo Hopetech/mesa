@@ -73,7 +73,6 @@
 #define D2F                       (1U << 12)
 #define D2I                       (1U << 13)
 #define I2D                       (1U << 14)
-#define GT64                      (1U << 15)
 #define FMA64                     (1U << 16)
 #define SQRT64                    (1U << 17)
 #define U2D                       (1U << 18)

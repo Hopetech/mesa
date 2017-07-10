@@ -7048,8 +7048,8 @@ st_link_shader(struct gl_context *ctx, struct gl_shader_program *prog)
                                D2F |
                                D2I |
                                I2D |
-                               GT64 |
-                               /*FMA64 |*/
+                               /* GT64 |
+                               FMA64 |*/
                                SQRT64 |
                                U2D |
                                D2U |
