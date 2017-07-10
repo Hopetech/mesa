@@ -1711,3 +1711,15 @@ fmod64(uvec2 x, uvec2 y)
 
    return (!feq64(mod, y)) ? mod : uvec2(0u, 0u);
 }
+
+uvec2
+fsign64(uvec2 a)
+{
+   if ((a.y << 1 | a.x) == 0u)
+      return uvec2(0u, 0u);
+
+   uvec2 retval;
+   retval.x = 0u;
+   retval.y = (a.y & 0x80000000u) | 0x3FF00000u;
+   return retval;
+}
