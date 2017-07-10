@@ -580,7 +580,11 @@ lower_64bit_visitor::handle_rvalue(ir_rvalue **rvalue)
 
    case ir_unop_sign:
       if (lowering(SIGN64)) {
-         *rvalue = handle_op(ir, "__builtin_sign64", generate_ir::sign64);
+         if (ir->type->base_type == GLSL_TYPE_DOUBLE) {
+            *rvalue = handle_op(ir, "__builtin_fsign64", generate_ir::fsign64);
+         } else {
+            *rvalue = handle_op(ir, "__builtin_sign64", generate_ir::sign64);
+         }
       }
       break;
 
