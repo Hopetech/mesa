@@ -52,13 +52,16 @@ fneg64(uvec2 a)
 }
 
 /* Returns the fraction bits of the double-precision floating-point value `a'.*/
-uvec2
-extractFloat64Frac(uvec2 a)
+uint
+extractFloat64FracLo(uvec2 a)
 {
-   uvec2 frac;
-   frac.y = a.y & 0x000FFFFFu;
-   frac.x = a.x;
-   return frac;
+   return a.x;
+}
+
+uint
+extractFloat64FracHi(uvec2 a)
+{
+   return a.y & 0x000FFFFFu;
 }
 
 /* Returns the exponent bits of the double-precision floating-point value `a'.*/
@@ -75,17 +78,17 @@ extractFloat64Exp(uvec2 a)
 bool
 feq64(uvec2 a, uvec2 b)
 {
-   uvec2 aFrac;
-   uvec2 bFrac;
    bool isaNaN;
    bool isbNaN;
 
-   aFrac = extractFloat64Frac(a);
-   bFrac = extractFloat64Frac(b);
+   uint aFracLo = extractFloat64FracLo(a);
+   uint aFracHi = extractFloat64FracHi(a);
+   uint bFracLo = extractFloat64FracLo(b);
+   uint bFracHi = extractFloat64FracHi(b);
    isaNaN = (extractFloat64Exp(a) == 0x7FF) &&
-      ((aFrac.y | aFrac.x) != 0u);
+      ((aFracHi | aFracLo) != 0u);
    isbNaN = (extractFloat64Exp(b) == 0x7FF) &&
-      ((bFrac.y | bFrac.x) != 0u);
+      ((bFracHi | bFracLo) != 0u);
 
    if (isaNaN || isbNaN)
       return false;
@@ -120,17 +123,17 @@ fle64(uvec2 a, uvec2 b)
 {
    uint aSign;
    uint bSign;
-   uvec2 aFrac;
-   uvec2 bFrac;
    bool isaNaN;
    bool isbNaN;
 
-   aFrac = extractFloat64Frac(a);
-   bFrac = extractFloat64Frac(b);
+   uint aFracLo = extractFloat64FracLo(a);
+   uint aFracHi = extractFloat64FracHi(a);
+   uint bFracLo = extractFloat64FracLo(b);
+   uint bFracHi = extractFloat64FracHi(b);
    isaNaN = (extractFloat64Exp(a) == 0x7FF) &&
-      ((aFrac.y | aFrac.x) != 0u);
+      ((aFracHi | aFracLo) != 0u);
    isbNaN = (extractFloat64Exp(b) == 0x7FF) &&
-      ((bFrac.y | bFrac.x) != 0u);
+      ((bFracHi | bFracLo) != 0u);
 
    if (isaNaN || isbNaN)
       return false;
@@ -138,7 +141,7 @@ fle64(uvec2 a, uvec2 b)
    aSign = extractFloat64Sign(a);
    bSign = extractFloat64Sign(b);
    if (aSign != bSign)
-      return (aSign != 0u) || (((((a.y | b.y)<<1)) | a.x | b.x) == 0u);
+      return (aSign != 0u) || ((((a.y | b.y)<<1) | a.x | b.x) == 0u);
 
    return (aSign != 0u) ? le64(b.y, b.x, a.y, a.x)
       : le64(a.y, a.x, b.y, b.x);
@@ -163,17 +166,17 @@ flt64(uvec2 a, uvec2 b)
 {
    uint aSign;
    uint bSign;
-   uvec2 aFrac;
-   uvec2 bFrac;
    bool isaNaN;
    bool isbNaN;
 
-   aFrac = extractFloat64Frac(a);
-   bFrac = extractFloat64Frac(b);
+   uint aFracLo = extractFloat64FracLo(a);
+   uint aFracHi = extractFloat64FracHi(a);
+   uint bFracLo = extractFloat64FracLo(b);
+   uint bFracHi = extractFloat64FracHi(b);
    isaNaN = (extractFloat64Exp(a) == 0x7FF) &&
-      ((aFrac.y | aFrac.x) != 0u);
+      ((aFracHi | aFracLo) != 0u);
    isbNaN = (extractFloat64Exp(b) == 0x7FF) &&
-      ((bFrac.y | bFrac.x) != 0u);
+      ((bFracHi | bFracLo) != 0u);
 
    if (isaNaN || isbNaN)
       return false;
@@ -181,7 +184,7 @@ flt64(uvec2 a, uvec2 b)
    aSign = extractFloat64Sign(a);
    bSign = extractFloat64Sign(b);
    if (aSign != bSign)
-      return (aSign != 0u) && (((((a.y | b.y)<<1)) | a.x | b.x) != 0u);
+      return (aSign != 0u) && ((((a.y | b.y)<<1) | a.x | b.x) != 0u);
 
    return (aSign != 0u) ? lt64(b.y, b.x, a.y, a.x)
       : lt64(a.y, a.x, b.y, b.x);
@@ -542,44 +545,46 @@ addFloat64Fracs(uvec2 a, uvec2 b, uint zSign)
    uint zFrac2 = 0u;
    int zExp;
 
-   uvec2 aFrac = extractFloat64Frac(a);
+   uint aFracLo = extractFloat64FracLo(a);
+   uint aFracHi = extractFloat64FracHi(a);
+   uint bFracLo = extractFloat64FracLo(b);
+   uint bFracHi = extractFloat64FracHi(b);
    int aExp = extractFloat64Exp(a);
-   uvec2 bFrac = extractFloat64Frac(b);
    int bExp = extractFloat64Exp(b);
    int expDiff = aExp - bExp;
    if (0 < expDiff) {
       if (aExp == 0x7FF) {
-         if ((aFrac.y | aFrac.x) != 0u)
+         if ((aFracHi | aFracLo) != 0u)
             return propagateFloat64NaN(a, b);
          return a;
       }
       if (bExp == 0)
          --expDiff;
       else
-         bFrac.y |= 0x00100000u;
+         bFracHi |= 0x00100000u;
       shift64ExtraRightJamming(
-         bFrac.y, bFrac.x, 0u, expDiff, bFrac.y, bFrac.x, zFrac2);
+         bFracHi, bFracLo, 0u, expDiff, bFracHi, bFracLo, zFrac2);
       zExp = aExp;
    } else if (expDiff < 0) {
       if (bExp == 0x7FF) {
-         if ((bFrac.y | bFrac.x) != 0u)
+         if ((bFracHi | bFracLo) != 0u)
             return propagateFloat64NaN(a, b);
          return packFloat64(zSign, 0x7FF, 0u, 0u);
       }
       if (aExp == 0)
          ++expDiff;
       else
-         aFrac.y |= 0x00100000u;
+         aFracHi |= 0x00100000u;
       shift64ExtraRightJamming(
-         aFrac.y, aFrac.x, 0u, - expDiff, aFrac.y, aFrac.x, zFrac2);
+         aFracHi, aFracLo, 0u, - expDiff, aFracHi, aFracLo, zFrac2);
       zExp = bExp;
    } else {
       if (aExp == 0x7FF) {
-         if ((aFrac.y | aFrac.x | bFrac.y | bFrac.x) != 0u)
+         if ((aFracHi | aFracLo | bFracHi | bFracLo) != 0u)
             return propagateFloat64NaN(a, b);
          return a;
       }
-      add64(aFrac.y, aFrac.x, bFrac.y, bFrac.x, zFrac0, zFrac1);
+      add64(aFracHi, aFracLo, bFracHi, bFracLo, zFrac0, zFrac1);
       if (aExp == 0)
          return packFloat64(zSign, 0, zFrac0, zFrac1);
       zFrac2 = 0u;
@@ -589,8 +594,8 @@ addFloat64Fracs(uvec2 a, uvec2 b, uint zSign)
          zFrac0, zFrac1, zFrac2, 1, zFrac0, zFrac1, zFrac2);
       return roundAndPackFloat64(zSign, zExp, zFrac0, zFrac1, zFrac2);
    }
-   aFrac.y |= 0x00100000u;
-   add64(aFrac.y, aFrac.x, bFrac.y, bFrac.x, zFrac0, zFrac1);
+   aFracHi |= 0x00100000u;
+   add64(aFracHi, aFracLo, bFracHi, bFracLo, zFrac0, zFrac1);
    --zExp;
    if (zFrac0 < 0x00200000u)
       return roundAndPackFloat64(zSign, zExp, zFrac0, zFrac1, zFrac2);
@@ -613,16 +618,18 @@ subFloat64Fracs(uvec2 a, uvec2 b, uint zSign)
    uint zFrac0 = 0u;
    uint zFrac1 = 0u;
 
-   uvec2 aFrac = extractFloat64Frac(a);
+   uint aFracLo = extractFloat64FracLo(a);
+   uint aFracHi = extractFloat64FracHi(a);
+   uint bFracLo = extractFloat64FracLo(b);
+   uint bFracHi = extractFloat64FracHi(b);
    int aExp = extractFloat64Exp(a);
-   uvec2 bFrac = extractFloat64Frac(b);
    int bExp = extractFloat64Exp(b);
    int expDiff = aExp - bExp;
-   shortShift64Left(aFrac.y, aFrac.x, 10, aFrac.y, aFrac.x);
-   shortShift64Left(bFrac.y, bFrac.x, 10, bFrac.y, bFrac.x);
+   shortShift64Left(aFracHi, aFracLo, 10, aFracHi, aFracLo);
+   shortShift64Left(bFracHi, bFracLo, 10, bFracHi, bFracLo);
    if (0 < expDiff) {
       if (aExp == 0x7FF) {
-         if ((aFrac.y | aFrac.x) != 0u) {
+         if ((aFracHi | aFracLo) != 0u) {
             return propagateFloat64NaN(a, b);
          }
          return a;
@@ -630,34 +637,34 @@ subFloat64Fracs(uvec2 a, uvec2 b, uint zSign)
       if (bExp == 0)
          --expDiff;
       else
-         bFrac.y |= 0x40000000u;
-      shift64RightJamming(bFrac.y, bFrac.x, expDiff, bFrac.y, bFrac.x);
-      aFrac.y |= 0x40000000u;
-      sub64(aFrac.y, aFrac.x, bFrac.y, bFrac.x, zFrac0, zFrac1);
+         bFracHi |= 0x40000000u;
+      shift64RightJamming(bFracHi, bFracLo, expDiff, bFracHi, bFracLo);
+      aFracHi |= 0x40000000u;
+      sub64(aFracHi, aFracLo, bFracHi, bFracLo, zFrac0, zFrac1);
       zExp = aExp;
       --zExp;
       return normalizeRoundAndPackFloat64(zSign, zExp - 10, zFrac0, zFrac1);
    }
    if (expDiff < 0) {
       if (bExp == 0x7FF) {
-         if ((bFrac.y | bFrac.x) != 0u)
+         if ((bFracHi | bFracLo) != 0u)
             return propagateFloat64NaN(a, b);
          return packFloat64(zSign ^ 1u, 0x7FF, 0u, 0u);
       }
       if (aExp == 0)
          ++expDiff;
       else
-         aFrac.y |= 0x40000000u;
-      shift64RightJamming(aFrac.y, aFrac.x, - expDiff, aFrac.y, aFrac.x);
-      bFrac.y |= 0x40000000u;
-      sub64(bFrac.y, bFrac.x, aFrac.y, aFrac.x, zFrac0, zFrac1);
+         aFracHi |= 0x40000000u;
+      shift64RightJamming(aFracHi, aFracLo, - expDiff, aFracHi, aFracLo);
+      bFracHi |= 0x40000000u;
+      sub64(bFracHi, bFracLo, aFracHi, aFracLo, zFrac0, zFrac1);
       zExp = bExp;
       zSign ^= 1u;
       --zExp;
       return normalizeRoundAndPackFloat64(zSign, zExp - 10, zFrac0, zFrac1);
    }
    if (aExp == 0x7FF) {
-      if ((aFrac.y | aFrac.x | bFrac.y | bFrac.x) != 0u)
+      if ((aFracHi | aFracLo | bFracHi | bFracLo) != 0u)
          return propagateFloat64NaN(a, b);
       return uvec2(0xFFFFFFFFu, 0xFFFFFFFFu);
    }
@@ -665,27 +672,27 @@ subFloat64Fracs(uvec2 a, uvec2 b, uint zSign)
       aExp = 1;
       bExp = 1;
    }
-   if (bFrac.y < aFrac.y) {
-      sub64(aFrac.y, aFrac.x, bFrac.y, bFrac.x, zFrac0, zFrac1);
+   if (bFracHi < aFracHi) {
+      sub64(aFracHi, aFracLo, bFracHi, bFracLo, zFrac0, zFrac1);
       zExp = aExp;
       --zExp;
       return normalizeRoundAndPackFloat64(zSign, zExp - 10, zFrac0, zFrac1);
    }
-   if (aFrac.y < bFrac.y) {
-      sub64(bFrac.y, bFrac.x, aFrac.y, aFrac.x, zFrac0, zFrac1);
+   if (aFracHi < bFracHi) {
+      sub64(bFracHi, bFracLo, aFracHi, aFracLo, zFrac0, zFrac1);
       zExp = bExp;
       zSign ^= 1u;
       --zExp;
       return normalizeRoundAndPackFloat64(zSign, zExp - 10, zFrac0, zFrac1);
    }
-   if (bFrac.x < aFrac.x) {
-      sub64(aFrac.y, aFrac.x, bFrac.y, bFrac.x, zFrac0, zFrac1);
+   if (bFracLo < aFracLo) {
+      sub64(aFracHi, aFracLo, bFracHi, bFracLo, zFrac0, zFrac1);
       zExp = aExp;
       --zExp;
       return normalizeRoundAndPackFloat64(zSign, zExp - 10, zFrac0, zFrac1);
    }
-   if (aFrac.x < bFrac.x) {
-      sub64(bFrac.y, bFrac.x, aFrac.y, aFrac.x, zFrac0, zFrac1);
+   if (aFracLo < bFracLo) {
+      sub64(bFracHi, bFracLo, aFracHi, aFracLo, zFrac0, zFrac1);
       zExp = bExp;
       zSign ^= 1u;
       --zExp;
@@ -830,45 +837,47 @@ fmul64(uvec2 a, uvec2 b)
    uint zFrac3 = 0u;
    int zExp;
 
-   uvec2 aFrac = extractFloat64Frac(a);
+   uint aFracLo = extractFloat64FracLo(a);
+   uint aFracHi = extractFloat64FracHi(a);
+   uint bFracLo = extractFloat64FracLo(b);
+   uint bFracHi = extractFloat64FracHi(b);
    int aExp = extractFloat64Exp(a);
    uint aSign = extractFloat64Sign(a);
-   uvec2 bFrac = extractFloat64Frac(b);
    int bExp = extractFloat64Exp(b);
    uint bSign = extractFloat64Sign(b);
    uint zSign = aSign ^ bSign;
    if (aExp == 0x7FF) {
-      if (((aFrac.y | aFrac.x) != 0u) ||
-         ((bExp == 0x7FF) && ((bFrac.y | bFrac.x) != 0u))) {
+      if (((aFracHi | aFracLo) != 0u) ||
+         ((bExp == 0x7FF) && ((bFracHi | bFracLo) != 0u))) {
          return propagateFloat64NaN(a, b);
       }
-      if ((uint(bExp) | bFrac.y | bFrac.x) == 0u)
+      if ((uint(bExp) | bFracHi | bFracLo) == 0u)
             return uvec2(0xFFFFFFFFu, 0xFFFFFFFFu);
       return packFloat64(zSign, 0x7FF, 0u, 0u);
    }
    if (bExp == 0x7FF) {
-      if ((bFrac.y | bFrac.x) != 0u)
+      if ((bFracHi | bFracLo) != 0u)
          return propagateFloat64NaN(a, b);
-      if ((uint(aExp) | aFrac.y | aFrac.x) == 0u)
+      if ((uint(aExp) | aFracHi | aFracLo) == 0u)
          return uvec2(0xFFFFFFFFu, 0xFFFFFFFFu);
       return packFloat64(zSign, 0x7FF, 0u, 0u);
    }
    if (aExp == 0) {
-      if ((aFrac.y | aFrac.x) == 0u)
+      if ((aFracHi | aFracLo) == 0u)
          return packFloat64(zSign, 0, 0u, 0u);
-      normalizeFloat64Subnormal(aFrac.y, aFrac.x, aExp, aFrac.y, aFrac.x);
+      normalizeFloat64Subnormal(aFracHi, aFracLo, aExp, aFracHi, aFracLo);
    }
    if (bExp == 0) {
-      if ((bFrac.y | bFrac.x) == 0u)
+      if ((bFracHi | bFracLo) == 0u)
          return packFloat64(zSign, 0, 0u, 0u);
-      normalizeFloat64Subnormal(bFrac.y, bFrac.x, bExp, bFrac.y, bFrac.x);
+      normalizeFloat64Subnormal(bFracHi, bFracLo, bExp, bFracHi, bFracLo);
    }
    zExp = aExp + bExp - 0x400;
-   aFrac.y |= 0x00100000u;
-   shortShift64Left(bFrac.y, bFrac.x, 12, bFrac.y, bFrac.x);
+   aFracHi |= 0x00100000u;
+   shortShift64Left(bFracHi, bFracLo, 12, bFracHi, bFracLo);
    mul64To128(
-      aFrac.y, aFrac.x, bFrac.y, bFrac.x, zFrac0, zFrac1, zFrac2, zFrac3);
-   add64(zFrac0, zFrac1, aFrac.y, aFrac.x, zFrac0, zFrac1);
+      aFracHi, aFracLo, bFracHi, bFracLo, zFrac0, zFrac1, zFrac2, zFrac3);
+   add64(zFrac0, zFrac1, aFracHi, aFracLo, zFrac0, zFrac1);
    zFrac2 |= uint(zFrac3 != 0u);
    if (0x00200000u <= zFrac0) {
       shift64ExtraRightJamming(
@@ -1039,62 +1048,64 @@ fdiv64(uvec2 a, uvec2 b)
    uint term2 = 0u;
    uint term3 = 0u;
 
-   uvec2 aFrac = extractFloat64Frac(a);
+   uint aFracLo = extractFloat64FracLo(a);
+   uint aFracHi = extractFloat64FracHi(a);
+   uint bFracLo = extractFloat64FracLo(b);
+   uint bFracHi = extractFloat64FracHi(b);
    int aExp = extractFloat64Exp(a);
    uint aSign = extractFloat64Sign(a);
-   uvec2 bFrac = extractFloat64Frac(b);
    int bExp = extractFloat64Exp(b);
    uint bSign = extractFloat64Sign(b);
    uint zSign = aSign ^ bSign;
    if (aExp == 0x7FF) {
-      if ((aFrac.y | aFrac.x) != 0u)
+      if ((aFracHi | aFracLo) != 0u)
          return propagateFloat64NaN(a, b);
       if (bExp == 0x7FF) {
-         if ((bFrac.y | bFrac.x) != 0u)
+         if ((bFracHi | bFracLo) != 0u)
             return propagateFloat64NaN(a, b);
          return uvec2(0xFFFFFFFFu, 0xFFFFFFFFu);
       }
       return packFloat64(zSign, 0x7FF, 0u, 0u);
    }
    if (bExp == 0x7FF) {
-      if ((bFrac.y | bFrac.x) != 0u)
+      if ((bFracHi | bFracLo) != 0u)
          return propagateFloat64NaN(a, b);
       return packFloat64(zSign, 0, 0u, 0u);
    }
    if (bExp == 0) {
-      if ((bFrac.y | bFrac.x) == 0u) {
-         if ((uint(aExp) | aFrac.y | aFrac.x) == 0u)
+      if ((bFracHi | bFracLo) == 0u) {
+         if ((uint(aExp) | aFracHi | aFracLo) == 0u)
             return uvec2(0xFFFFFFFFu, 0xFFFFFFFFu);
          return packFloat64(zSign, 0x7FF, 0u, 0u);
       }
-      normalizeFloat64Subnormal(bFrac.y, bFrac.x, bExp, bFrac.y, bFrac.x);
+      normalizeFloat64Subnormal(bFracHi, bFracLo, bExp, bFracHi, bFracLo);
    }
    if (aExp == 0) {
-      if ((aFrac.y | aFrac.x) == 0u)
+      if ((aFracHi | aFracLo) == 0u)
          return packFloat64(zSign, 0, 0u, 0u);
-      normalizeFloat64Subnormal(aFrac.y, aFrac.x, aExp, aFrac.y, aFrac.x);
+      normalizeFloat64Subnormal(aFracHi, aFracLo, aExp, aFracHi, aFracLo);
    }
    zExp = aExp - bExp + 0x3FD;
-   shortShift64Left(aFrac.y | 0x00100000u, aFrac.x, 11, aFrac.y, aFrac.x);
-   shortShift64Left(bFrac.y | 0x00100000u, bFrac.x, 11, bFrac.y, bFrac.x);
-   if (le64(bFrac.y, bFrac.x, aFrac.y, aFrac.x)) {
-      shift64Right(aFrac.y, aFrac.x, 1, aFrac.y, aFrac.x);
+   shortShift64Left(aFracHi | 0x00100000u, aFracLo, 11, aFracHi, aFracLo);
+   shortShift64Left(bFracHi | 0x00100000u, bFracLo, 11, bFracHi, bFracLo);
+   if (le64(bFracHi, bFracLo, aFracHi, aFracLo)) {
+      shift64Right(aFracHi, aFracLo, 1, aFracHi, aFracLo);
       ++zExp;
    }
-   zFrac0 = estimateDiv64To32(aFrac.y, aFrac.x, bFrac.y);
-   mul64By32To96(bFrac.y, bFrac.x, zFrac0, term0, term1, term2);
-   sub96(aFrac.y, aFrac.x, 0u, term0, term1, term2, rem0, rem1, rem2);
+   zFrac0 = estimateDiv64To32(aFracHi, aFracLo, bFracHi);
+   mul64By32To96(bFracHi, bFracLo, zFrac0, term0, term1, term2);
+   sub96(aFracHi, aFracLo, 0u, term0, term1, term2, rem0, rem1, rem2);
    while (int(rem0) < 0) {
       --zFrac0;
-      add96(rem0, rem1, rem2, 0u, bFrac.y, bFrac.x, rem0, rem1, rem2);
+      add96(rem0, rem1, rem2, 0u, bFracHi, bFracLo, rem0, rem1, rem2);
    }
-   zFrac1 = estimateDiv64To32(rem1, rem2, bFrac.y);
+   zFrac1 = estimateDiv64To32(rem1, rem2, bFracHi);
    if ((zFrac1 & 0x3FFu) <= 4u) {
-      mul64By32To96(bFrac.y, bFrac.x, zFrac1, term1, term2, term3);
+      mul64By32To96(bFracHi, bFracLo, zFrac1, term1, term2, term3);
       sub96(rem1, rem2, 0u, term1, term2, term3, rem1, rem2, rem3);
       while (int(rem1) < 0) {
          --zFrac1;
-         add96(rem1, rem2, rem3, 0u, bFrac.y, bFrac.x, rem1, rem2, rem3);
+         add96(rem1, rem2, rem3, 0u, bFracHi, bFracLo, rem1, rem2, rem3);
       }
       zFrac1 |= uint(((rem1 | rem2 | rem3) != 0u));
    }
@@ -1153,12 +1164,11 @@ fp32_to_fp64(float f)
 
    if (aExp == 0xFF) {
       if (aFrac != 0u) {
-         uvec2 nan;
-         nan.x = 0u;
-         nan.y = a<<9;
-         shift64Right(nan.y, nan.x, 12, nan.y, nan.x);
-         nan.y |= ((aSign<<31) | 0x7FF80000u);
-         return nan;
+         uint nanLo = 0u;
+         uint nanHi = a<<9;
+         shift64Right(nanHi, nanLo, 12, nanHi, nanLo);
+         nanHi |= ((aSign<<31) | 0x7FF80000u);
+         return uvec2(nanLo, nanHi);
       }
       return packFloat64(aSign, 0x7FF, 0u, 0u);
     }
@@ -1282,17 +1292,18 @@ fp64_to_fp32(uvec2 a)
    uint zFrac = 0u;
    uint allZero = 0u;
 
-   uvec2 aFrac = extractFloat64Frac(a);
+   uint aFracLo = extractFloat64FracLo(a);
+   uint aFracHi = extractFloat64FracHi(a);
    int aExp = extractFloat64Exp(a);
    uint aSign = extractFloat64Sign(a);
    if (aExp == 0x7FF) {
-      if ((aFrac.y | aFrac.x) != 0u) {
+      if ((aFracHi | aFracLo) != 0u) {
          shortShift64Left(a.y, a.x, 12, a.y, a.x);
          return uintBitsToFloat((aSign<<31) | 0x7FC00000u | (a.y>>9));
       }
       return uintBitsToFloat(packFloat32(aSign, 0xFF, 0u));
    }
-   shift64RightJamming(aFrac.y, aFrac.x, 22, allZero, zFrac);
+   shift64RightJamming(aFracHi, aFracLo, 22, allZero, zFrac);
    if (aExp != 0)
       zFrac |= 0x40000000u;
 
@@ -1310,7 +1321,8 @@ fp64_to_fp32(uvec2 a)
 int
 fp64_to_int(uvec2 a)
 {
-   uvec2 aFrac = extractFloat64Frac(a);
+   uint aFracLo = extractFloat64FracLo(a);
+   uint aFracHi = extractFloat64FracHi(a);
    int aExp = extractFloat64Exp(a);
    uint aSign = extractFloat64Sign(a);
 
@@ -1321,18 +1333,18 @@ fp64_to_int(uvec2 a)
 
    if (0 <= shiftCount) {
       if (0x41E < aExp) {
-         if ((aExp == 0x7FF) && bool(aFrac.y | aFrac.x))
+         if ((aExp == 0x7FF) && bool(aFracHi | aFracLo))
             aSign = 0u;
          return bool(aSign) ? 0x80000000 : 0x7FFFFFFF;
       }
-      shortShift64Left(aFrac.y | 0x00100000u, aFrac.x, shiftCount, absZ, aFracExtra);
+      shortShift64Left(aFracHi | 0x00100000u, aFracLo, shiftCount, absZ, aFracExtra);
    } else {
       if (aExp < 0x3FF)
          return 0;
 
-      aFrac.y |= 0x00100000u;
-      aFracExtra = ( aFrac.y << (shiftCount & 31)) | aFrac.x;
-      absZ = aFrac.y >> (- shiftCount);
+      aFracHi |= 0x00100000u;
+      aFracExtra = ( aFracHi << (shiftCount & 31)) | aFracLo;
+      absZ = aFracHi >> (- shiftCount);
    }
 
    z = (aSign != 0u) ? - int(absZ) : int(absZ);
@@ -1496,7 +1508,7 @@ uint estimateSqrt32(int aExp, uint a)
 uvec2
 fsqrt64(uvec2 a)
 {
-   uint zFrac0 = 0u;
+/*  uint zFrac0 = 0u;
    uint zFrac1 = 0u;
    uint zFrac2 = 0u;
    uint doubleZFrac0 = 0u;
@@ -1512,36 +1524,37 @@ fsqrt64(uvec2 a)
    default_nan.y = 0xFFFFFFFFu;
    default_nan.x = 0xFFFFFFFFu;
 
-   uvec2 aFrac = extractFloat64Frac(a);
+   uint aFracLo = extractFloat64FracLo(a);
+   uint aFracHi = extractFloat64FracHi(a);
    int aExp = extractFloat64Exp(a);
    uint aSign = extractFloat64Sign(a);
    if (aExp == 0x7FF) {
-      if ((aFrac.y | aFrac.x) != 0u)
+      if ((aFracHi | aFracLo) != 0u)
          return propagateFloat64NaN(a, a);
       if (aSign == 0u)
          return a;
       return default_nan;
    }
    if (aSign != 0u) {
-      if ((uint(aExp) | aFrac.y | aFrac.x) == 0u)
+      if ((uint(aExp) | aFracHi | aFracLo) == 0u)
          return a;
       return default_nan;
    }
    if (aExp == 0) {
-      if ((aFrac.y | aFrac.x) == 0u)
+      if ((aFracHi | aFracLo) == 0u)
          return packFloat64(0u, 0, 0u, 0u);
-      normalizeFloat64Subnormal(aFrac.y, aFrac.x, aExp, aFrac.y, aFrac.x);
+      normalizeFloat64Subnormal(aFracHi, aFracLo, aExp, aFracHi, aFracLo);
    }
    int zExp = ((aExp - 0x3FF)>>1) + 0x3FE;
-   aFrac.y |= 0x00100000u;
-   shortShift64Left(aFrac.y, aFrac.x, 11, term0, term1);
+   aFracHi |= 0x00100000u;
+   shortShift64Left(aFracHi, aFracLo, 11, term0, term1);
    zFrac0 = (estimateSqrt32(aExp, term0)>>1) + 1u;
    if (zFrac0 == 0u)
       zFrac0 = 0x7FFFFFFFu;
    doubleZFrac0 = zFrac0 + zFrac0;
-   shortShift64Left(aFrac.y, aFrac.x, 9 - (aExp & 1), aFrac.y, aFrac.x);
+   shortShift64Left(aFracHi, aFracLo, 9 - (aExp & 1), aFracHi, aFracLo);
    mul32To64(zFrac0, zFrac0, term0, term1);
-   sub64(aFrac.y, aFrac.x, term0, term1, rem0, rem1);
+   sub64(aFracHi, aFracLo, term0, term1, rem0, rem1);
    while (int(rem0) < 0) {
       --zFrac0;
       doubleZFrac0 -= 2u;
@@ -1566,8 +1579,8 @@ fsqrt64(uvec2 a)
    }
    shift64ExtraRightJamming(zFrac0, zFrac1, 0u, 10, zFrac0, zFrac1, zFrac2);
    return roundAndPackFloat64(0u, zExp, zFrac0, zFrac1, zFrac2);
-
-//   return fp32_to_fp64(sqrt(fp64_to_fp32(a)));
+*/
+   return fp32_to_fp64(sqrt(fp64_to_fp32(a)));
 }
 
 void
@@ -1610,29 +1623,30 @@ uint_to_fp64(uint a)
 uint
 fp64_to_uint(uvec2 a)
 {
-   uvec2 aFrac = extractFloat64Frac(a);
+   uint aFracLo = extractFloat64FracLo(a);
+   uint aFracHi = extractFloat64FracHi(a);
    int aExp = extractFloat64Exp(a);
    uint aSign = extractFloat64Sign(a);
 
    if (aSign != 0u)
       return 0u;
 
-   if ((aExp == 0x7FF) && ((aFrac.y | aFrac.x) != 0u))
+   if ((aExp == 0x7FF) && ((aFracHi | aFracLo) != 0u))
       return 0xFFFFFFFFu;
 
    if (aExp != 0)
-      aFrac.y |= 0x00100000u;
+      aFracHi |= 0x00100000u;
 
    int shiftDist = 0x427 - aExp;
    if (0 < shiftDist)
-      shift64RightJamming(aFrac.y, aFrac.x, shiftDist, aFrac.y, aFrac.x);
+      shift64RightJamming(aFracHi, aFracLo, shiftDist, aFracHi, aFracLo);
 
-   if ((aFrac.y & 0xFFFFF000u) != 0u)
+   if ((aFracHi & 0xFFFFF000u) != 0u)
       return (aSign != 0u) ? 0u : ~0u;
 
    uint z = 0u;
    uint zero = 0u;
-   shift64Right(aFrac.y, aFrac.x, 12, zero, z);
+   shift64Right(aFracHi, aFracLo, 12, zero, z);
 
    if ((aSign != 0u) && (z != 0u))
       return (aSign != 0u) ? 0u : ~0u;
@@ -1652,13 +1666,14 @@ ftrunc64(uvec2 a)
    else if (unbiasedExp > 52)
       return a;
    else {
-      uvec2 z;
+      uint zLo;
+      uint zHi;
       int fracBits = 52 - unbiasedExp;
       uint maskLo = (fracBits >= 32) ? 0u : (~0u << fracBits);
       uint maskHi = (fracBits < 33) ? ~0u : (~0u << (fracBits - 32));
-      z.x = maskLo & a.x;
-      z.y = maskHi & a.y;
-      return z;
+      zLo = maskLo & a.x;
+      zHi = maskHi & a.y;
+      return uvec2(zLo, zHi);
    }
 }
 
