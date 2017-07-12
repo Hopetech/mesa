@@ -1193,10 +1193,10 @@ fp32_to_fp64(float f)
  * than the desired result exponent whenever `zFrac' is a complete, normalized
  * significand.
  */
-uint
+float
 packFloat32(uint zSign, int zExp, uint zFrac)
 {
-   return (zSign<<31) + (uint(zExp)<<23) + zFrac;
+   return uintBitsToFloat((zSign<<31) + (uint(zExp)<<23) + zFrac);
 }
 
 /* Shifts `a' right by the number of bits given in `count'.  If any nonzero
@@ -1241,41 +1241,41 @@ shift32RightJamming(uint a, int count, inout uint zPtr)
  * The handling of underflow and overflow follows the IEEE Standard for
  * Floating-Point Arithmetic.
  */
-uint
+float
 roundAndPackFloat32(uint zSign, int zExp, uint zFrac)
 {
    bool roundNearestEven;
-   uint roundIncrement;
+   int roundIncrement;
    int roundBits;
 
    roundNearestEven = FLOAT_ROUNDING_MODE == FLOAT_ROUND_NEAREST_EVEN;
-   roundIncrement = 0x40u;
+   roundIncrement = 0x40;
    if (!roundNearestEven) {
       if (FLOAT_ROUNDING_MODE == FLOAT_ROUND_TO_ZERO) {
-         roundIncrement = 0u;
+         roundIncrement = 0;
       } else {
-         roundIncrement = 0x7Fu;
+         roundIncrement = 0x7F;
          if (zSign != 0u) {
             if (FLOAT_ROUNDING_MODE == FLOAT_ROUND_UP)
-               roundIncrement = 0u;
+               roundIncrement = 0;
          } else {
             if (FLOAT_ROUNDING_MODE == FLOAT_ROUND_DOWN)
-               roundIncrement = 0u;
+               roundIncrement = 0;
          }
       }
    }
-   roundBits = int(zFrac) & 0x7F;
+   roundBits = int(zFrac & 0x7Fu);
    if (0xFDu <= uint(zExp)) {
-      if ((0xFD < zExp) || ((zExp == 0xFD) && (int(zFrac + roundIncrement) < 0)))
-            return packFloat32(zSign, 0xFF, 0u) - uint(roundIncrement == 0u);
+      if ((0xFD < zExp) || ((zExp == 0xFD) && (int(zFrac) + roundIncrement) < 0))
+         return packFloat32(zSign, 0xFF, 0u) - float(roundIncrement == 0);
       if (zExp < 0) {
          shift32RightJamming(zFrac, -zExp, zFrac);
          zExp = 0;
          roundBits = int(zFrac) & 0x7F;
       }
    }
-   zFrac = (zFrac + roundIncrement)>>7;
-   zFrac &= ~(uint((roundBits ^ 0x40) == 0) & uint(roundNearestEven));
+   zFrac = (zFrac + uint(roundIncrement))>>7;
+   zFrac &= ~uint(((roundBits ^ 0x40) == 0) && roundNearestEven);
    if (zFrac == 0u)
       zExp = 0;
 
@@ -1301,13 +1301,13 @@ fp64_to_fp32(uvec2 a)
          shortShift64Left(a.y, a.x, 12, a.y, a.x);
          return uintBitsToFloat((aSign<<31) | 0x7FC00000u | (a.y>>9));
       }
-      return uintBitsToFloat(packFloat32(aSign, 0xFF, 0u));
+      return packFloat32(aSign, 0xFF, 0u);
    }
    shift64RightJamming(aFracHi, aFracLo, 22, allZero, zFrac);
    if (aExp != 0)
       zFrac |= 0x40000000u;
 
-   return uintBitsToFloat(roundAndPackFloat32(aSign, aExp - 0x381, zFrac));
+   return roundAndPackFloat32(aSign, aExp - 0x381, zFrac);
 }
 
 /* Returns the result of converting the double-precision floating-point value
