@@ -422,6 +422,16 @@ lower_64bit::lower_op_to_function_call(ir_instruction *base_ir,
           ir->operation == ir_binop_nequal)
          body.emit(assign(dst[i], logic_not(dst[i])));
 
+      if (ir->operation == ir_binop_min) {
+         /* We compute lessThan(src[0], src[1]).
+          * So if the result is true, return src[0] else return src[1].
+          */
+         /* TODO: Evaluate the value return by lessThan */
+         if(dst[i])
+            body.emit(assign(dst[i], src[0][i]));
+         else
+            body.emit(assign(dst[i], src[1][i]));
+      }
    }
 
    ir_rvalue *rv;
@@ -651,6 +661,13 @@ lower_64bit_visitor::handle_rvalue(ir_rvalue **rvalue)
       break;
 
    case ir_binop_less:
+      if (lowering(LT64)) {
+         if (ir->operands[0]->type->base_type == GLSL_TYPE_DOUBLE)
+            *rvalue = handle_op(ir, "__builtin_flt64", generate_ir::flt64);
+      }
+      break;
+
+   case ir_binop_min:
       if (lowering(LT64)) {
          if (ir->operands[0]->type->base_type == GLSL_TYPE_DOUBLE)
             *rvalue = handle_op(ir, "__builtin_flt64", generate_ir::flt64);
