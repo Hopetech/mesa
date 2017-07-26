@@ -1727,3 +1727,46 @@ fsign64(uvec2 a)
    retval.y = (a.y & 0x80000000u) | 0x3FF00000u;
    return retval;
 }
+
+uvec2
+fround64(uvec2 a)
+{
+   int unbiasedExp = extractFloat64Exp(a) - 1023;
+   uint aHi = a.y;
+   uint aLo = a.x;
+
+   if (unbiasedExp < 20) {
+      if (unbiasedExp < 0) {
+         aHi &= 0x80000000u;
+         if (unbiasedExp == -1 && aLo != 0u)
+            aHi |= (1023u << 20);
+         aLo = 0u;
+      } else {
+         uint maskExp = 0x000FFFFFu >> unbiasedExp;
+         /* a is an integral value */
+         if (((aHi & maskExp) == 0u) && (aLo == 0u))
+            return a;
+
+         aHi += 0x00080000u >> unbiasedExp;
+         aHi &= ~maskExp;
+         aLo = 0u;
+      }
+   } else if (unbiasedExp > 51 || unbiasedExp == 1024) {
+      return a;
+   } else {
+      uint maskExp = 0xFFFFFFFFu >> (unbiasedExp - 20);
+      if ((aLo & maskExp) == 0u)
+         return a;
+      uint tmp = aLo + (1u << (51 - unbiasedExp));
+      if(tmp < aLo)
+         aHi += 1u;
+      aLo = tmp;
+
+      aLo &= ~maskExp;
+
+   }
+
+   a.x = aLo;
+   a.y = aHi;
+   return a;
+}

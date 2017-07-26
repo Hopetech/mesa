@@ -54808,3 +54808,228 @@ fsign64(void *mem_ctx, builtin_available_predicate avail)
    sig->replace_parameters(&sig_parameters);
    return sig;
 }
+ir_function_signature *
+fround64(void *mem_ctx, builtin_available_predicate avail)
+{
+   ir_function_signature *const sig =
+      new(mem_ctx) ir_function_signature(glsl_type::uvec2_type, avail);
+   ir_factory body(&sig->body, mem_ctx);
+   sig->is_defined = true;
+
+   exec_list sig_parameters;
+
+   ir_variable *const r2AC1 = new(mem_ctx) ir_variable(glsl_type::uvec2_type, "a", ir_var_function_in);
+   sig_parameters.push_tail(r2AC1);
+   ir_variable *const r2AC2 = body.make_temp(glsl_type::bool_type, "execute_flag");
+   body.emit(assign(r2AC2, body.constant(true), 0x01));
+
+   ir_variable *const r2AC3 = body.make_temp(glsl_type::uvec2_type, "return_value");
+   ir_variable *const r2AC4 = new(mem_ctx) ir_variable(glsl_type::uint_type, "aLo", ir_var_auto);
+   body.emit(r2AC4);
+   ir_variable *const r2AC5 = new(mem_ctx) ir_variable(glsl_type::uint_type, "aHi", ir_var_auto);
+   body.emit(r2AC5);
+   ir_variable *const r2AC6 = body.make_temp(glsl_type::int_type, "assignment_tmp");
+   ir_expression *const r2AC7 = rshift(swizzle_y(r2AC1), body.constant(int(20)));
+   ir_expression *const r2AC8 = bit_and(r2AC7, body.constant(2047u));
+   ir_expression *const r2AC9 = expr(ir_unop_u2i, r2AC8);
+   body.emit(assign(r2AC6, add(r2AC9, body.constant(int(-1023))), 0x01));
+
+   body.emit(assign(r2AC5, swizzle_y(r2AC1), 0x01));
+
+   body.emit(assign(r2AC4, swizzle_x(r2AC1), 0x01));
+
+   /* IF CONDITION */
+   ir_expression *const r2ACB = less(r2AC6, body.constant(int(20)));
+   ir_if *f2ACA = new(mem_ctx) ir_if(operand(r2ACB).val);
+   exec_list *const f2ACA_parent_instructions = body.instructions;
+
+      /* THEN INSTRUCTIONS */
+      body.instructions = &f2ACA->then_instructions;
+
+      /* IF CONDITION */
+      ir_expression *const r2ACD = less(r2AC6, body.constant(int(0)));
+      ir_if *f2ACC = new(mem_ctx) ir_if(operand(r2ACD).val);
+      exec_list *const f2ACC_parent_instructions = body.instructions;
+
+         /* THEN INSTRUCTIONS */
+         body.instructions = &f2ACC->then_instructions;
+
+         body.emit(assign(r2AC5, bit_and(swizzle_y(r2AC1), body.constant(2147483648u)), 0x01));
+
+         /* IF CONDITION */
+         ir_expression *const r2ACF = equal(r2AC6, body.constant(int(-1)));
+         ir_expression *const r2AD0 = nequal(swizzle_x(r2AC1), body.constant(0u));
+         ir_expression *const r2AD1 = logic_and(r2ACF, r2AD0);
+         ir_if *f2ACE = new(mem_ctx) ir_if(operand(r2AD1).val);
+         exec_list *const f2ACE_parent_instructions = body.instructions;
+
+            /* THEN INSTRUCTIONS */
+            body.instructions = &f2ACE->then_instructions;
+
+            body.emit(assign(r2AC5, bit_or(r2AC5, body.constant(1072693248u)), 0x01));
+
+
+         body.instructions = f2ACE_parent_instructions;
+         body.emit(f2ACE);
+
+         /* END IF */
+
+         body.emit(assign(r2AC4, body.constant(0u), 0x01));
+
+
+         /* ELSE INSTRUCTIONS */
+         body.instructions = &f2ACC->else_instructions;
+
+         ir_variable *const r2AD2 = body.make_temp(glsl_type::uint_type, "assignment_tmp");
+         body.emit(assign(r2AD2, rshift(body.constant(1048575u), r2AC6), 0x01));
+
+         /* IF CONDITION */
+         ir_expression *const r2AD4 = bit_and(r2AC5, r2AD2);
+         ir_expression *const r2AD5 = equal(r2AD4, body.constant(0u));
+         ir_expression *const r2AD6 = equal(r2AC4, body.constant(0u));
+         ir_expression *const r2AD7 = logic_and(r2AD5, r2AD6);
+         ir_if *f2AD3 = new(mem_ctx) ir_if(operand(r2AD7).val);
+         exec_list *const f2AD3_parent_instructions = body.instructions;
+
+            /* THEN INSTRUCTIONS */
+            body.instructions = &f2AD3->then_instructions;
+
+            body.emit(assign(r2AC3, r2AC1, 0x03));
+
+            body.emit(assign(r2AC2, body.constant(false), 0x01));
+
+
+            /* ELSE INSTRUCTIONS */
+            body.instructions = &f2AD3->else_instructions;
+
+            ir_expression *const r2AD8 = rshift(body.constant(524288u), r2AC6);
+            body.emit(assign(r2AC5, add(r2AC5, r2AD8), 0x01));
+
+            ir_expression *const r2AD9 = expr(ir_unop_bit_not, r2AD2);
+            body.emit(assign(r2AC5, bit_and(r2AC5, r2AD9), 0x01));
+
+            body.emit(assign(r2AC4, body.constant(0u), 0x01));
+
+
+         body.instructions = f2AD3_parent_instructions;
+         body.emit(f2AD3);
+
+         /* END IF */
+
+
+      body.instructions = f2ACC_parent_instructions;
+      body.emit(f2ACC);
+
+      /* END IF */
+
+
+      /* ELSE INSTRUCTIONS */
+      body.instructions = &f2ACA->else_instructions;
+
+      /* IF CONDITION */
+      ir_expression *const r2ADB = greater(r2AC6, body.constant(int(51)));
+      ir_expression *const r2ADC = equal(r2AC6, body.constant(int(1024)));
+      ir_expression *const r2ADD = logic_or(r2ADB, r2ADC);
+      ir_if *f2ADA = new(mem_ctx) ir_if(operand(r2ADD).val);
+      exec_list *const f2ADA_parent_instructions = body.instructions;
+
+         /* THEN INSTRUCTIONS */
+         body.instructions = &f2ADA->then_instructions;
+
+         body.emit(assign(r2AC3, r2AC1, 0x03));
+
+         body.emit(assign(r2AC2, body.constant(false), 0x01));
+
+
+         /* ELSE INSTRUCTIONS */
+         body.instructions = &f2ADA->else_instructions;
+
+         ir_variable *const r2ADE = body.make_temp(glsl_type::uint_type, "assignment_tmp");
+         ir_expression *const r2ADF = add(r2AC6, body.constant(int(-20)));
+         body.emit(assign(r2ADE, rshift(body.constant(4294967295u), r2ADF), 0x01));
+
+         /* IF CONDITION */
+         ir_expression *const r2AE1 = bit_and(r2AC4, r2ADE);
+         ir_expression *const r2AE2 = equal(r2AE1, body.constant(0u));
+         ir_if *f2AE0 = new(mem_ctx) ir_if(operand(r2AE2).val);
+         exec_list *const f2AE0_parent_instructions = body.instructions;
+
+            /* THEN INSTRUCTIONS */
+            body.instructions = &f2AE0->then_instructions;
+
+            body.emit(assign(r2AC3, r2AC1, 0x03));
+
+            body.emit(assign(r2AC2, body.constant(false), 0x01));
+
+
+            /* ELSE INSTRUCTIONS */
+            body.instructions = &f2AE0->else_instructions;
+
+            ir_variable *const r2AE3 = body.make_temp(glsl_type::uint_type, "assignment_tmp");
+            ir_expression *const r2AE4 = sub(body.constant(int(51)), r2AC6);
+            ir_expression *const r2AE5 = lshift(body.constant(1u), r2AE4);
+            body.emit(assign(r2AE3, add(r2AC4, r2AE5), 0x01));
+
+            /* IF CONDITION */
+            ir_expression *const r2AE7 = less(r2AE3, r2AC4);
+            ir_if *f2AE6 = new(mem_ctx) ir_if(operand(r2AE7).val);
+            exec_list *const f2AE6_parent_instructions = body.instructions;
+
+               /* THEN INSTRUCTIONS */
+               body.instructions = &f2AE6->then_instructions;
+
+               body.emit(assign(r2AC5, add(r2AC5, body.constant(1u)), 0x01));
+
+
+            body.instructions = f2AE6_parent_instructions;
+            body.emit(f2AE6);
+
+            /* END IF */
+
+            ir_expression *const r2AE8 = expr(ir_unop_bit_not, r2ADE);
+            body.emit(assign(r2AC4, bit_and(r2AE3, r2AE8), 0x01));
+
+
+         body.instructions = f2AE0_parent_instructions;
+         body.emit(f2AE0);
+
+         /* END IF */
+
+
+      body.instructions = f2ADA_parent_instructions;
+      body.emit(f2ADA);
+
+      /* END IF */
+
+
+   body.instructions = f2ACA_parent_instructions;
+   body.emit(f2ACA);
+
+   /* END IF */
+
+   /* IF CONDITION */
+   ir_if *f2AE9 = new(mem_ctx) ir_if(operand(r2AC2).val);
+   exec_list *const f2AE9_parent_instructions = body.instructions;
+
+      /* THEN INSTRUCTIONS */
+      body.instructions = &f2AE9->then_instructions;
+
+      body.emit(assign(r2AC1, r2AC4, 0x01));
+
+      body.emit(assign(r2AC1, r2AC5, 0x02));
+
+      body.emit(assign(r2AC3, r2AC1, 0x03));
+
+      body.emit(assign(r2AC2, body.constant(false), 0x01));
+
+
+   body.instructions = f2AE9_parent_instructions;
+   body.emit(f2AE9);
+
+   /* END IF */
+
+   body.emit(ret(r2AC3));
+
+   sig->replace_parameters(&sig_parameters);
+   return sig;
+}
