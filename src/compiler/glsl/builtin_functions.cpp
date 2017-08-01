@@ -3349,10 +3349,10 @@ builtin_builder::create_builtins()
                 generate_ir::fadd64(mem_ctx, integer_functions_supported),
                 NULL);
 
-   add_function("__builtin_fsub64",
+/*   add_function("__builtin_fsub64",
                 generate_ir::fsub64(mem_ctx, integer_functions_supported),
                 NULL);
-
+*/
    add_function("__builtin_fmul64",
                 generate_ir::fmul64(mem_ctx, integer_functions_supported),
                 NULL);

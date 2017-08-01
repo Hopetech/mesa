@@ -722,7 +722,7 @@ fadd64(uvec2 a, uvec2 b)
  * `a' and `b'.  The operation is performed according to the IEEE Standard for
  * Floating-Point Arithmetic.
  */
-uvec2
+/*uvec2
 fsub64(uvec2 a, uvec2 b)
 {
    uint aSign = extractFloat64Sign(a);
@@ -732,7 +732,7 @@ fsub64(uvec2 a, uvec2 b)
       return subFloat64Fracs(a, b, aSign);
    else
       return addFloat64Fracs(a, b, aSign);
-}
+}*/
 
 /* Multiplies `a' by `b' to obtain a 64-bit product.  The product is broken
  * into two 32-bit pieces which are stored at the locations pointed to by
@@ -1684,7 +1684,8 @@ ffloor64(uvec2 a)
    bool negative = bool(extractFloat64Sign(a));
    uvec2 one = uvec2(0u, 0x3FF00000u);
 
-   return (!negative || feq64(a, tr)) ? tr : fsub64(tr, one);
+//   return (!negative || feq64(a, tr)) ? tr : fsub64(tr, one);
+   return (!negative || feq64(a, tr)) ? tr : fadd64(tr, fneg64(one));
 }
 
 uvec2
@@ -1700,14 +1701,15 @@ fceil64(uvec2 a)
 uvec2
 ffract64(uvec2 a)
 {
-   return fsub64(a, ffloor64(a));
+//   return fsub64(a, ffloor64(a));
+   return fadd64(a, fneg64(ffloor64(a)));
 }
 
 uvec2
 fmod64(uvec2 x, uvec2 y)
 {
    uvec2 floor = ffloor64(fdiv64(x, y));
-   uvec2 mod = fsub64(x,fmul64(y, floor));
+   uvec2 mod = fadd64(x, fneg64(fmul64(y, floor)));
 
    return (!feq64(mod, y)) ? mod : uvec2(0u, 0u);
 }
