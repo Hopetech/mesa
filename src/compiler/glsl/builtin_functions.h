@@ -91,8 +91,8 @@ fadd64(void *mem_ctx, builtin_available_predicate avail);
 ir_function_signature *
 fmul64(void *mem_ctx, builtin_available_predicate avail);
 
-ir_function_signature *
-fdiv64(void *mem_ctx, builtin_available_predicate avail);
+//ir_function_signature *
+//fdiv64(void *mem_ctx, builtin_available_predicate avail);
 
 ir_function_signature *
 fp32_to_fp64(void *mem_ctx, builtin_available_predicate avail);

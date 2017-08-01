@@ -1008,7 +1008,7 @@ estimateDiv64To32(uint a0, uint a1, uint b)
  * which are stored at the locations pointed to by `z0Ptr', `z1Ptr', and
  * `z2Ptr'.
  */
-void
+/*void
 mul64By32To96(uint a0, uint a1,
               uint b,
               inout uint z0Ptr,
@@ -1026,13 +1026,13 @@ mul64By32To96(uint a0, uint a1,
    z2Ptr = z2;
    z1Ptr = z1;
    z0Ptr = z0;
-}
+}*/
 
 /* Returns the result of dividing the double-precision floating-point value
  * `a' by the corresponding value `b'. The operation is performed according to
  * the IEEE Standard for Floating-Point Arithmetic.
  */
-uvec2
+/*uvec2
 fdiv64(uvec2 a, uvec2 b)
 {
    int zExp;
@@ -1111,7 +1111,7 @@ fdiv64(uvec2 a, uvec2 b)
    }
    shift64ExtraRightJamming(zFrac0, zFrac1, 0u, 11, zFrac0, zFrac1, zFrac2);
    return roundAndPackFloat64(zSign, zExp, zFrac0, zFrac1, zFrac2);
-}
+}*/
 
 /* Normalizes the subnormal single-precision floating-point value represented
  * by the denormalized significand `aFrac'.  The normalized exponent and
@@ -1708,10 +1708,12 @@ ffract64(uvec2 a)
 uvec2
 fmod64(uvec2 x, uvec2 y)
 {
-   uvec2 floor = ffloor64(fdiv64(x, y));
+/*   uvec2 floor = ffloor64(fdiv64(x, y));
    uvec2 mod = fadd64(x, fneg64(fmul64(y, floor)));
 
    return (!feq64(mod, y)) ? mod : uvec2(0u, 0u);
+*/
+   return uvec2(0u, 0u);
 }
 
 uvec2
