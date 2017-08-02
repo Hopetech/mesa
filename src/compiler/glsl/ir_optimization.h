@@ -82,6 +82,7 @@
 #define CE64                      (1U << 22)
 #define FRACT64                   (1U << 23)
 #define ROUND64                   (1U << 24)
+#define RCP64                     (1U << 25)
 
 /**
  * \see class lower_packing_builtins_visitor
