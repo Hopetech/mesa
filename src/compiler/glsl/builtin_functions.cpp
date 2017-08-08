@@ -3366,6 +3366,10 @@ builtin_builder::create_builtins()
                 generate_ir::flt64(mem_ctx, integer_functions_supported),
                 NULL);
 
+   add_function("__builtin_fadd64",
+                generate_ir::fadd64(mem_ctx, integer_functions_supported),
+                NULL);
+
 #undef F
 #undef FI
 #undef FIUD_VEC
