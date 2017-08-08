@@ -67,6 +67,9 @@ sign64(void *mem_ctx, builtin_available_predicate avail);
 ir_function_signature *
 udivmod64(void *mem_ctx, builtin_available_predicate avail);
 
+ir_function_signature *
+fabs64(void *mem_ctx, builtin_available_predicate avail);
+
 }
 
 #endif /* BULITIN_FUNCTIONS_H */

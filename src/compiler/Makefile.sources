@@ -22,6 +22,7 @@ LIBGLSL_FILES = \
 	glsl/builtin_functions.cpp \
 	glsl/builtin_functions.h \
 	glsl/builtin_int64.h \
+	glsl/builtin_float64.h \
 	glsl/builtin_types.cpp \
 	glsl/builtin_variables.cpp \
 	glsl/generate_ir.cpp \
