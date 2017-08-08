@@ -62,3 +62,49 @@ fsign64(uvec2 a)
    retval.y = (a.y & 0x80000000u) | 0x3FF00000u;
    return retval;
 }
+
+/* Returns the fraction bits of the double-precision floating-point value `a'.*/
+uint
+extractFloat64FracLo(uvec2 a)
+{
+   return a.x;
+}
+
+uint
+extractFloat64FracHi(uvec2 a)
+{
+   return a.y & 0x000FFFFFu;
+}
+
+/* Returns the exponent bits of the double-precision floating-point value `a'.*/
+int
+extractFloat64Exp(uvec2 a)
+{
+   return int((a.y>>20) & 0x7FFu);
+}
+
+/* Returns true if the double-precision floating-point value `a' is equal to the
+ * corresponding value `b', and false otherwise.  The comparison is performed
+ * according to the IEEE Standard for Floating-Point Arithmetic.
+ */
+bool
+feq64(uvec2 a, uvec2 b)
+{
+   bool isaNaN;
+   bool isbNaN;
+
+   uint aFracLo = extractFloat64FracLo(a);
+   uint aFracHi = extractFloat64FracHi(a);
+   uint bFracLo = extractFloat64FracLo(b);
+   uint bFracHi = extractFloat64FracHi(b);
+   isaNaN = (extractFloat64Exp(a) == 0x7FF) &&
+      ((aFracHi | aFracLo) != 0u);
+   isbNaN = (extractFloat64Exp(b) == 0x7FF) &&
+      ((bFracHi | bFracLo) != 0u);
+
+   if (isaNaN || isbNaN)
+      return false;
+
+   return (a.x == b.x) &&
+      ((a.y == b.y) || ((a.x == 0u) && (((a.y | b.y)<<1) == 0u)));
+}
