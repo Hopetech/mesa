@@ -439,3 +439,158 @@ fle64(void *mem_ctx, builtin_available_predicate avail)
    sig->replace_parameters(&sig_parameters);
    return sig;
 }
+ir_function_signature *
+lt64(void *mem_ctx, builtin_available_predicate avail)
+{
+   ir_function_signature *const sig =
+      new(mem_ctx) ir_function_signature(glsl_type::bool_type, avail);
+   ir_factory body(&sig->body, mem_ctx);
+   sig->is_defined = true;
+
+   exec_list sig_parameters;
+
+   ir_variable *const r0080 = new(mem_ctx) ir_variable(glsl_type::uint_type, "a0", ir_var_function_in);
+   sig_parameters.push_tail(r0080);
+   ir_variable *const r0081 = new(mem_ctx) ir_variable(glsl_type::uint_type, "a1", ir_var_function_in);
+   sig_parameters.push_tail(r0081);
+   ir_variable *const r0082 = new(mem_ctx) ir_variable(glsl_type::uint_type, "b0", ir_var_function_in);
+   sig_parameters.push_tail(r0082);
+   ir_variable *const r0083 = new(mem_ctx) ir_variable(glsl_type::uint_type, "b1", ir_var_function_in);
+   sig_parameters.push_tail(r0083);
+   ir_expression *const r0084 = less(r0080, r0082);
+   ir_expression *const r0085 = equal(r0080, r0082);
+   ir_expression *const r0086 = less(r0081, r0083);
+   ir_expression *const r0087 = logic_and(r0085, r0086);
+   ir_expression *const r0088 = logic_or(r0084, r0087);
+   body.emit(ret(r0088));
+
+   sig->replace_parameters(&sig_parameters);
+   return sig;
+}
+ir_function_signature *
+flt64(void *mem_ctx, builtin_available_predicate avail)
+{
+   ir_function_signature *const sig =
+      new(mem_ctx) ir_function_signature(glsl_type::bool_type, avail);
+   ir_factory body(&sig->body, mem_ctx);
+   sig->is_defined = true;
+
+   exec_list sig_parameters;
+
+   ir_variable *const r0089 = new(mem_ctx) ir_variable(glsl_type::uvec2_type, "a", ir_var_function_in);
+   sig_parameters.push_tail(r0089);
+   ir_variable *const r008A = new(mem_ctx) ir_variable(glsl_type::uvec2_type, "b", ir_var_function_in);
+   sig_parameters.push_tail(r008A);
+   ir_variable *const r008B = body.make_temp(glsl_type::bool_type, "return_value");
+   ir_variable *const r008C = new(mem_ctx) ir_variable(glsl_type::bool_type, "isbNaN", ir_var_auto);
+   body.emit(r008C);
+   ir_variable *const r008D = new(mem_ctx) ir_variable(glsl_type::bool_type, "isaNaN", ir_var_auto);
+   body.emit(r008D);
+   ir_expression *const r008E = rshift(swizzle_y(r0089), body.constant(int(20)));
+   ir_expression *const r008F = bit_and(r008E, body.constant(2047u));
+   ir_expression *const r0090 = expr(ir_unop_u2i, r008F);
+   ir_expression *const r0091 = equal(r0090, body.constant(int(2047)));
+   ir_expression *const r0092 = bit_and(swizzle_y(r0089), body.constant(1048575u));
+   ir_expression *const r0093 = bit_or(r0092, swizzle_x(r0089));
+   ir_expression *const r0094 = nequal(r0093, body.constant(0u));
+   body.emit(assign(r008D, logic_and(r0091, r0094), 0x01));
+
+   ir_expression *const r0095 = rshift(swizzle_y(r008A), body.constant(int(20)));
+   ir_expression *const r0096 = bit_and(r0095, body.constant(2047u));
+   ir_expression *const r0097 = expr(ir_unop_u2i, r0096);
+   ir_expression *const r0098 = equal(r0097, body.constant(int(2047)));
+   ir_expression *const r0099 = bit_and(swizzle_y(r008A), body.constant(1048575u));
+   ir_expression *const r009A = bit_or(r0099, swizzle_x(r008A));
+   ir_expression *const r009B = nequal(r009A, body.constant(0u));
+   body.emit(assign(r008C, logic_and(r0098, r009B), 0x01));
+
+   /* IF CONDITION */
+   ir_expression *const r009D = logic_or(r008D, r008C);
+   ir_if *f009C = new(mem_ctx) ir_if(operand(r009D).val);
+   exec_list *const f009C_parent_instructions = body.instructions;
+
+      /* THEN INSTRUCTIONS */
+      body.instructions = &f009C->then_instructions;
+
+      body.emit(assign(r008B, body.constant(false), 0x01));
+
+
+      /* ELSE INSTRUCTIONS */
+      body.instructions = &f009C->else_instructions;
+
+      ir_variable *const r009E = body.make_temp(glsl_type::uint_type, "extractFloat64Sign_retval");
+      body.emit(assign(r009E, rshift(swizzle_y(r0089), body.constant(int(31))), 0x01));
+
+      ir_variable *const r009F = body.make_temp(glsl_type::uint_type, "extractFloat64Sign_retval");
+      body.emit(assign(r009F, rshift(swizzle_y(r008A), body.constant(int(31))), 0x01));
+
+      /* IF CONDITION */
+      ir_expression *const r00A1 = nequal(r009E, r009F);
+      ir_if *f00A0 = new(mem_ctx) ir_if(operand(r00A1).val);
+      exec_list *const f00A0_parent_instructions = body.instructions;
+
+         /* THEN INSTRUCTIONS */
+         body.instructions = &f00A0->then_instructions;
+
+         ir_expression *const r00A2 = nequal(r009E, body.constant(0u));
+         ir_expression *const r00A3 = bit_or(swizzle_y(r0089), swizzle_y(r008A));
+         ir_expression *const r00A4 = lshift(r00A3, body.constant(int(1)));
+         ir_expression *const r00A5 = bit_or(r00A4, swizzle_x(r0089));
+         ir_expression *const r00A6 = bit_or(r00A5, swizzle_x(r008A));
+         ir_expression *const r00A7 = nequal(r00A6, body.constant(0u));
+         body.emit(assign(r008B, logic_and(r00A2, r00A7), 0x01));
+
+
+         /* ELSE INSTRUCTIONS */
+         body.instructions = &f00A0->else_instructions;
+
+         ir_variable *const r00A8 = body.make_temp(glsl_type::bool_type, "conditional_tmp");
+         /* IF CONDITION */
+         ir_expression *const r00AA = nequal(r009E, body.constant(0u));
+         ir_if *f00A9 = new(mem_ctx) ir_if(operand(r00AA).val);
+         exec_list *const f00A9_parent_instructions = body.instructions;
+
+            /* THEN INSTRUCTIONS */
+            body.instructions = &f00A9->then_instructions;
+
+            ir_expression *const r00AB = less(swizzle_y(r008A), swizzle_y(r0089));
+            ir_expression *const r00AC = equal(swizzle_y(r008A), swizzle_y(r0089));
+            ir_expression *const r00AD = less(swizzle_x(r008A), swizzle_x(r0089));
+            ir_expression *const r00AE = logic_and(r00AC, r00AD);
+            body.emit(assign(r00A8, logic_or(r00AB, r00AE), 0x01));
+
+
+            /* ELSE INSTRUCTIONS */
+            body.instructions = &f00A9->else_instructions;
+
+            ir_expression *const r00AF = less(swizzle_y(r0089), swizzle_y(r008A));
+            ir_expression *const r00B0 = equal(swizzle_y(r0089), swizzle_y(r008A));
+            ir_expression *const r00B1 = less(swizzle_x(r0089), swizzle_x(r008A));
+            ir_expression *const r00B2 = logic_and(r00B0, r00B1);
+            body.emit(assign(r00A8, logic_or(r00AF, r00B2), 0x01));
+
+
+         body.instructions = f00A9_parent_instructions;
+         body.emit(f00A9);
+
+         /* END IF */
+
+         body.emit(assign(r008B, r00A8, 0x01));
+
+
+      body.instructions = f00A0_parent_instructions;
+      body.emit(f00A0);
+
+      /* END IF */
+
+
+   body.instructions = f009C_parent_instructions;
+   body.emit(f009C);
+
+   /* END IF */
+
+   body.emit(ret(r008B));
+
+   sig->replace_parameters(&sig_parameters);
+   return sig;
+}
