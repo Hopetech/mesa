@@ -89,3 +89,52 @@ fneg64(void *mem_ctx, builtin_available_predicate avail)
    sig->replace_parameters(&sig_parameters);
    return sig;
 }
+ir_function_signature *
+fsign64(void *mem_ctx, builtin_available_predicate avail)
+{
+   ir_function_signature *const sig =
+      new(mem_ctx) ir_function_signature(glsl_type::uvec2_type, avail);
+   ir_factory body(&sig->body, mem_ctx);
+   sig->is_defined = true;
+
+   exec_list sig_parameters;
+
+   ir_variable *const r001E = new(mem_ctx) ir_variable(glsl_type::uvec2_type, "a", ir_var_function_in);
+   sig_parameters.push_tail(r001E);
+   ir_variable *const r001F = body.make_temp(glsl_type::uvec2_type, "return_value");
+   ir_variable *const r0020 = new(mem_ctx) ir_variable(glsl_type::uvec2_type, "retval", ir_var_auto);
+   body.emit(r0020);
+   /* IF CONDITION */
+   ir_expression *const r0022 = lshift(swizzle_y(r001E), body.constant(int(1)));
+   ir_expression *const r0023 = bit_or(r0022, swizzle_x(r001E));
+   ir_expression *const r0024 = equal(r0023, body.constant(0u));
+   ir_if *f0021 = new(mem_ctx) ir_if(operand(r0024).val);
+   exec_list *const f0021_parent_instructions = body.instructions;
+
+      /* THEN INSTRUCTIONS */
+      body.instructions = &f0021->then_instructions;
+
+      body.emit(assign(r001F, ir_constant::zero(mem_ctx, glsl_type::uvec2_type), 0x03));
+
+
+      /* ELSE INSTRUCTIONS */
+      body.instructions = &f0021->else_instructions;
+
+      body.emit(assign(r0020, body.constant(0u), 0x01));
+
+      ir_expression *const r0025 = bit_and(swizzle_y(r001E), body.constant(2147483648u));
+      body.emit(assign(r0020, bit_or(r0025, body.constant(1072693248u)), 0x02));
+
+      body.emit(assign(r001F, r0020, 0x03));
+
+
+   body.instructions = f0021_parent_instructions;
+   body.emit(f0021);
+
+   /* END IF */
+
+   body.emit(ret(r001F));
+
+   sig->replace_parameters(&sig_parameters);
+   return sig;
+}

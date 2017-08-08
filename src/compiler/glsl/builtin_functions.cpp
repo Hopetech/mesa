@@ -3350,6 +3350,10 @@ builtin_builder::create_builtins()
                 generate_ir::fneg64(mem_ctx, integer_functions_supported),
                 NULL);
 
+   add_function("__builtin_fsign64",
+                generate_ir::fsign64(mem_ctx, integer_functions_supported),
+                NULL);
+
 #undef F
 #undef FI
 #undef FIUD_VEC
