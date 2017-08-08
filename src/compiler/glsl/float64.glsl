@@ -27,3 +27,26 @@ fabs64(uvec2 a)
    a.y &= 0x7FFFFFFFu;
    return a;
 }
+
+/* Returns 1 if the double-precision floating-point value `a' is a NaN;
+ * otherwise returns 0.
+ */
+bool
+is_nan(uvec2 a)
+{
+   return (0xFFE00000u <= (a.y<<1)) &&
+      ((a.x != 0u) || ((a.y & 0x000FFFFFu) != 0u));
+}
+
+/* Negate value of a Float64 :
+ * Toggle the sign bit
+ */
+uvec2
+fneg64(uvec2 a)
+{
+   if(is_nan(a))
+      return a;
+
+   a.y ^= (1u<<31);
+   return a;
+}
