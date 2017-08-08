@@ -427,10 +427,7 @@ lower_64bit::lower_op_to_function_call(ir_instruction *base_ir,
           * So if the result is true, return src[1] else return src[0].
           */
          /* TODO: Evaluate the value return by lessThan */
-         if(dst[i])
-            body.emit(assign(dst[i], src[1][i]));
-         else
-            body.emit(assign(dst[i], src[0][i]));
+         body.emit(assign(dst[i], csel(dst[i], src[1][i], src[0][i])));
       }
 
       if (ir->operation == ir_binop_min) {
@@ -438,10 +435,11 @@ lower_64bit::lower_op_to_function_call(ir_instruction *base_ir,
           * So if the result is true, return src[0] else return src[1].
           */
          /* TODO: Evaluate the value return by lessThan */
-         if(dst[i])
-            body.emit(assign(dst[i], src[0][i]));
-         else
-            body.emit(assign(dst[i], src[1][i]));
+         ir_variable *const zero = new(mem_ctx) ir_variable(glsl_type::uvec2_type, "zero", ir_var_auto);
+         body.emit(assign(zero, body.constant(0u), 1));
+         body.emit(assign(zero, body.constant(0u), 2));
+
+         body.emit(assign(dst[i], csel(equal(dst[i], zero), src[0][i], src[1][i])));
       }
    }
 
