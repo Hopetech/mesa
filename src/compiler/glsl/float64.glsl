@@ -905,3 +905,29 @@ fp64_to_uint(uvec2 a)
 
    return z;
 }
+
+uvec2
+uint_to_fp64(uint a)
+{
+   if (a == 0u)
+      return uvec2(0u, 0u);
+
+   int shiftDist = countLeadingZeros32(a) + 21;
+
+   uint aHigh = 0u;
+   uint aLow = 0u;
+   int negCount = (- shiftDist) & 31;
+
+   if (shiftDist == 0) {
+      aHigh = 0u;
+      aLow = a;
+   } else if (shiftDist< 32) {
+      aHigh = (a >> negCount);
+      aLow = a << shiftDist;
+   } else {
+      aHigh = (shiftDist < 64) ? (a << shiftDist - 32) : 0u;
+      aLow = 0u;
+   }
+
+   return packFloat64(0u, 0x432 - shiftDist, aHigh, aLow);
+}
