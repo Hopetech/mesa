@@ -999,3 +999,111 @@ int_to_fp64(int a)
    }
    return packFloat64(zSign, 0x412 - shiftCount, zFrac0, zFrac1);
 }
+
+/* Packs the sign `zSign', exponent `zExp', and significand `zFrac' into a
+ * single-precision floating-point value, returning the result.  After being
+ * shifted into the proper positions, the three fields are simply added
+ * together to form the result.  This means that any integer portion of `zSig'
+ * will be added into the exponent.  Since a properly normalized significand
+ * will have an integer portion equal to 1, the `zExp' input should be 1 less
+ * than the desired result exponent whenever `zFrac' is a complete, normalized
+ * significand.
+ */
+float
+packFloat32(uint zSign, int zExp, uint zFrac)
+{
+   return uintBitsToFloat((zSign<<31) + (uint(zExp)<<23) + zFrac);
+}
+
+/* Takes an abstract floating-point value having sign `zSign', exponent `zExp',
+ * and significand `zFrac', and returns the proper single-precision floating-
+ * point value corresponding to the abstract input.  Ordinarily, the abstract
+ * value is simply rounded and packed into the single-precision format, with
+ * the inexact exception raised if the abstract input cannot be represented
+ * exactly.  However, if the abstract value is too large, the overflow and
+ * inexact exceptions are raised and an infinity or maximal finite value is
+ * returned.  If the abstract value is too small, the input value is rounded to
+ * a subnormal number, and the underflow and inexact exceptions are raised if
+ * the abstract input cannot be represented exactly as a subnormal single-
+ * precision floating-point number.
+ *     The input significand `zFrac' has its binary point between bits 30
+ * and 29, which is 7 bits to the left of the usual location.  This shifted
+ * significand must be normalized or smaller.  If `zFrac' is not normalized,
+ * `zExp' must be 0; in that case, the result returned is a subnormal number,
+ * and it must not require rounding.  In the usual case that `zFrac' is
+ * normalized, `zExp' must be 1 less than the "true" floating-point exponent.
+ * The handling of underflow and overflow follows the IEEE Standard for
+ * Floating-Point Arithmetic.
+ */
+float
+roundAndPackFloat32(uint zSign, int zExp, uint zFrac)
+{
+   bool roundNearestEven;
+   int roundIncrement;
+   int roundBits;
+
+   roundNearestEven = FLOAT_ROUNDING_MODE == FLOAT_ROUND_NEAREST_EVEN;
+   roundIncrement = 0x40;
+   if (!roundNearestEven) {
+      if (FLOAT_ROUNDING_MODE == FLOAT_ROUND_TO_ZERO) {
+         roundIncrement = 0;
+      } else {
+         roundIncrement = 0x7F;
+         if (zSign != 0u) {
+            if (FLOAT_ROUNDING_MODE == FLOAT_ROUND_UP)
+               roundIncrement = 0;
+         } else {
+            if (FLOAT_ROUNDING_MODE == FLOAT_ROUND_DOWN)
+               roundIncrement = 0;
+         }
+      }
+   }
+   roundBits = int(zFrac & 0x7Fu);
+   if (0xFDu <= uint(zExp)) {
+      if ((0xFD < zExp) || ((zExp == 0xFD) && (int(zFrac) + roundIncrement) < 0))
+         return packFloat32(zSign, 0xFF, 0u) - float(roundIncrement == 0);
+      if (zExp < 0) {
+         int count = -zExp;
+         if (count < 32)
+            zFrac = (zFrac>>count) | uint((zFrac<<((-count) & 31)) != 0u);
+         else
+            zFrac = uint(zFrac != 0u);
+         zExp = 0;
+         roundBits = int(zFrac) & 0x7F;
+      }
+   }
+   zFrac = (zFrac + uint(roundIncrement))>>7;
+   zFrac &= ~uint(((roundBits ^ 0x40) == 0) && roundNearestEven);
+   if (zFrac == 0u)
+      zExp = 0;
+
+   return packFloat32(zSign, zExp, zFrac);
+}
+
+/* Returns the result of converting the double-precision floating-point value
+ * `a' to the single-precision floating-point format.  The conversion is
+ * performed according to the IEEE Standard for Floating-Point Arithmetic.
+ */
+float
+fp64_to_fp32(uvec2 a)
+{
+   uint zFrac = 0u;
+   uint allZero = 0u;
+
+   uint aFracLo = extractFloat64FracLo(a);
+   uint aFracHi = extractFloat64FracHi(a);
+   int aExp = extractFloat64Exp(a);
+   uint aSign = extractFloat64Sign(a);
+   if (aExp == 0x7FF) {
+      if ((aFracHi | aFracLo) != 0u) {
+         shortShift64Left(a.y, a.x, 12, a.y, a.x);
+         return uintBitsToFloat((aSign<<31) | 0x7FC00000u | (a.y>>9));
+      }
+      return packFloat32(aSign, 0xFF, 0u);
+   }
+   shift64RightJamming(aFracHi, aFracLo, 22, allZero, zFrac);
+   if (aExp != 0)
+      zFrac |= 0x40000000u;
+
+   return roundAndPackFloat32(aSign, aExp - 0x381, zFrac);
+}

@@ -3390,6 +3390,10 @@ builtin_builder::create_builtins()
                 generate_ir::int_to_fp64(mem_ctx, integer_functions_supported),
                 NULL);
 
+   add_function("__builtin_fp64_to_fp32",
+                generate_ir::fp64_to_fp32(mem_ctx, integer_functions_supported),
+                NULL);
+
 #undef F
 #undef FI
 #undef FIUD_VEC
