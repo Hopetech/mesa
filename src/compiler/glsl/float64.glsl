@@ -931,3 +931,48 @@ uint_to_fp64(uint a)
 
    return packFloat64(0u, 0x432 - shiftDist, aHigh, aLow);
 }
+
+/* Returns the result of converting the double-precision floating-point value
+ * `a' to the 32-bit two's complement integer format.  The conversion is
+ * performed according to the IEEE Standard for Floating-Point Arithmetic---
+ * which means in particular that the conversion is rounded according to the
+ * current rounding mode.  If `a' is a NaN, the largest positive integer is
+ * returned.  Otherwise, if the conversion overflows, the largest integer with
+ * the same sign as `a' is returned.
+ */
+int
+fp64_to_int(uvec2 a)
+{
+   uint aFracLo = extractFloat64FracLo(a);
+   uint aFracHi = extractFloat64FracHi(a);
+   int aExp = extractFloat64Exp(a);
+   uint aSign = extractFloat64Sign(a);
+
+   uint absZ = 0u;
+   uint aFracExtra = 0u;
+   int z;
+   int shiftCount = aExp - 0x413;
+
+   if (0 <= shiftCount) {
+      if (0x41E < aExp) {
+         if ((aExp == 0x7FF) && bool(aFracHi | aFracLo))
+            aSign = 0u;
+         return bool(aSign) ? 0x80000000 : 0x7FFFFFFF;
+      }
+      shortShift64Left(aFracHi | 0x00100000u, aFracLo, shiftCount, absZ, aFracExtra);
+   } else {
+      if (aExp < 0x3FF)
+         return 0;
+
+      aFracHi |= 0x00100000u;
+      aFracExtra = ( aFracHi << (shiftCount & 31)) | aFracLo;
+      absZ = aFracHi >> (- shiftCount);
+   }
+
+   z = (aSign != 0u) ? - int(absZ) : int(absZ);
+
+   if (bool(aSign ^ uint(z < 0)) && bool(z))
+      return bool(aSign) ? 0x80000000 : 0x7FFFFFFF;
+
+   return z;
+}
