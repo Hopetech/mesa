@@ -976,3 +976,26 @@ fp64_to_int(uvec2 a)
 
    return z;
 }
+
+/* Returns the result of converting the 32-bit two's complement integer `a'
+ * to the double-precision floating-point format.  The conversion is performed
+ * according to the IEEE Standard for Floating-Point Arithmetic.
+ */
+uvec2
+int_to_fp64(int a)
+{
+   uint zFrac0 = 0u;
+   uint zFrac1 = 0u;
+   if (a==0)
+      return packFloat64(0u, 0, 0u, 0u);
+   uint zSign = uint(a < 0);
+   uint absA = a < 0 ? uint(-a) : uint(a);
+   int shiftCount = countLeadingZeros32(absA) - 11;
+   if (0 <= shiftCount) {
+      zFrac0 = absA << shiftCount;
+      zFrac1 = 0u;
+   } else {
+      shift64Right(absA, 0u, -shiftCount, zFrac0, zFrac1);
+   }
+   return packFloat64(zSign, 0x412 - shiftCount, zFrac0, zFrac1);
+}
