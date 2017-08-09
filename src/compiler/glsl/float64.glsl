@@ -1107,3 +1107,41 @@ fp64_to_fp32(uvec2 a)
 
    return roundAndPackFloat32(aSign, aExp - 0x381, zFrac);
 }
+
+/* Returns the result of converting the single-precision floating-point value
+ * `a' to the double-precision floating-point format.
+ */
+uvec2
+fp32_to_fp64(float f)
+{
+   uint a = floatBitsToUint(f);
+   uint aFrac = a & 0x007FFFFFu;
+   int aExp = int((a>>23) & 0xFFu);
+   uint aSign = a>>31;
+   uint zFrac0 = 0u;
+   uint zFrac1 = 0u;
+
+   if (aExp == 0xFF) {
+      if (aFrac != 0u) {
+         uint nanLo = 0u;
+         uint nanHi = a<<9;
+         shift64Right(nanHi, nanLo, 12, nanHi, nanLo);
+         nanHi |= ((aSign<<31) | 0x7FF80000u);
+         return uvec2(nanLo, nanHi);
+      }
+      return packFloat64(aSign, 0x7FF, 0u, 0u);
+    }
+
+   if (aExp == 0) {
+      if (aFrac == 0u)
+         return packFloat64(aSign, 0, 0u, 0u);
+      /* Normalize subnormal */
+      int shiftCount = countLeadingZeros32(aFrac) - 8;
+      aFrac <<= shiftCount;
+      aExp = 1 - shiftCount;
+      --aExp;
+   }
+
+   shift64Right(aFrac, 0u, 3, zFrac0, zFrac1);
+   return packFloat64(aSign, aExp + 0x380, zFrac0, zFrac1);
+}
