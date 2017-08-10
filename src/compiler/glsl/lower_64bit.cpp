@@ -505,6 +505,8 @@ lower_64bit_visitor::handle_rvalue(ir_rvalue **rvalue)
       if (lowering(MUL64)) {
          if (ir->type->is_integer_64())
             *rvalue = handle_op(ir, "__builtin_umul64", generate_ir::umul64);
+	 else if (ir->type->base_type == GLSL_TYPE_DOUBLE)
+            *rvalue = handle_op(ir, "__builtin_fmul64", generate_ir::fmul64);
       }
       break;
 
