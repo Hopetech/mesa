@@ -448,6 +448,8 @@ lower_64bit_visitor::handle_rvalue(ir_rvalue **rvalue)
       if (lowering(SIGN64)) {
          if (ir->type->is_integer_64())
             *rvalue = handle_op(ir, "__builtin_sign64", generate_ir::sign64);
+	 else if (ir->type->base_type == GLSL_TYPE_DOUBLE)
+            *rvalue = handle_op(ir, "__builtin_fsign64", generate_ir::fsign64);
       }
       break;
 
