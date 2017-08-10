@@ -453,6 +453,13 @@ lower_64bit_visitor::handle_rvalue(ir_rvalue **rvalue)
       }
       break;
 
+   case ir_binop_add:
+      if (lowering(ADD64)) {
+         if (ir->type->base_type == GLSL_TYPE_DOUBLE)
+            *rvalue = handle_op(ir, "__builtin_fadd64", generate_ir::fadd64);
+      }
+      break;
+
    case ir_binop_div:
       if (lowering(DIV64)) {
          if (ir->type->base_type == GLSL_TYPE_UINT64) {
