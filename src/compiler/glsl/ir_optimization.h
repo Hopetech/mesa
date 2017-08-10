@@ -70,6 +70,7 @@
 #define ADD64                     (1U << 9)
 #define D2U                       (1U << 10)
 #define U2D                       (1U << 11)
+#define D2I                       (1U << 12)
 
 /**
  * \see class lower_packing_builtins_visitor
