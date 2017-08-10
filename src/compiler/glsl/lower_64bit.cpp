@@ -463,6 +463,13 @@ lower_64bit_visitor::handle_rvalue(ir_rvalue **rvalue)
       }
       break;
 
+   case ir_binop_equal:
+      if (lowering(EQ64)) {
+         if (ir->operands[0]->type->base_type == GLSL_TYPE_DOUBLE)
+            *rvalue = handle_op(ir, "__builtin_feq64", generate_ir::feq64);
+      }
+      break;
+
    case ir_binop_mod:
       if (lowering(MOD64)) {
          if (ir->type->base_type == GLSL_TYPE_UINT64) {
