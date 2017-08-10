@@ -71,6 +71,7 @@
 #define D2U                       (1U << 10)
 #define U2D                       (1U << 11)
 #define D2I                       (1U << 12)
+#define I2D                       (1U << 13)
 
 /**
  * \see class lower_packing_builtins_visitor
