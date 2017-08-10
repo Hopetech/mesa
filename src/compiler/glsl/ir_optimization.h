@@ -74,6 +74,7 @@
 #define I2D                       (1U << 13)
 #define D2F                       (1U << 14)
 #define F2D                       (1U << 15)
+#define SQRT64                    (1U << 16)
 
 /**
  * \see class lower_packing_builtins_visitor
