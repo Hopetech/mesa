@@ -437,6 +437,13 @@ lower_64bit_visitor::handle_rvalue(ir_rvalue **rvalue)
       }
       break;
 
+   case ir_unop_d2f:
+      if (lowering(D2F)) {
+         if (ir->type->base_type == GLSL_TYPE_FLOAT)
+            *rvalue = handle_op(ir, "__builtin_fp64_to_fp32", generate_ir::fp64_to_fp32);
+      }
+      break;
+
    case ir_unop_d2i:
       if (lowering(D2I)) {
          if (ir->type->base_type == GLSL_TYPE_INT)
