@@ -1418,3 +1418,26 @@ fsqrt64(uvec2 a)
    shift64ExtraRightJamming(zFrac0, zFrac1, 0u, 10, zFrac0, zFrac1, zFrac2);
    return roundAndPackFloat64(0u, zExp, zFrac0, zFrac1, zFrac2);
 }
+
+uvec2
+ftrunc64(uvec2 a)
+{
+   int aExp = extractFloat64Exp(a);
+
+   int unbiasedExp = aExp - 1023;
+
+   if (unbiasedExp < 0)
+      return uvec2(0u, 0u);
+   else if (unbiasedExp > 52)
+      return a;
+   else {
+      uint zLo;
+      uint zHi;
+      int fracBits = 52 - unbiasedExp;
+      uint maskLo = (fracBits >= 32) ? 0u : (~0u << fracBits);
+      uint maskHi = (fracBits < 33) ? ~0u : (~0u << (fracBits - 32));
+      zLo = maskLo & a.x;
+      zHi = maskHi & a.y;
+      return uvec2(zLo, zHi);
+   }
+}
