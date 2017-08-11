@@ -479,6 +479,13 @@ lower_64bit_visitor::handle_rvalue(ir_rvalue **rvalue)
       }
       break;
 
+   case ir_unop_round_even:
+      if (lowering(ROUND64)) {
+         if (ir->type->base_type == GLSL_TYPE_DOUBLE)
+            *rvalue = handle_op(ir, "__builtin_fround64", generate_ir::fround64);
+      }
+      break;
+
    case ir_unop_sign:
       if (lowering(SIGN64)) {
          if (ir->type->is_integer_64())
