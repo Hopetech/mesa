@@ -177,6 +177,7 @@ private:
    void imul_high_to_mul(ir_expression *ir);
    void sqrt_to_abs_sqrt(ir_expression *ir);
    void min_to_less(ir_expression *ir);
+   void max_to_less(ir_expression *ir);
 
    ir_expression *_carry(operand a, operand b);
 };
@@ -1688,6 +1689,20 @@ lower_instructions_visitor::min_to_less(ir_expression *ir)
    this->progress = true;
 }
 
+void
+lower_instructions_visitor::max_to_less(ir_expression *ir)
+{
+   ir_rvalue *x_clone = ir->operands[0]->clone(ir, NULL);
+   ir_rvalue *y_clone = ir->operands[1]->clone(ir, NULL);
+   ir->operation = ir_triop_csel;
+   ir->init_num_operands();
+   ir->operands[0] = less(ir->operands[0], ir->operands[1]);
+   ir->operands[1] = y_clone;
+   ir->operands[2] = x_clone;
+
+   this->progress = true;
+}
+
 ir_visitor_status
 lower_instructions_visitor::visit_leave(ir_expression *ir)
 {
@@ -1835,6 +1850,12 @@ lower_instructions_visitor::visit_leave(ir_expression *ir)
       if (lowering(MIN_MAX_TO_LESS) &&
           ir->type->is_double() && ir->type->is_scalar())
          min_to_less(ir);
+      break;
+
+   case ir_binop_max:
+      if (lowering(MIN_MAX_TO_LESS) &&
+          ir->type->is_double() && ir->type->is_scalar())
+         max_to_less(ir);
       break;
 
    default:
