@@ -43,6 +43,7 @@
  * - BORROW_TO_ARITH
  * - SAT_TO_CLAMP
  * - DOPS_TO_DFRAC
+ * - MIN_MAX_TO_LESS
  *
  * SUB_TO_ADD_NEG:
  * ---------------
@@ -115,6 +116,12 @@
  * DOPS_TO_DFRAC:
  * --------------
  * Converts double trunc, ceil, floor, round to fract
+ *
+ * MIN_MAX_TO_LESS:
+ * ----------------
+ * Converts min, max into less.
+ * min(x,y) = less(x,y) ? x, y;
+ * max(x,y) = less(x,y) ? y, x;
  */
 
 #include "c99_math.h"
@@ -169,6 +176,7 @@ private:
    void find_msb_to_float_cast(ir_expression *ir);
    void imul_high_to_mul(ir_expression *ir);
    void sqrt_to_abs_sqrt(ir_expression *ir);
+   void min_to_less(ir_expression *ir);
 
    ir_expression *_carry(operand a, operand b);
 };
@@ -1666,6 +1674,20 @@ lower_instructions_visitor::sqrt_to_abs_sqrt(ir_expression *ir)
    this->progress = true;
 }
 
+void
+lower_instructions_visitor::min_to_less(ir_expression *ir)
+{
+   ir_rvalue *x_clone = ir->operands[0]->clone(ir, NULL);
+   ir_rvalue *y_clone = ir->operands[1]->clone(ir, NULL);
+   ir->operation = ir_triop_csel;
+   ir->init_num_operands();
+   ir->operands[0] = less(ir->operands[0], ir->operands[1]);
+   ir->operands[1] = x_clone;
+   ir->operands[2] = y_clone;
+
+   this->progress = true;
+}
+
 ir_visitor_status
 lower_instructions_visitor::visit_leave(ir_expression *ir)
 {
@@ -1807,6 +1829,12 @@ lower_instructions_visitor::visit_leave(ir_expression *ir)
    case ir_unop_sqrt:
       if (lowering(SQRT_TO_ABS_SQRT))
          sqrt_to_abs_sqrt(ir);
+      break;
+
+   case ir_binop_min:
+      if (lowering(MIN_MAX_TO_LESS) &&
+          ir->type->is_double() && ir->type->is_scalar())
+         min_to_less(ir);
       break;
 
    default:
