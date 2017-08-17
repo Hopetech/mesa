@@ -44,6 +44,7 @@
  * - SAT_TO_CLAMP
  * - DOPS_TO_DFRAC
  * - MIN_MAX_TO_LESS
+ * - DOPS_TO_DTRUNC
  *
  * SUB_TO_ADD_NEG:
  * ---------------
@@ -178,6 +179,7 @@ private:
    void sqrt_to_abs_sqrt(ir_expression *ir);
    void min_to_less(ir_expression *ir);
    void max_to_less(ir_expression *ir);
+   void dfloor_to_dtrunc(ir_expression *ir);
 
    ir_expression *_carry(operand a, operand b);
 };
@@ -1703,6 +1705,29 @@ lower_instructions_visitor::max_to_less(ir_expression *ir)
    this->progress = true;
 }
 
+void
+lower_instructions_visitor::dfloor_to_dtrunc(ir_expression *ir)
+{
+   /*
+    * For x >= 0, floor(x) = trunc(x)
+    * For x < 0,
+    *    - if x is integer, floor(x) = x
+    *    - otherwise, floor(x) = trunc(x) - 1
+    */
+
+   ir_rvalue *src = ir->operands[0]->clone(ir, NULL);
+   ir_rvalue *tr = trunc(src);
+
+   ir->operation = ir_triop_csel;
+   ir->init_num_operands();
+   ir->operands[0] = logic_or(gequal(src, new(ir) ir_constant(0.0, 1)),
+                              equal(src, tr));
+   ir->operands[1] = tr;
+   ir->operands[2] = add(tr, new(ir) ir_constant(-1.0, 1));
+
+   this->progress = true;
+}
+
 ir_visitor_status
 lower_instructions_visitor::visit_leave(ir_expression *ir)
 {
@@ -1791,8 +1816,13 @@ lower_instructions_visitor::visit_leave(ir_expression *ir)
       break;
 
    case ir_unop_floor:
-      if (lowering(DOPS_TO_DFRAC) && ir->type->is_double())
-         dfloor_to_dfrac(ir);
+      if (ir->type->is_double()) {
+         if (lowering(DOPS_TO_DFRAC)) {
+            dfloor_to_dfrac(ir);
+         } else if (lowering(DOPS_TO_DTRUNC) && ir->type->is_scalar()) {
+            dfloor_to_dtrunc(ir);
+         }
+      }
       break;
 
    case ir_unop_round_even:

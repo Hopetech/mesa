@@ -55,6 +55,7 @@
 #define DIV_TO_MUL_RCP            (FDIV_TO_MUL_RCP | DDIV_TO_MUL_RCP)
 #define SQRT_TO_ABS_SQRT          0x200000
 #define MIN_MAX_TO_LESS           0x400000
+#define DOPS_TO_DTRUNC            0x800000
 
 /* Operations for lower_64bit_integer_instructions()
  * and lower_64bit_double_instructions()
