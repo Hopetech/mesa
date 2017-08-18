@@ -180,6 +180,7 @@ private:
    void min_to_less(ir_expression *ir);
    void max_to_less(ir_expression *ir);
    void dfloor_to_dtrunc(ir_expression *ir);
+   void dceil_to_dtrunc(ir_expression *ir);
 
    ir_expression *_carry(operand a, operand b);
 };
@@ -1728,6 +1729,27 @@ lower_instructions_visitor::dfloor_to_dtrunc(ir_expression *ir)
    this->progress = true;
 }
 
+void
+lower_instructions_visitor::dceil_to_dtrunc(ir_expression *ir)
+{
+   /* if x < 0,                    ceil(x) = trunc(x)
+    * else if (x - trunc(x) == 0), ceil(x) = x
+    * else,                        ceil(x) = trunc(x) + 1
+    */
+
+   ir_rvalue *src = ir->operands[0]->clone(ir, NULL);
+   ir_rvalue *tr = trunc(src);
+
+   ir->operation = ir_triop_csel;
+   ir->init_num_operands();
+   ir->operands[0] = logic_or(less(src, new(ir) ir_constant(0.0, 1)),
+                              equal(src, tr));
+   ir->operands[1] = tr;
+   ir->operands[2] = add(tr, new(ir) ir_constant(1.0, 1));
+
+   this->progress = true;
+}
+
 ir_visitor_status
 lower_instructions_visitor::visit_leave(ir_expression *ir)
 {
@@ -1811,8 +1833,13 @@ lower_instructions_visitor::visit_leave(ir_expression *ir)
       break;
 
    case ir_unop_ceil:
-      if (lowering(DOPS_TO_DFRAC) && ir->type->is_double())
-         dceil_to_dfrac(ir);
+      if (ir->type->is_double()) {
+         if (lowering(DOPS_TO_DFRAC)) {
+            dceil_to_dfrac(ir);
+         } else if (lowering(DOPS_TO_DTRUNC) && ir->type->is_scalar()) {
+            dceil_to_dtrunc(ir);
+         }
+      }
       break;
 
    case ir_unop_floor:
