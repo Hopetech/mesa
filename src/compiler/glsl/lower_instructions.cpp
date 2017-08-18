@@ -181,6 +181,7 @@ private:
    void max_to_less(ir_expression *ir);
    void dfloor_to_dtrunc(ir_expression *ir);
    void dceil_to_dtrunc(ir_expression *ir);
+   void dfrac_to_dtrunc(ir_expression *ir);
 
    ir_expression *_carry(operand a, operand b);
 };
@@ -1750,6 +1751,24 @@ lower_instructions_visitor::dceil_to_dtrunc(ir_expression *ir)
    this->progress = true;
 }
 
+void
+lower_instructions_visitor::dfrac_to_dtrunc(ir_expression *ir)
+{
+   ir_expression *const floor_expr =
+      new(ir) ir_expression(ir_unop_floor,
+                            ir->operands[0]->type, ir->operands[0]);
+   dfloor_to_dtrunc(floor_expr);
+   ir_expression *const neg_expr =
+      new(ir) ir_expression(ir_unop_neg,
+                            ir->operands[0]->type, floor_expr);
+
+   ir->operation = ir_binop_add;
+   ir->init_num_operands();
+   ir->operands[1] = neg_expr;
+
+   this->progress = true;
+}
+
 ir_visitor_status
 lower_instructions_visitor::visit_leave(ir_expression *ir)
 {
@@ -1913,6 +1932,12 @@ lower_instructions_visitor::visit_leave(ir_expression *ir)
       if (lowering(MIN_MAX_TO_LESS) &&
           ir->type->is_double() && ir->type->is_scalar())
          max_to_less(ir);
+      break;
+
+   case ir_unop_fract:
+      if (lowering(DOPS_TO_DTRUNC) &&
+          ir->type->is_double() && ir->type->is_scalar())
+         dfrac_to_dtrunc(ir);
       break;
 
    default:
