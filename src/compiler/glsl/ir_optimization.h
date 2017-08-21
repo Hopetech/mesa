@@ -77,6 +77,7 @@
 #define SQRT64                    (1U << 16)
 #define TRUNC64                   (1U << 17)
 #define ROUND64                   (1U << 18)
+#define RCP64                     (1U << 19)
 
 /**
  * \see class lower_packing_builtins_visitor

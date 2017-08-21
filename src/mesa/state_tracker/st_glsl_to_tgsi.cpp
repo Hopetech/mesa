@@ -7052,7 +7052,8 @@ st_link_shader(struct gl_context *ctx, struct gl_shader_program *prog)
                                F2D |
                                SQRT64 |
                                TRUNC64 |
-                               ROUND64;
+                               ROUND64 |
+                               RCP64;
          lower_64bit_double_instructions(ir, lower_inst);
       }
 
