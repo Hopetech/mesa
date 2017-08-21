@@ -2385,6 +2385,7 @@ _glcpp_parser_handle_version_declaration(glcpp_parser_t *parser, intmax_t versio
          add_builtin_define(parser, "__have_builtin_builtin_fsqrt64", 1);
          add_builtin_define(parser, "__have_builtin_builtin_ftrunc64", 1);
          add_builtin_define(parser, "__have_builtin_builtin_fround64", 1);
+         add_builtin_define(parser, "__have_builtin_builtin_frcp64", 1);
       }
    }
 

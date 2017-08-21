@@ -3410,6 +3410,10 @@ builtin_builder::create_builtins()
                 generate_ir::fround64(mem_ctx, integer_functions_supported),
                 NULL);
 
+   add_function("__builtin_frcp64",
+                generate_ir::frcp64(mem_ctx, integer_functions_supported),
+                NULL);
+
 #undef F
 #undef FI
 #undef FIUD_VEC
