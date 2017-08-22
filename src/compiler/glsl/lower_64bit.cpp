@@ -420,7 +420,8 @@ lower_64bit::lower_op_to_function_call(ir_instruction *base_ir,
 
       if (ir->operation == ir_unop_d2b ||
           ir->operation == ir_binop_gequal ||
-          ir->operation == ir_binop_greater)
+          ir->operation == ir_binop_greater ||
+          ir->operation == ir_binop_nequal)
          body.emit(assign(dst[i], logic_not(dst[i])));
    }
 
@@ -613,6 +614,7 @@ lower_64bit_visitor::handle_rvalue(ir_rvalue **rvalue)
       }
       break;
 
+   case ir_binop_nequal:
    case ir_binop_equal:
       if (lowering(EQ64)) {
          if (ir->operands[0]->type->base_type == GLSL_TYPE_DOUBLE)
