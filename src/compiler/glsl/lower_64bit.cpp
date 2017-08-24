@@ -63,9 +63,9 @@ ir_dereference_variable *merge_destination(ir_factory &,
 ir_dereference_variable *all_equal_destination(ir_factory &,
 					       const glsl_type *type,
 					       ir_variable *result[4]);
-ir_dereference_variable *any_nequal_destination(ir_factory &,
-						const glsl_type *type,
-						ir_variable *result[4]);
+//ir_dereference_variable *any_nequal_destination(ir_factory &,
+//						const glsl_type *type,
+//						ir_variable *result[4]);
 
 ir_rvalue *lower_op_to_function_call(ir_instruction *base_ir,
                                      ir_expression *ir,
@@ -339,7 +339,7 @@ lower_64bit::all_equal_destination(ir_factory &body,
 /*
  * and the results from each comparison, the not the result
  */
-ir_dereference_variable *
+/*ir_dereference_variable *
 lower_64bit::any_nequal_destination(ir_factory &body,
 			     const glsl_type *type,
 			     ir_variable *result[4])
@@ -355,7 +355,7 @@ lower_64bit::any_nequal_destination(ir_factory &body,
    body.emit(assign(merged_result, logic_not(merged_result)));
    void *const mem_ctx = ralloc_parent(merged_result);
    return new(mem_ctx) ir_dereference_variable(merged_result);
-}
+}*/
 
 ir_rvalue *
 lower_64bit::lower_op_to_function_call(ir_instruction *base_ir,
@@ -428,8 +428,8 @@ lower_64bit::lower_op_to_function_call(ir_instruction *base_ir,
    ir_rvalue *rv;
    if (ir->operation == ir_binop_all_equal)
       rv = all_equal_destination(body, ir->type, dst);
-   else if (ir->operation == ir_binop_any_nequal)
-      rv = any_nequal_destination(body, ir->type, dst);
+//   else if (ir->operation == ir_binop_any_nequal)
+//      rv = any_nequal_destination(body, ir->type, dst);
    else if (ir->type->is_64bit())
       rv = compact_destination(body, ir->type, dst);
    else
@@ -658,7 +658,7 @@ lower_64bit_visitor::handle_rvalue(ir_rvalue **rvalue)
       break;
 
    case ir_binop_all_equal:
-   case ir_binop_any_nequal:
+//   case ir_binop_any_nequal:
       if (lowering(EQ64)) {
 	 if (ir->operands[0]->type->base_type == GLSL_TYPE_DOUBLE) {
             *rvalue = handle_op(ir, "__builtin_feq64", generate_ir::feq64);
