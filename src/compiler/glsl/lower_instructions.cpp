@@ -1737,7 +1737,6 @@ lower_instructions_visitor::dceil_to_dtrunc(ir_expression *ir)
     * else if (x - trunc(x) == 0), ceil(x) = x
     * else,                        ceil(x) = trunc(x) + 1
     */
-
    ir_rvalue *src = ir->operands[0]->clone(ir, NULL);
    ir_rvalue *tr = trunc(src);
 
@@ -1805,8 +1804,8 @@ lower_instructions_visitor::visit_leave(ir_expression *ir)
       break;
 
    case ir_binop_mod:
-      if (lowering(MOD_TO_FLOOR) && (ir->type->is_float() || ir->type->is_double()))
-	 mod_to_floor(ir);
+      if (/*lowering(MOD_TO_FLOOR) &&*/ (ir->type->is_float() || ir->type->is_double()))
+	      mod_to_floor(ir);
       break;
 
    case ir_binop_pow:
