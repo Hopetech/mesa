@@ -1489,8 +1489,10 @@ uvec2
 frcp64(uvec2 a)
 {
    /* pow(x, -0,5) */
-   sub64(0xBFCDD6A1u, 0x8F6A6F52u, a.y, a.x, a.y, a.x);
-   shift64Right(a.y, a.x, 1, a.y, a.x);
+//   sub64(0xBFCDD6A1u, 0x8F6A6F52u, a.y, a.x, a.y, a.x);
+//   shift64Right(a.y, a.x, 1, a.y, a.x);
    /* pow(pow(x, -0.5), 2) = pow(x, -1) = 1/x */
-   return fmul64(a, a);
+//   return fmul64(a, a);
+
+   return fp32_to_fp64(1.0/fp64_to_fp32(a));
 }
