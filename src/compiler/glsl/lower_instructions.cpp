@@ -45,6 +45,7 @@
  * - DOPS_TO_DFRAC
  * - MIN_MAX_TO_LESS
  * - DOPS_TO_DTRUNC
+ * - DRSQ_TO_DRCP
  *
  * SUB_TO_ADD_NEG:
  * ---------------
@@ -182,6 +183,7 @@ private:
    void dfloor_to_dtrunc(ir_expression *ir);
    void dceil_to_dtrunc(ir_expression *ir);
    void dfrac_to_dtrunc(ir_expression *ir);
+   void drsq_to_drcp(ir_expression *ir);
 
    ir_expression *_carry(operand a, operand b);
 };
@@ -1768,6 +1770,22 @@ lower_instructions_visitor::dfrac_to_dtrunc(ir_expression *ir)
    this->progress = true;
 }
 
+void
+lower_instructions_visitor::drsq_to_drcp(ir_expression *ir)
+{
+   ir_expression *const sqrt_expr =
+      new(ir) ir_expression(ir_unop_sqrt,
+                            ir->operands[0]->type, ir->operands[0]);
+   if (lowering(SQRT_TO_ABS_SQRT))
+      sqrt_to_abs_sqrt(sqrt_expr);
+
+   ir->operation = ir_unop_rcp;
+   ir->init_num_operands();
+   ir->operands[0] = sqrt_expr;
+
+   this->progress = true;
+}
+
 ir_visitor_status
 lower_instructions_visitor::visit_leave(ir_expression *ir)
 {
@@ -1916,6 +1934,13 @@ lower_instructions_visitor::visit_leave(ir_expression *ir)
       break;
 
    case ir_unop_rsq:
+      if (lowering(DRSQ_TO_DRCP) &&
+          ir->type->is_double() && ir->type->is_scalar())
+         drsq_to_drcp(ir);
+      else if (lowering(SQRT_TO_ABS_SQRT))
+         sqrt_to_abs_sqrt(ir);
+      break;
+
    case ir_unop_sqrt:
       if (lowering(SQRT_TO_ABS_SQRT))
          sqrt_to_abs_sqrt(ir);
