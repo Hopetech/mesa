@@ -3358,10 +3358,6 @@ builtin_builder::create_builtins()
                 generate_ir::feq64(mem_ctx, integer_functions_supported),
                 NULL);
 
-   add_function("__builtin_fle64",
-                generate_ir::fle64(mem_ctx, integer_functions_supported),
-                NULL);
-
    add_function("__builtin_flt64",
                 generate_ir::flt64(mem_ctx, integer_functions_supported),
                 NULL);
