@@ -359,3 +359,22 @@ void eg_dump_debug_state(struct pipe_context *ctx, FILE *f,
 	radeon_clear_saved_cs(&rctx->last_gfx);
 	r600_resource_reference(&rctx->last_trace_buf, NULL);
 }
+
+void eg_dump_ib_to_file(struct pipe_context *ctx,
+			struct radeon_winsys_cs *cs)
+{
+#if 1
+	struct r600_context *rctx = (struct r600_context*)ctx;
+  static int ib_dump_id = 0;
+  char name[128];
+  FILE *fl;
+  ib_dump_id++;
+
+  snprintf(name, 127, "/tmp/rad_dump_%d.txt", ib_dump_id);
+  fl = fopen(name, "w+");
+  eg_parse_ib(fl, cs->current.buf, cs->current.cdw,
+	      -1, "IB", rctx->b.chip_class,
+	      NULL, NULL);
+  fclose(fl);
+#endif
+}

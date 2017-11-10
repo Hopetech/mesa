@@ -1077,4 +1077,6 @@ void r600_update_compressed_resource_state(struct r600_context *rctx, bool compu
 
 void eg_setup_buffer_constants(struct r600_context *rctx, int shader_type);
 void r600_update_driver_const_buffers(struct r600_context *rctx, bool compute_only);
+void eg_dump_ib_to_file(struct pipe_context *ctx,
+			struct radeon_winsys_cs *cs);
 #endif

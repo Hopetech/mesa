@@ -293,6 +293,9 @@ void r600_context_gfx_flush(void *context, unsigned flags,
 		r600_resource_reference(&ctx->last_trace_buf, ctx->trace_buf);
 		r600_resource_reference(&ctx->trace_buf, NULL);
 	}
+
+	if (getenv("R600_DUMP"))
+	  eg_dump_ib_to_file(ctx, cs);
 	/* Flush the CS. */
 	ws->cs_flush(cs, flags, &ctx->b.last_gfx_fence);
 	if (fence)
