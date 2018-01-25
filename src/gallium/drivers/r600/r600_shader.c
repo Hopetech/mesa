@@ -4419,6 +4419,7 @@ static int tgsi_op2_64_params(struct r600_shader_ctx *ctx, bool singledest, bool
 	int use_tmp = 0;
 	int swizzle_x = inst->Src[0].Register.SwizzleX;
 
+	assert (ctx->bc->chip_class == CAYMAN);
 	if (singledest) {
 		switch (write_mask) {
 		case 0x1:
@@ -4987,6 +4988,7 @@ static int cayman_emit_double_instr(struct r600_shader_ctx *ctx)
 	int lasti = tgsi_last_instruction(inst->Dst[0].Register.WriteMask);
 	int t1 = ctx->temp_reg;
 
+	assert (ctx->bc->chip_class == CAYMAN);
 	/* should only be one src regs */
 	assert(inst->Instruction.NumSrcRegs == 1);
 
