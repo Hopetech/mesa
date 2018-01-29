@@ -177,7 +177,7 @@ ir_variable *compare_index_block(ir_builder::ir_factory &body,
                                  ir_variable *index,
                                  unsigned base, unsigned components);
 
-bool lower_64bit_integer_instructions(exec_list *instructions,
-                                      unsigned what_to_lower);
+bool lower_64bit_instructions(exec_list *instructions,
+                              unsigned what_to_lower);
 
 #endif /* GLSL_IR_OPTIMIZATION_H */

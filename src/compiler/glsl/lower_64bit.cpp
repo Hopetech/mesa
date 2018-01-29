@@ -22,7 +22,7 @@
  */
 
 /**
- * \file lower_int64.cpp
+ * \file lower_64bit.cpp
  *
  * Lower 64-bit operations to 32-bit operations.  Each 64-bit value is lowered
  * to a uvec2.  For each operation that can be lowered, there is a function
@@ -132,8 +132,8 @@ private:
 #define lowering(x) (this->lower & x)
 
 bool
-lower_64bit_integer_instructions(exec_list *instructions,
-                                 unsigned what_to_lower)
+lower_64bit_instructions(exec_list *instructions,
+                         unsigned what_to_lower)
 {
    if (instructions->is_empty())
       return false;

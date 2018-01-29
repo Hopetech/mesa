@@ -81,6 +81,7 @@ LIBGLSL_FILES = \
 	glsl/loop_analysis.cpp \
 	glsl/loop_analysis.h \
 	glsl/loop_unroll.cpp \
+	glsl/lower_64bit.cpp \
 	glsl/lower_blend_equation_advanced.cpp \
 	glsl/lower_buffer_access.cpp \
 	glsl/lower_buffer_access.h \
@@ -91,7 +92,6 @@ LIBGLSL_FILES = \
 	glsl/lower_distance.cpp \
 	glsl/lower_if_to_cond_assign.cpp \
 	glsl/lower_instructions.cpp \
-	glsl/lower_int64.cpp \
 	glsl/lower_jumps.cpp \
 	glsl/lower_mat_op_to_vec.cpp \
 	glsl/lower_noise.cpp \
