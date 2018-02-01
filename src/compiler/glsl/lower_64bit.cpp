@@ -52,6 +52,7 @@ using namespace ir_builder;
 
 namespace lower_64bit {
 void expand_source(ir_factory &, ir_rvalue *val, ir_variable **expanded_src);
+void extract_source(ir_factory &, ir_rvalue *val, ir_variable **extracted_src);
 
 ir_dereference_variable *compact_destination(ir_factory &,
                                              const glsl_type *type,
@@ -226,6 +227,25 @@ lower_64bit::expand_source(ir_factory &body,
       expanded_src[i] = expanded_src[0];
 }
 
+void
+lower_64bit::extract_source(ir_factory &body,
+                            ir_rvalue *val,
+                            ir_variable **extracted_src)
+{
+   ir_variable *const temp = body.make_temp(val->type, "tmp");
+
+   body.emit(assign(temp, val));
+   unsigned i;
+   for (i = 0; i < val->type->vector_elements; i++) {
+      extracted_src[i] = body.make_temp(val->type->get_scalar_type(), "extracted_source");
+
+      body.emit(assign(extracted_src[i], swizzle(temp, i, 1)));
+   }
+
+   for (/* empty */; i < 4; i++)
+      extracted_src[i] = extracted_src[0];
+}
+
 /**
  * Convert a series of uvec2 results into a single 64-bit integer vector
  */
@@ -262,14 +282,24 @@ lower_64bit::lower_op_to_function_call(ir_instruction *base_ir,
    void *const mem_ctx = ralloc_parent(ir);
    exec_list instructions;
    unsigned source_components = 0;
-   const glsl_type *const result_type =
-      ir->type->base_type == GLSL_TYPE_UINT64
-      ? glsl_type::uvec2_type : glsl_type::ivec2_type;
+   const glsl_type *result_type;
+
+   if (ir->type->is_64bit()) {
+      if (ir->type->base_type == GLSL_TYPE_UINT64 ||
+          ir->type->base_type == GLSL_TYPE_DOUBLE)
+         result_type = glsl_type::uvec2_type;
+      else
+         result_type = glsl_type::ivec2_type;
+   } else
+      result_type = ir->type->get_scalar_type();
 
    ir_factory body(&instructions, mem_ctx);
 
    for (unsigned i = 0; i < num_operands; i++) {
-      expand_source(body, ir->operands[i], src[i]);
+      if (ir->operands[i]->type->is_64bit())
+         expand_source(body, ir->operands[i], src[i]);
+      else
+         extract_source(body, ir->operands[i], src[i]);
 
       if (ir->operands[i]->type->vector_elements > source_components)
          source_components = ir->operands[i]->type->vector_elements;
