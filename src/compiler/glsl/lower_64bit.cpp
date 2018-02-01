@@ -122,7 +122,7 @@ private:
    ir_factory added_functions;
 
    ir_rvalue *handle_op(ir_expression *ir, const char *function_name,
-                        function_generator generator);
+                        function_generator generator, bool conv_from_32bit = false);
 };
 
 } /* anonymous namespace */
@@ -350,12 +350,15 @@ lower_64bit::lower_op_to_function_call(ir_instruction *base_ir,
 ir_rvalue *
 lower_64bit_visitor::handle_op(ir_expression *ir,
                                const char *function_name,
-                               function_generator generator)
+                               function_generator generator,
+                               bool conv_from_32bit)
 {
-   for (unsigned i = 0; i < ir->num_operands; i++)
-      if (!ir->operands[i]->type->is_integer_64())
-         return ir;
-
+   if (conv_from_32bit == false) {
+      for (unsigned i = 0; i < ir->num_operands; i++)
+         if (!ir->operands[i]->type->is_integer_64() &&
+             !ir->operands[i]->type->is_double())
+            return ir;
+   }
    /* Get a handle to the correct ir_function_signature for the core
     * operation.
     */
