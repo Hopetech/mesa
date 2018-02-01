@@ -201,18 +201,21 @@ lower_64bit::expand_source(ir_factory &body,
                            ir_rvalue *val,
                            ir_variable **expanded_src)
 {
-   assert(val->type->is_integer_64());
+   assert(val->type->is_integer_64() || val->type->is_double());
 
    ir_variable *const temp = body.make_temp(val->type, "tmp");
 
    body.emit(assign(temp, val));
 
    const ir_expression_operation unpack_opcode =
-      val->type->base_type == GLSL_TYPE_UINT64
-      ? ir_unop_unpack_uint_2x32 : ir_unop_unpack_int_2x32;
+      val->type->base_type == GLSL_TYPE_DOUBLE
+      ? ir_unop_unpack_double_2x32 :
+      (val->type->base_type == GLSL_TYPE_UINT64
+       ? ir_unop_unpack_uint_2x32 : ir_unop_unpack_int_2x32);
 
    const glsl_type *const type =
-      val->type->base_type == GLSL_TYPE_UINT64
+      (val->type->base_type == GLSL_TYPE_UINT64 ||
+       val->type->base_type == GLSL_TYPE_DOUBLE)
       ? glsl_type::uvec2_type : glsl_type::ivec2_type;
 
    unsigned i;
@@ -255,8 +258,10 @@ lower_64bit::compact_destination(ir_factory &body,
                                  ir_variable *result[4])
 {
    const ir_expression_operation pack_opcode =
-      type->base_type == GLSL_TYPE_UINT64
-      ? ir_unop_pack_uint_2x32 : ir_unop_pack_int_2x32;
+      type->base_type == GLSL_TYPE_DOUBLE
+      ? ir_unop_pack_double_2x32 :
+      (type->base_type == GLSL_TYPE_UINT64
+      ? ir_unop_pack_uint_2x32 : ir_unop_pack_int_2x32);
 
    ir_variable *const compacted_result =
       body.make_temp(type, "compacted_64bit_result");
