@@ -402,6 +402,17 @@ static bool ctx_needs_stack_workaround_8xx(struct r600_shader_ctx *ctx)
 	return true;
 }
 
+static bool ctx_has_doubles(struct r600_shader_ctx *ctx)
+{
+	if (ctx->bc->family == CHIP_ARUBA ||
+	    ctx->bc->family == CHIP_CAYMAN ||
+	    ctx->bc->family == CHIP_CYPRESS ||
+	    ctx->bc->family == CHIP_HEMLOCK)
+		return true;
+	else
+		return false;
+}
+
 static int tgsi_last_instruction(unsigned writemask)
 {
 	int i, lasti = 0;
@@ -4419,7 +4430,7 @@ static int tgsi_op2_64_params(struct r600_shader_ctx *ctx, bool singledest, bool
 	int use_tmp = 0;
 	int swizzle_x = inst->Src[0].Register.SwizzleX;
 
-	assert (ctx->bc->chip_class == CAYMAN);
+	assert (ctx_has_doubles(ctx));
 	if (singledest) {
 		switch (write_mask) {
 		case 0x1:
@@ -4569,6 +4580,7 @@ static int tgsi_op3_64(struct r600_shader_ctx *ctx)
 	int lasti = 3;
 	int tmp = r600_get_temp(ctx);
 
+	assert (ctx_has_doubles(ctx));
 	for (i = 0; i < lasti + 1; i++) {
 
 		memset(&alu, 0, sizeof(struct r600_bytecode_alu));
@@ -4988,7 +5000,7 @@ static int cayman_emit_double_instr(struct r600_shader_ctx *ctx)
 	int lasti = tgsi_last_instruction(inst->Dst[0].Register.WriteMask);
 	int t1 = ctx->temp_reg;
 
-	assert (ctx->bc->chip_class == CAYMAN);
+	assert (ctx_has_doubles(ctx));
 	/* should only be one src regs */
 	assert(inst->Instruction.NumSrcRegs == 1);
 
