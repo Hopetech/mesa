@@ -184,7 +184,7 @@ private:
    void dceil_to_dtrunc(ir_expression *ir);
    void dfrac_to_dtrunc(ir_expression *ir);
    void drsq_to_drcp(ir_expression *ir);
-
+   void dfma_to_dmuladd(ir_expression *ir);
    ir_expression *_carry(operand a, operand b);
 };
 
@@ -1783,6 +1783,22 @@ lower_instructions_visitor::dfrac_to_dtrunc(ir_expression *ir)
 }
 
 void
+lower_instructions_visitor::dfma_to_dmuladd(ir_expression *ir)
+{
+   ir_variable *temp = new(ir) ir_variable(ir->operands[0]->type, "temp",
+                                           ir_var_temporary);
+   ir_rvalue *arg = ir->operands[2];
+   ir_instruction &i = *base_ir;
+   i.insert_before(temp);
+   i.insert_before(assign(temp, mul(ir->operands[0], ir->operands[1])));
+
+   ir->operation = ir_binop_add;
+   ir->init_num_operands();
+   ir->operands[0] = new(ir) ir_dereference_variable(temp);
+   ir->operands[1] = arg->clone(ir, NULL);
+   this->progress = true;
+}
+void
 lower_instructions_visitor::drsq_to_drcp(ir_expression *ir)
 {
    ir_expression *const sqrt_expr =
@@ -1974,6 +1990,12 @@ lower_instructions_visitor::visit_leave(ir_expression *ir)
       if (lowering(DOPS_TO_DTRUNC) &&
           ir->type->is_double())
          dfrac_to_dtrunc(ir);
+      break;
+
+   case ir_triop_fma:
+      if (lowering(DFMA_TO_DMULADD) &&
+          ir->type->is_double())
+         dfma_to_dmuladd(ir);
       break;
 
    default:
