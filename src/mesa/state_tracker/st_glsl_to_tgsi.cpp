@@ -7119,6 +7119,8 @@ st_link_shader(struct gl_context *ctx, struct gl_shader_program *prog)
                                              options->EmitNoIndirectUniform);
       }
 
+      do_mat_op_to_vec(ir);
+
       if (!pscreen->get_param(pscreen, PIPE_CAP_INT64_DIVMOD))
          lower_64bit_instructions(ir, DIV64 | MOD64);
 
@@ -7171,7 +7173,6 @@ st_link_shader(struct gl_context *ctx, struct gl_shader_program *prog)
 
       if (!pscreen->get_param(pscreen, PIPE_CAP_TEXTURE_GATHER_OFFSETS))
          lower_offset_arrays(ir);
-      do_mat_op_to_vec(ir);
 
       if (stage == MESA_SHADER_FRAGMENT)
          lower_blend_equation_advanced(
