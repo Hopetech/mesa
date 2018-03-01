@@ -1684,26 +1684,37 @@ lower_instructions_visitor::sqrt_to_abs_sqrt(ir_expression *ir)
 void
 lower_instructions_visitor::min_to_less(ir_expression *ir)
 {
+   const unsigned vec_elem = ir->type->vector_elements;
    ir_rvalue *x_clone = ir->operands[0]->clone(ir, NULL);
    ir_rvalue *y_clone = ir->operands[1]->clone(ir, NULL);
    ir->operation = ir_triop_csel;
    ir->init_num_operands();
-   ir->operands[0] = less(ir->operands[0], ir->operands[1]);
+   if (ir->operands[1]->type->vector_elements == 1 && vec_elem > 1) {
+	   ir->operands[0] = less(ir->operands[0], swizzle(ir->operands[1], SWIZZLE_XXXX, vec_elem));
+	   ir->operands[2] = swizzle(y_clone, SWIZZLE_XXXX, vec_elem);
+   } else {
+	   ir->operands[0] = less(ir->operands[0], ir->operands[1]);
+	   ir->operands[2] = y_clone;
+   }
    ir->operands[1] = x_clone;
-   ir->operands[2] = y_clone;
-
    this->progress = true;
 }
 
 void
 lower_instructions_visitor::max_to_less(ir_expression *ir)
 {
+   const unsigned vec_elem = ir->type->vector_elements;
    ir_rvalue *x_clone = ir->operands[0]->clone(ir, NULL);
    ir_rvalue *y_clone = ir->operands[1]->clone(ir, NULL);
    ir->operation = ir_triop_csel;
    ir->init_num_operands();
-   ir->operands[0] = less(ir->operands[0], ir->operands[1]);
-   ir->operands[1] = y_clone;
+   if (ir->operands[1]->type->vector_elements == 1 && vec_elem > 1) {
+	   ir->operands[0] = less(ir->operands[0], swizzle(ir->operands[1], SWIZZLE_XXXX, vec_elem));
+	   ir->operands[1] = swizzle(y_clone, SWIZZLE_XXXX, vec_elem);
+   } else {
+	   ir->operands[0] = less(ir->operands[0], ir->operands[1]);
+	   ir->operands[1] = y_clone;
+   }
    ir->operands[2] = x_clone;
 
    this->progress = true;
