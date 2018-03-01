@@ -1718,16 +1718,16 @@ lower_instructions_visitor::dfloor_to_dtrunc(ir_expression *ir)
     *    - if x is integer, floor(x) = x
     *    - otherwise, floor(x) = trunc(x) - 1
     */
-
+   const unsigned vec_elem = ir->type->vector_elements;
    ir_rvalue *src = ir->operands[0]->clone(ir, NULL);
    ir_rvalue *tr = trunc(src);
 
    ir->operation = ir_triop_csel;
    ir->init_num_operands();
-   ir->operands[0] = logic_or(gequal(src, new(ir) ir_constant(0.0, 1)),
+   ir->operands[0] = logic_or(gequal(src, new(ir) ir_constant(0.0, vec_elem)),
                               equal(src, tr));
    ir->operands[1] = tr;
-   ir->operands[2] = add(tr, new(ir) ir_constant(-1.0, 1));
+   ir->operands[2] = add(tr, new(ir) ir_constant(-1.0, vec_elem));
 
    this->progress = true;
 }
@@ -1739,15 +1739,16 @@ lower_instructions_visitor::dceil_to_dtrunc(ir_expression *ir)
     * else if (x - trunc(x) == 0), ceil(x) = x
     * else,                        ceil(x) = trunc(x) + 1
     */
+   const unsigned vec_elem = ir->type->vector_elements;
    ir_rvalue *src = ir->operands[0]->clone(ir, NULL);
    ir_rvalue *tr = trunc(src);
 
    ir->operation = ir_triop_csel;
    ir->init_num_operands();
-   ir->operands[0] = logic_or(less(src, new(ir) ir_constant(0.0, 1)),
+   ir->operands[0] = logic_or(less(src, new(ir) ir_constant(0.0, vec_elem)),
                               equal(src, tr));
    ir->operands[1] = tr;
-   ir->operands[2] = add(tr, new(ir) ir_constant(1.0, 1));
+   ir->operands[2] = add(tr, new(ir) ir_constant(1.0, vec_elem));
 
    this->progress = true;
 }
@@ -1872,7 +1873,7 @@ lower_instructions_visitor::visit_leave(ir_expression *ir)
       if (ir->type->is_double()) {
          if (lowering(DOPS_TO_DFRAC)) {
             dceil_to_dfrac(ir);
-         } else if (lowering(DOPS_TO_DTRUNC) && ir->type->is_scalar()) {
+         } else if (lowering(DOPS_TO_DTRUNC)) {
             dceil_to_dtrunc(ir);
          }
       }
@@ -1882,7 +1883,7 @@ lower_instructions_visitor::visit_leave(ir_expression *ir)
       if (ir->type->is_double()) {
          if (lowering(DOPS_TO_DFRAC)) {
             dfloor_to_dfrac(ir);
-         } else if (lowering(DOPS_TO_DTRUNC) && ir->type->is_scalar()) {
+         } else if (lowering(DOPS_TO_DTRUNC)) {
             dfloor_to_dtrunc(ir);
          }
       }
@@ -1935,7 +1936,7 @@ lower_instructions_visitor::visit_leave(ir_expression *ir)
 
    case ir_unop_rsq:
       if (lowering(DRSQ_TO_DRCP) &&
-          ir->type->is_double() && ir->type->is_scalar())
+          ir->type->is_double())
          drsq_to_drcp(ir);
       else if (lowering(SQRT_TO_ABS_SQRT))
          sqrt_to_abs_sqrt(ir);
@@ -1948,19 +1949,19 @@ lower_instructions_visitor::visit_leave(ir_expression *ir)
 
    case ir_binop_min:
       if (lowering(MIN_MAX_TO_LESS) &&
-          ir->type->is_double() && ir->type->is_scalar())
+          ir->type->is_double())
          min_to_less(ir);
       break;
 
    case ir_binop_max:
       if (lowering(MIN_MAX_TO_LESS) &&
-          ir->type->is_double() && ir->type->is_scalar())
+          ir->type->is_double())
          max_to_less(ir);
       break;
 
    case ir_unop_fract:
       if (lowering(DOPS_TO_DTRUNC) &&
-          ir->type->is_double() && ir->type->is_scalar())
+          ir->type->is_double())
          dfrac_to_dtrunc(ir);
       break;
 
