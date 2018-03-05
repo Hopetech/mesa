@@ -7129,6 +7129,7 @@ st_link_shader(struct gl_context *ctx, struct gl_shader_program *prog)
        */
       if (!pscreen->get_param(pscreen, PIPE_CAP_DOUBLES) &&
             ctx->Const.GLSLVersion >= 130) {
+         lower_instructions(ir, DDIV_TO_MUL_RCP);
          lower_instructions(ir, MIN_MAX_TO_LESS | DOPS_TO_DTRUNC | DRSQ_TO_DRCP | DFMA_TO_DMULADD |
 			    (have_dfrexp ? 0 : DFREXP_DLDEXP_TO_ARITH));
 	 lower_instructions(ir, DFMA_TO_DMULADD);

@@ -2190,7 +2190,7 @@ do_common_optimization(exec_list *ir, bool linked,
    } while (false)
 
    OPT(lower_instructions, ir, SUB_TO_ADD_NEG);
-   OPT(lower_instructions, ir, DDIV_TO_MUL_RCP);
+   //   OPT(lower_instructions, ir, DDIV_TO_MUL_RCP);
 
    if (linked) {
       OPT(do_function_inlining, ir);
