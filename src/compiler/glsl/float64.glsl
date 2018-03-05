@@ -7,6 +7,7 @@
 #version 130
 #extension GL_ARB_shader_bit_encoding : enable
 #extension GL_EXT_shader_integer_mix : enable
+#extension GL_MESA_shader_integer_functions : enable
 /* Software IEEE floating-point rounding mode.
  * GLSL spec section "4.7.1 Range and Precision":
  * The rounding mode cannot be set and is undefined.
@@ -406,16 +407,8 @@ roundAndPackFloat64(uint zSign,
 int
 countLeadingZeros32(uint a)
 {
-   if (a == 0u)
-      return 32;
-
-   int shiftCount = 0;
-   if ((a & 0xFFFF0000u) == 0u) {shiftCount += 16; a <<= 16;}
-   if ((a & 0xFF000000u) == 0u) {shiftCount += 8; a <<= 8;}
-   if ((a & 0xF0000000u) == 0u) {shiftCount += 4; a <<= 4;}
-   if ((a & 0xC0000000u) == 0u) {shiftCount += 2; a <<= 2;}
-   if ((a & 0x80000000u) == 0u) {shiftCount += 1;}
-
+   int shiftCount;
+   shiftCount = mix(31 - findMSB(a), 32, a == 0u);
    return shiftCount;
 }
 
