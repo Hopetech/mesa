@@ -211,7 +211,7 @@ shift64RightJamming(uint a0,
    z0 = mix(z0, (a0 >> count), count < 32);
 
    if (count == 0) {
-      z1 = a1;
+         z1 = a1;
    } else if (count < 32) {
       z1 = (a0<<negCount) | (a1>>count) | uint ((a1<<negCount) != 0u);
    } else {
@@ -395,8 +395,7 @@ roundAndPackFloat64(uint zSign,
       add64(zFrac0, zFrac1, 0u, 1u, zFrac0, zFrac1);
       zFrac1 &= ~((zFrac2 + uint(zFrac2 == 0u)) & uint(roundNearestEven));
    } else {
-      if ((zFrac0 | zFrac1) == 0u)
-         zExp = 0;
+      zExp = mix(zExp, 0, (zFrac0 | zFrac1) == 0u);
    }
    return packFloat64(zSign, zExp, zFrac0, zFrac1);
 }
@@ -437,11 +436,9 @@ normalizeRoundAndPackFloat64(uint zSign,
    int shiftCount;
    uint zFrac2;
 
-   if (zFrac0 == 0u) {
-      zFrac0 = zFrac1;
-      zFrac1 = 0u;
-      zExp -= 32;
-   }
+   zExp = mix(zExp, zExp - 32, zFrac0 == 0u);
+   zFrac1 = mix(zFrac1, 0u, zFrac0 == 0u);
+   zFrac0 = mix(zFrac0, zFrac1, zFrac0 == 0u);
    shiftCount = countLeadingZeros32(zFrac0) - 11;
    if (0 <= shiftCount) {
       zFrac2 = 0u;
