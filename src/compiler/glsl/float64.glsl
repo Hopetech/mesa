@@ -468,10 +468,8 @@ propagateFloat64NaN(uvec2 a, uvec2 b)
    bool bIsNaN = is_nan(b);
    a.y |= 0x00080000u;
    b.y |= 0x00080000u;
-   if (aIsNaN)
-      return (bIsNaN) ? b : a;
-   else
-      return b;
+
+   return mix(b, mix(a, b, bvec2(bIsNaN, bIsNaN)), bvec2(aIsNaN, aIsNaN));
 }
 
 /* Returns the result of adding the double-precision floating-point values
@@ -807,16 +805,14 @@ shift64Right(uint a0, uint a1,
    uint z1;
    int negCount = (-count) & 31;
 
-   if (count == 0) {
-      z1 = a1;
-      z0 = a0;
-   } else if (count < 32) {
-      z1 = (a0<<negCount) | (a1>>count);
-      z0 = a0>>count;
-   } else {
-      z1 = (count < 64) ? (a0>>(count & 31)) : 0u;
-      z0 = 0u;
-   }
+   z0 = 0u;
+   z0 = mix(z0, (a0 >> count), count < 32);
+   z0 = mix(z0, a0, count == 0);
+
+   z1 = mix(0u, (a0 >> (count & 31)), count < 64);
+   z1 = mix(z1, (a0<<negCount) | (a1>>count), count < 32);
+   z1 = mix(z1, a0, count == 0);
+
    z1Ptr = z1;
    z0Ptr = z0;
 }
