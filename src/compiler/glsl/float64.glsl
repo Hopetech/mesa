@@ -481,9 +481,8 @@ fadd64(uvec2 a, uvec2 b)
       int expDiff = aExp - bExp;
       if (0 < expDiff) {
          if (aExp == 0x7FF) {
-            if ((aFracHi | aFracLo) != 0u)
-               return propagateFloat64NaN(a, b);
-            return a;
+	    bool propagate = (aFracHi | aFracLo) != 0u;
+	    return mix(a, propagateFloat64NaN(a, b), bvec2(propagate, propagate));
          }
          if (bExp == 0)
             --expDiff;
@@ -494,9 +493,8 @@ fadd64(uvec2 a, uvec2 b)
          zExp = aExp;
       } else if (expDiff < 0) {
          if (bExp == 0x7FF) {
-            if ((bFracHi | bFracLo) != 0u)
-               return propagateFloat64NaN(a, b);
-            return packFloat64(aSign, 0x7FF, 0u, 0u);
+	    bool propagate = (bFracHi | bFracLo) != 0u;
+	    return mix(packFloat64(aSign, 0x7ff, 0u, 0u), propagateFloat64NaN(a, b), bvec2(propagate, propagate));
          }
          if (aExp == 0)
             ++expDiff;
@@ -507,9 +505,8 @@ fadd64(uvec2 a, uvec2 b)
          zExp = bExp;
       } else {
          if (aExp == 0x7FF) {
-            if ((aFracHi | aFracLo | bFracHi | bFracLo) != 0u)
-               return propagateFloat64NaN(a, b);
-            return a;
+	    bool propagate = (aFracHi | aFracLo | bFracHi | bFracLo) != 0u;
+	    return mix(a, propagateFloat64NaN(a, b), bvec2(propagate, propagate));
          }
          add64(aFracHi, aFracLo, bFracHi, bFracLo, zFrac0, zFrac1);
          if (aExp == 0)
@@ -547,10 +544,8 @@ fadd64(uvec2 a, uvec2 b)
       shortShift64Left(bFracHi, bFracLo, 10, bFracHi, bFracLo);
       if (0 < expDiff) {
          if (aExp == 0x7FF) {
-            if ((aFracHi | aFracLo) != 0u) {
-               return propagateFloat64NaN(a, b);
-            }
-            return a;
+ 	    bool propagate = (aFracHi | aFracLo) != 0u;
+	    return mix(a, propagateFloat64NaN(a, b), bvec2(propagate, propagate));
          }
          if (bExp == 0)
             --expDiff;
@@ -565,9 +560,8 @@ fadd64(uvec2 a, uvec2 b)
       }
       if (expDiff < 0) {
          if (bExp == 0x7FF) {
-            if ((bFracHi | bFracLo) != 0u)
-               return propagateFloat64NaN(a, b);
-            return packFloat64(aSign ^ 1u, 0x7FF, 0u, 0u);
+ 	    bool propagate = (bFracHi | bFracLo) != 0u;
+	    return mix(packFloat64(aSign ^ 1u, 0x7ff, 0u, 0u), propagateFloat64NaN(a, b), bvec2(propagate, propagate));
          }
          if (aExp == 0)
             ++expDiff;
@@ -582,9 +576,8 @@ fadd64(uvec2 a, uvec2 b)
          return normalizeRoundAndPackFloat64(aSign, zExp - 10, zFrac0, zFrac1);
       }
       if (aExp == 0x7FF) {
-         if ((aFracHi | aFracLo | bFracHi | bFracLo) != 0u)
-            return propagateFloat64NaN(a, b);
-         return uvec2(0xFFFFFFFFu, 0xFFFFFFFFu);
+  	 bool propagate = (aFracHi | aFracLo | bFracHi | bFracLo) != 0u;
+	 return mix(uvec2(0xFFFFFFFFu, 0xFFFFFFFFu), propagateFloat64NaN(a, b), bvec2(propagate, propagate));
       }
       bExp = mix(bExp, 1, aExp == 0);
       aExp = mix(aExp, 1, aExp == 0);
