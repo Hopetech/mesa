@@ -207,12 +207,13 @@ shift64RightJamming(uint a0,
    uint z1;
    int negCount = (-count) & 31;
 
+   z0 = mix(0u, a0, count == 0);
+   z0 = mix(z0, (a0 >> count), count < 32);
+
    if (count == 0) {
       z1 = a1;
-      z0 = a0;
    } else if (count < 32) {
       z1 = (a0<<negCount) | (a1>>count) | uint ((a1<<negCount) != 0u);
-      z0 = a0>>count;
    } else {
       if (count == 32) {
          z1 = a0 | uint(a1 != 0u);
@@ -221,7 +222,6 @@ shift64RightJamming(uint a0,
       } else {
          z1 = uint((a0 | a1) != 0u);
       }
-      z0 = 0u;
    }
    z1Ptr = z1;
    z0Ptr = z0;
@@ -271,13 +271,9 @@ shift64ExtraRightJamming(uint a0, uint a1, uint a2,
             z1 = a0;
          } else {
             a2 |= a1;
-            if (count < 64) {
-               z2 = a0<<negCount;
-               z1 = a0>>(count & 31);
-            } else {
-               z2 = (count == 64) ? a0 : uint(a0 != 0u);
-               z1 = 0u;
-            }
+	    z2 = mix(uint(a0 != 0u), a0, count == 64);
+	    z2 = mix(z2, a0 << negCount, count < 64);
+	    z1 = mix(0u, (a0 >> (count & 31)), count < 64);
          }
          z0 = 0u;
       }
@@ -299,7 +295,7 @@ shortShift64Left(uint a0, uint a1,
                  inout uint z0Ptr, inout uint z1Ptr)
 {
    z1Ptr = a1<<count;
-   z0Ptr = (count == 0) ? a0 : (a0<<count) | (a1>>((-count) & 31));
+   z0Ptr = mix((a0 << count | (a1 >> ((-count) & 31))), a0, count == 0);
 }
 
 /* Packs the sign `zSign', the exponent `zExp', and the significand formed by
