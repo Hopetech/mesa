@@ -171,58 +171,34 @@ feq64(void *mem_ctx, builtin_available_predicate avail)
    sig_parameters.push_tail(r002C);
    ir_variable *const r002D = new(mem_ctx) ir_variable(glsl_type::uvec2_type, "b", ir_var_function_in);
    sig_parameters.push_tail(r002D);
-   ir_variable *const r002E = body.make_temp(glsl_type::bool_type, "return_value");
-   ir_variable *const r002F = new(mem_ctx) ir_variable(glsl_type::bool_type, "isbNaN", ir_var_auto);
-   body.emit(r002F);
-   ir_variable *const r0030 = new(mem_ctx) ir_variable(glsl_type::bool_type, "isaNaN", ir_var_auto);
-   body.emit(r0030);
-   ir_expression *const r0031 = rshift(swizzle_y(r002C), body.constant(int(20)));
-   ir_expression *const r0032 = bit_and(r0031, body.constant(2047u));
-   ir_expression *const r0033 = expr(ir_unop_u2i, r0032);
-   ir_expression *const r0034 = equal(r0033, body.constant(int(2047)));
-   ir_expression *const r0035 = bit_and(swizzle_y(r002C), body.constant(1048575u));
-   ir_expression *const r0036 = bit_or(r0035, swizzle_x(r002C));
-   ir_expression *const r0037 = nequal(r0036, body.constant(0u));
-   body.emit(assign(r0030, logic_and(r0034, r0037), 0x01));
-
-   ir_expression *const r0038 = rshift(swizzle_y(r002D), body.constant(int(20)));
-   ir_expression *const r0039 = bit_and(r0038, body.constant(2047u));
-   ir_expression *const r003A = expr(ir_unop_u2i, r0039);
-   ir_expression *const r003B = equal(r003A, body.constant(int(2047)));
-   ir_expression *const r003C = bit_and(swizzle_y(r002D), body.constant(1048575u));
-   ir_expression *const r003D = bit_or(r003C, swizzle_x(r002D));
-   ir_expression *const r003E = nequal(r003D, body.constant(0u));
-   body.emit(assign(r002F, logic_and(r003B, r003E), 0x01));
-
-   /* IF CONDITION */
-   ir_expression *const r0040 = logic_or(r0030, r002F);
-   ir_if *f003F = new(mem_ctx) ir_if(operand(r0040).val);
-   exec_list *const f003F_parent_instructions = body.instructions;
-
-      /* THEN INSTRUCTIONS */
-      body.instructions = &f003F->then_instructions;
-
-      body.emit(assign(r002E, body.constant(false), 0x01));
-
-
-      /* ELSE INSTRUCTIONS */
-      body.instructions = &f003F->else_instructions;
-
-      ir_expression *const r0041 = equal(swizzle_x(r002C), swizzle_x(r002D));
-      ir_expression *const r0042 = equal(swizzle_y(r002C), swizzle_y(r002D));
-      ir_expression *const r0043 = equal(swizzle_x(r002C), body.constant(0u));
-      ir_expression *const r0044 = bit_or(swizzle_y(r002C), swizzle_y(r002D));
-      ir_expression *const r0045 = lshift(r0044, body.constant(int(1)));
-      ir_expression *const r0046 = equal(r0045, body.constant(0u));
-      ir_expression *const r0047 = logic_and(r0043, r0046);
-      ir_expression *const r0048 = logic_or(r0042, r0047);
-      body.emit(assign(r002E, logic_and(r0041, r0048), 0x01));
-
-
-   body.instructions = f003F_parent_instructions;
-   body.emit(f003F);
-
-   /* END IF */
+   ir_variable *const r002E = body.make_temp(glsl_type::bool_type, "mix_retval");
+   ir_expression *const r002F = rshift(swizzle_y(r002C), body.constant(int(20)));
+   ir_expression *const r0030 = bit_and(r002F, body.constant(2047u));
+   ir_expression *const r0031 = expr(ir_unop_u2i, r0030);
+   ir_expression *const r0032 = equal(r0031, body.constant(int(2047)));
+   ir_expression *const r0033 = bit_and(swizzle_y(r002C), body.constant(1048575u));
+   ir_expression *const r0034 = bit_or(r0033, swizzle_x(r002C));
+   ir_expression *const r0035 = nequal(r0034, body.constant(0u));
+   ir_expression *const r0036 = logic_and(r0032, r0035);
+   ir_expression *const r0037 = rshift(swizzle_y(r002D), body.constant(int(20)));
+   ir_expression *const r0038 = bit_and(r0037, body.constant(2047u));
+   ir_expression *const r0039 = expr(ir_unop_u2i, r0038);
+   ir_expression *const r003A = equal(r0039, body.constant(int(2047)));
+   ir_expression *const r003B = bit_and(swizzle_y(r002D), body.constant(1048575u));
+   ir_expression *const r003C = bit_or(r003B, swizzle_x(r002D));
+   ir_expression *const r003D = nequal(r003C, body.constant(0u));
+   ir_expression *const r003E = logic_and(r003A, r003D);
+   ir_expression *const r003F = logic_or(r0036, r003E);
+   ir_expression *const r0040 = equal(swizzle_x(r002C), swizzle_x(r002D));
+   ir_expression *const r0041 = equal(swizzle_y(r002C), swizzle_y(r002D));
+   ir_expression *const r0042 = equal(swizzle_x(r002C), body.constant(0u));
+   ir_expression *const r0043 = bit_or(swizzle_y(r002C), swizzle_y(r002D));
+   ir_expression *const r0044 = lshift(r0043, body.constant(int(1)));
+   ir_expression *const r0045 = equal(r0044, body.constant(0u));
+   ir_expression *const r0046 = logic_and(r0042, r0045);
+   ir_expression *const r0047 = logic_or(r0041, r0046);
+   ir_expression *const r0048 = logic_and(r0040, r0047);
+   body.emit(assign(r002E, expr(ir_triop_csel, r003F, body.constant(false), r0048), 0x01));
 
    body.emit(ret(r002E));
 

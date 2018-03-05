@@ -100,11 +100,9 @@ feq64(uvec2 a, uvec2 b)
    isbNaN = (extractFloat64Exp(b) == 0x7FF) &&
       ((bFracHi | bFracLo) != 0u);
 
-   if (isaNaN || isbNaN)
-      return false;
-
-   return (a.x == b.x) &&
+   bool result = (a.x == b.x) &&
       ((a.y == b.y) || ((a.x == 0u) && (((a.y | b.y)<<1) == 0u)));
+   return mix(result, false, isaNaN || isbNaN);
 }
 
 /* Returns the sign bit of the double-precision floating-point value `a'.*/
