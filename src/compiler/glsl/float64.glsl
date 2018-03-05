@@ -6,7 +6,7 @@
 
 #version 130
 #extension GL_ARB_shader_bit_encoding : enable
-
+#extension GL_EXT_shader_integer_mix : enable
 /* Software IEEE floating-point rounding mode.
  * GLSL spec section "4.7.1 Range and Precision":
  * The rounding mode cannot be set and is undefined.
@@ -44,22 +44,19 @@ is_nan(uvec2 a)
 uvec2
 fneg64(uvec2 a)
 {
-   if(is_nan(a))
-      return a;
+   uvec2 t = a;
 
-   a.y ^= (1u<<31);
+   t.y ^= (1u << 31);
+   a.y = mix(t.y, a.y, is_nan(a));
    return a;
 }
 
 uvec2
 fsign64(uvec2 a)
 {
-   if ((a.y << 1 | a.x) == 0u)
-      return uvec2(0u, 0u);
-
    uvec2 retval;
    retval.x = 0u;
-   retval.y = (a.y & 0x80000000u) | 0x3FF00000u;
+   retval.y = mix((a.y & 0x80000000u) | 0x3FF00000u, 0u, (a.y << 1 | a.x) == 0u);
    return retval;
 }
 
@@ -607,10 +604,9 @@ fadd64(uvec2 a, uvec2 b)
             return propagateFloat64NaN(a, b);
          return uvec2(0xFFFFFFFFu, 0xFFFFFFFFu);
       }
-      if (aExp == 0) {
-         aExp = 1;
-         bExp = 1;
-      }
+      bExp = mix(bExp, 1, aExp == 0);
+      aExp = mix(aExp, 1, aExp == 0);
+
       if (bFracHi < aFracHi) {
          sub64(aFracHi, aFracLo, bFracHi, bFracLo, zFrac0, zFrac1);
          zExp = aExp;
