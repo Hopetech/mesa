@@ -471,10 +471,9 @@ fadd64(uvec2 a, uvec2 b)
 	    bool propagate = (aFracHi | aFracLo) != 0u;
 	    return mix(a, propagateFloat64NaN(a, b), bvec2(propagate, propagate));
          }
-         if (bExp == 0)
-            --expDiff;
-         else
-            bFracHi |= 0x00100000u;
+
+	 expDiff = mix(expDiff, expDiff - 1, bExp == 0);
+	 bFracHi = mix(bFracHi | 0x00100000u, bFracHi, bExp == 0);
          shift64ExtraRightJamming(
             bFracHi, bFracLo, 0u, expDiff, bFracHi, bFracLo, zFrac2);
          zExp = aExp;
@@ -483,10 +482,8 @@ fadd64(uvec2 a, uvec2 b)
 	    bool propagate = (bFracHi | bFracLo) != 0u;
 	    return mix(packFloat64(aSign, 0x7ff, 0u, 0u), propagateFloat64NaN(a, b), bvec2(propagate, propagate));
          }
-         if (aExp == 0)
-            ++expDiff;
-         else
-            aFracHi |= 0x00100000u;
+	 expDiff = mix(expDiff, expDiff + 1, aExp == 0);
+	 aFracHi = mix(aFracHi | 0x00100000u, aFracHi, aExp == 0);
          shift64ExtraRightJamming(
             aFracHi, aFracLo, 0u, - expDiff, aFracHi, aFracLo, zFrac2);
          zExp = bExp;
@@ -508,10 +505,10 @@ fadd64(uvec2 a, uvec2 b)
       aFracHi |= 0x00100000u;
       add64(aFracHi, aFracLo, bFracHi, bFracLo, zFrac0, zFrac1);
       --zExp;
-      if (zFrac0 < 0x00200000u)
-         return roundAndPackFloat64(aSign, zExp, zFrac0, zFrac1, zFrac2);
-      ++zExp;
-      shift64ExtraRightJamming(zFrac0, zFrac1, zFrac2, 1, zFrac0, zFrac1, zFrac2);
+      if (!(zFrac0 < 0x00200000u)) {
+         shift64ExtraRightJamming(zFrac0, zFrac1, zFrac2, 1, zFrac0, zFrac1, zFrac2);
+	 ++zExp;
+      }
       return roundAndPackFloat64(aSign, zExp, zFrac0, zFrac1, zFrac2);
 
    } else {
@@ -525,10 +522,8 @@ fadd64(uvec2 a, uvec2 b)
  	    bool propagate = (aFracHi | aFracLo) != 0u;
 	    return mix(a, propagateFloat64NaN(a, b), bvec2(propagate, propagate));
          }
-         if (bExp == 0)
-            --expDiff;
-         else
-            bFracHi |= 0x40000000u;
+         expDiff = mix(expDiff, expDiff - 1, bExp == 0);
+         bFracHi = mix(bFracHi | 0x40000000u, bFracHi, bExp == 0);
          shift64RightJamming(bFracHi, bFracLo, expDiff, bFracHi, bFracLo);
          aFracHi |= 0x40000000u;
          sub64(aFracHi, aFracLo, bFracHi, bFracLo, zFrac0, zFrac1);
@@ -541,10 +536,8 @@ fadd64(uvec2 a, uvec2 b)
  	    bool propagate = (bFracHi | bFracLo) != 0u;
 	    return mix(packFloat64(aSign ^ 1u, 0x7ff, 0u, 0u), propagateFloat64NaN(a, b), bvec2(propagate, propagate));
          }
-         if (aExp == 0)
-            ++expDiff;
-         else
-            aFracHi |= 0x40000000u;
+         expDiff = mix(expDiff, expDiff + 1, aExp == 0);
+         aFracHi = mix(aFracHi | 0x40000000u, aFracHi, aExp == 0);
          shift64RightJamming(aFracHi, aFracLo, - expDiff, aFracHi, aFracLo);
          bFracHi |= 0x40000000u;
          sub64(bFracHi, bFracLo, aFracHi, aFracLo, zFrac0, zFrac1);
@@ -559,35 +552,31 @@ fadd64(uvec2 a, uvec2 b)
       }
       bExp = mix(bExp, 1, aExp == 0);
       aExp = mix(aExp, 1, aExp == 0);
-
+      bool zexp_normal = false;
+      bool blta = true;
       if (bFracHi < aFracHi) {
          sub64(aFracHi, aFracLo, bFracHi, bFracLo, zFrac0, zFrac1);
-         zExp = aExp;
-         --zExp;
-         return normalizeRoundAndPackFloat64(aSign, zExp - 10, zFrac0, zFrac1);
+         zexp_normal = true;
       }
-      if (aFracHi < bFracHi) {
+      else if (aFracHi < bFracHi) {
          sub64(bFracHi, bFracLo, aFracHi, aFracLo, zFrac0, zFrac1);
-         zExp = bExp;
-         aSign ^= 1u;
-         --zExp;
-         return normalizeRoundAndPackFloat64(aSign, zExp - 10, zFrac0, zFrac1);
+         blta = false;
+         zexp_normal = true;
       }
-      if (bFracLo < aFracLo) {
+      else if (bFracLo < aFracLo) {
          sub64(aFracHi, aFracLo, bFracHi, bFracLo, zFrac0, zFrac1);
-         zExp = aExp;
-         --zExp;
-         return normalizeRoundAndPackFloat64(aSign, zExp - 10, zFrac0, zFrac1);
+         zexp_normal = true;
       }
-      if (aFracLo < bFracLo) {
+      else if (aFracLo < bFracLo) {
          sub64(bFracHi, bFracLo, aFracHi, aFracLo, zFrac0, zFrac1);
-         zExp = bExp;
-         aSign ^= 1u;
-         --zExp;
-         return normalizeRoundAndPackFloat64(aSign, zExp - 10, zFrac0, zFrac1);
+          blta = false;
+          zexp_normal = true;
       }
-      return packFloat64(
-         uint(FLOAT_ROUNDING_MODE == FLOAT_ROUND_DOWN), 0, 0u, 0u);
+      zExp = mix(bExp, aExp, blta);
+      aSign = mix(aSign ^ 1u, aSign, blta);
+      uvec2 retval_0 = packFloat64(uint(FLOAT_ROUNDING_MODE == FLOAT_ROUND_DOWN), 0, 0u, 0u);
+      uvec2 retval_1 = normalizeRoundAndPackFloat64(aSign, zExp - 11, zFrac0, zFrac1);
+      return mix(retval_0, retval_1, bvec2(zexp_normal, zexp_normal));
    }
 }
 
