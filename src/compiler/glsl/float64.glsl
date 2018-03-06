@@ -209,19 +209,13 @@ shift64RightJamming(uint a0,
    z0 = mix(0u, a0, count == 0);
    z0 = mix(z0, (a0 >> count), count < 32);
 
-   if (count == 0) {
-         z1 = a1;
-   } else if (count < 32) {
-      z1 = (a0<<negCount) | (a1>>count) | uint ((a1<<negCount) != 0u);
-   } else {
-      if (count == 32) {
-         z1 = a0 | uint(a1 != 0u);
-      } else if (count < 64) {
-         z1 = (a0>>(count & 31)) | uint(((a0<<negCount) | a1) != 0u);
-      } else {
-         z1 = uint((a0 | a1) != 0u);
-      }
-   }
+   z1 = uint((a0 | a1) != 0u); /* count >= 64 */
+   uint z1_lt64 = (a0>>(count & 31)) | uint(((a0<<negCount) | a1) != 0u);
+   z1 = mix(z1, z1_lt64, count < 64);
+   z1 = mix(z1, (a0 | uint(a1 != 0u)), count == 32);
+   uint z1_lt32 = (a0<<negCount) | (a1>>count) | uint ((a1<<negCount) != 0u);
+   z1 = mix(z1, z1_lt32, count < 32);
+   z1 = mix(z1, a1, count == 0);
    z1Ptr = z1;
    z0Ptr = z0;
 }
