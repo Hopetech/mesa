@@ -244,22 +244,20 @@ shift64ExtraRightJamming(uint a0, uint a1, uint a2,
                          inout uint z1Ptr,
                          inout uint z2Ptr)
 {
-   uint z0;
+   uint z0 = 0u;
    uint z1;
    uint z2;
    int negCount = (-count) & 31;
 
-   if (count < 32) {
-      z2 = a1<<negCount;
-      z1 = (a0<<negCount) | (a1>>count);
-      z0 = a0>>count;
-   } else {
-      a2 |= a1;
-      z2 = mix(uint(a0 != 0u), a0, count == 64);
-      z2 = mix(z2, a0 << negCount, count < 64);
-      z1 = mix(0u, (a0 >> (count & 31)), count < 64);
-      z0 = 0u;
-   }
+   z2 = mix(uint(a0 != 0u), a0, count == 64);
+   z2 = mix(z2, a0 << negCount, count < 64);
+   z2 = mix(z2, a1 << negCount, count < 32);
+
+   z1 = mix(0u, (a0 >> (count & 31)), count < 64);
+   z1 = mix(z1, (a0<<negCount) | (a1>>count), count < 32);
+
+   a2 = mix(a2 | a1, a2, count < 32);
+   z0 = mix(z0, a0 >> count, count < 32);
    z2 |= uint(a2 != 0u);
 
    z0 = mix(z0, 0u, (count == 32));
