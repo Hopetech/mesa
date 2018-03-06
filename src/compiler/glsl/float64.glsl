@@ -465,20 +465,19 @@ fadd64(uvec2 a, uvec2 b)
 {
    uint aSign = extractFloat64Sign(a);
    uint bSign = extractFloat64Sign(b);
-
+   uint aFracLo = extractFloat64FracLo(a);
+   uint aFracHi = extractFloat64FracHi(a);
+   uint bFracLo = extractFloat64FracLo(b);
+   uint bFracHi = extractFloat64FracHi(b);
+   int aExp = extractFloat64Exp(a);
+   int bExp = extractFloat64Exp(b);
+   uint zFrac0 = 0u;
+   uint zFrac1 = 0u;
+   int expDiff = aExp - bExp;
    if (aSign == bSign) {
-      uint zFrac0 = 0u;
-      uint zFrac1 = 0u;
       uint zFrac2 = 0u;
       int zExp;
 
-      uint aFracLo = extractFloat64FracLo(a);
-      uint aFracHi = extractFloat64FracHi(a);
-      uint bFracLo = extractFloat64FracLo(b);
-      uint bFracHi = extractFloat64FracHi(b);
-      int aExp = extractFloat64Exp(a);
-      int bExp = extractFloat64Exp(b);
-      int expDiff = aExp - bExp;
       if (0 < expDiff) {
          if (aExp == 0x7FF) {
 	    bool propagate = (aFracHi | aFracLo) != 0u;
@@ -530,16 +529,7 @@ fadd64(uvec2 a, uvec2 b)
    } else {
       uvec2 z;
       int zExp;
-      uint zFrac0 = 0u;
-      uint zFrac1 = 0u;
 
-      uint aFracLo = extractFloat64FracLo(a);
-      uint aFracHi = extractFloat64FracHi(a);
-      uint bFracLo = extractFloat64FracLo(b);
-      uint bFracHi = extractFloat64FracHi(b);
-      int aExp = extractFloat64Exp(a);
-      int bExp = extractFloat64Exp(b);
-      int expDiff = aExp - bExp;
       shortShift64Left(aFracHi, aFracLo, 10, aFracHi, aFracLo);
       shortShift64Left(bFracHi, bFracLo, 10, bFracHi, bFracLo);
       if (0 < expDiff) {
