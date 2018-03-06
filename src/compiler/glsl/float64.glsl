@@ -654,22 +654,17 @@ normalizeFloat64Subnormal(uint aFrac0, uint aFrac1,
                           inout uint zFrac1Ptr)
 {
    int shiftCount;
+   uint temp_zfrac0, temp_zfrac1;
+   shiftCount = countLeadingZeros32(mix(aFrac0, aFrac1, aFrac0 == 0u)) - 11;
+   zExpPtr = mix(1 - shiftCount, -shiftCount - 31, aFrac0 == 0u);
 
-   if (aFrac0 == 0u) {
-      shiftCount = countLeadingZeros32(aFrac1) - 11;
-      if (shiftCount < 0) {
-         zFrac0Ptr = aFrac1>>(-shiftCount);
-         zFrac1Ptr = aFrac1<<(shiftCount & 31);
-      } else {
-         zFrac0Ptr = aFrac1<<shiftCount;
-         zFrac1Ptr = 0u;
-      }
-      zExpPtr = -shiftCount - 31;
-   } else {
-      shiftCount = countLeadingZeros32(aFrac0) - 11;
-      shortShift64Left(aFrac0, aFrac1, shiftCount, zFrac0Ptr, zFrac1Ptr);
-      zExpPtr = 1 - shiftCount;
-   }
+   temp_zfrac0 = mix(aFrac1<<shiftCount, aFrac1>>(-shiftCount), shiftCount < 0);
+   temp_zfrac1 = mix(0u, aFrac1<<(shiftCount & 31), shiftCount < 0);
+
+   shortShift64Left(aFrac0, aFrac1, shiftCount, zFrac0Ptr, zFrac1Ptr);
+
+   zFrac0Ptr = mix(zFrac0Ptr, temp_zfrac0, aFrac0 == 0);
+   zFrac1Ptr = mix(zFrac1Ptr, temp_zfrac1, aFrac0 == 0);
 }
 
 /* Returns the result of multiplying the double-precision floating-point values
@@ -1312,23 +1307,21 @@ uvec2
 ftrunc64(uvec2 a)
 {
    int aExp = extractFloat64Exp(a);
+   uint zLo;
+   uint zHi;
 
    int unbiasedExp = aExp - 1023;
+   int fracBits = 52 - unbiasedExp;
+   uint maskLo = (fracBits >= 32) ? 0u : (~0u << fracBits);
+   uint maskHi = (fracBits < 33) ? ~0u : (~0u << (fracBits - 32));
+   zLo = maskLo & a.x;
+   zHi = maskHi & a.y;
 
-   if (unbiasedExp < 0)
-      return uvec2(0u, 0u);
-   else if (unbiasedExp > 52)
-      return a;
-   else {
-      uint zLo;
-      uint zHi;
-      int fracBits = 52 - unbiasedExp;
-      uint maskLo = (fracBits >= 32) ? 0u : (~0u << fracBits);
-      uint maskHi = (fracBits < 33) ? ~0u : (~0u << (fracBits - 32));
-      zLo = maskLo & a.x;
-      zHi = maskHi & a.y;
-      return uvec2(zLo, zHi);
-   }
+   zLo = mix(zLo, 0u, unbiasedExp < 0);
+   zHi = mix(zHi, 0u, unbiasedExp < 0);
+   zLo = mix(zLo, a.x, unbiasedExp > 52);
+   zHi = mix(zHi, a.y, unbiasedExp > 52);
+   return uvec2(zLo, zHi);
 }
 
 uvec2
