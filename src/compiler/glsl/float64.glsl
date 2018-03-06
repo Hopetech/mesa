@@ -988,22 +988,17 @@ roundAndPackFloat32(uint zSign, int zExp, uint zFrac)
    if (0xFDu <= uint(zExp)) {
       if ((0xFD < zExp) || ((zExp == 0xFD) && (int(zFrac) + roundIncrement) < 0))
          return packFloat32(zSign, 0xFF, 0u) - float(roundIncrement == 0);
-      if (zExp < 0) {
-         int count = -zExp;
-         if (count < 32)
-            zFrac = (zFrac>>count) | uint((zFrac<<((-count) & 31)) != 0u);
-         else
-            zFrac = uint(zFrac != 0u);
-         zExp = 0;
-         roundBits = int(zFrac) & 0x7F;
-      }
+      int count = -zExp;
+      bool zexp_lt0 = zExp < 0;
+      uint zFrac_lt0 = mix(uint(zFrac != 0u), (zFrac>>count) | uint((zFrac<<((-count) & 31)) != 0u), (-zExp) < 32);
+      zFrac = mix(zFrac, zFrac_lt0, zexp_lt0);
+      roundBits = mix(roundBits, int(zFrac) & 0x7f, zexp_lt0);
+      zExp = mix(zExp, 0, zexp_lt0);
    }
    zFrac = (zFrac + uint(roundIncrement))>>7;
    zFrac &= ~uint(((roundBits ^ 0x40) == 0) && roundNearestEven);
-   if (zFrac == 0u)
-      zExp = 0;
 
-   return packFloat32(zSign, zExp, zFrac);
+   return packFloat32(zSign, mix(zExp, 0, zFrac == 0u), zFrac);
 }
 
 /* Returns the result of converting the double-precision floating-point value
@@ -1021,16 +1016,13 @@ fp64_to_fp32(uvec2 a)
    int aExp = extractFloat64Exp(a);
    uint aSign = extractFloat64Sign(a);
    if (aExp == 0x7FF) {
-      if ((aFracHi | aFracLo) != 0u) {
-         shortShift64Left(a.y, a.x, 12, a.y, a.x);
-         return uintBitsToFloat((aSign<<31) | 0x7FC00000u | (a.y>>9));
-      }
-      return packFloat32(aSign, 0xFF, 0u);
+      shortShift64Left(a.y, a.x, 12, a.y, a.x);
+      float rval = uintBitsToFloat((aSign<<31) | 0x7FC00000u | (a.y>>9));
+      rval = mix(packFloat32(aSign, 0xFF, 0u), rval, (aFracHi | aFracLo) != 0u);
+      return rval;
    }
    shift64RightJamming(aFracHi, aFracLo, 22, allZero, zFrac);
-   if (aExp != 0)
-      zFrac |= 0x40000000u;
-
+   zFrac = mix(zFrac, zFrac | 0x40000000u, aExp != 0);
    return roundAndPackFloat32(aSign, aExp - 0x381, zFrac);
 }
 
