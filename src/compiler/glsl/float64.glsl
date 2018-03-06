@@ -465,8 +465,22 @@ fadd64(uvec2 a, uvec2 b)
    if (aSign == bSign) {
       uint zFrac2 = 0u;
       int zExp;
+      bool orig_exp_diff_is_zero = (expDiff == 0);
 
-      if (0 < expDiff) {
+      if (orig_exp_diff_is_zero) {
+         if (aExp == 0x7FF) {
+	    bool propagate = (aFracHi | aFracLo | bFracHi | bFracLo) != 0u;
+	    return mix(a, propagateFloat64NaN(a, b), bvec2(propagate, propagate));
+         }
+         add64(aFracHi, aFracLo, bFracHi, bFracLo, zFrac0, zFrac1);
+         if (aExp == 0)
+            return packFloat64(aSign, 0, zFrac0, zFrac1);
+         zFrac2 = 0u;
+         zFrac0 |= 0x00200000u;
+         zExp = aExp;
+         shift64ExtraRightJamming(
+            zFrac0, zFrac1, zFrac2, 1, zFrac0, zFrac1, zFrac2);
+      } else if (0 < expDiff) {
          if (aExp == 0x7FF) {
 	    bool propagate = (aFracHi | aFracLo) != 0u;
 	    return mix(a, propagateFloat64NaN(a, b), bvec2(propagate, propagate));
@@ -487,27 +501,15 @@ fadd64(uvec2 a, uvec2 b)
          shift64ExtraRightJamming(
             aFracHi, aFracLo, 0u, - expDiff, aFracHi, aFracLo, zFrac2);
          zExp = bExp;
-      } else {
-         if (aExp == 0x7FF) {
-	    bool propagate = (aFracHi | aFracLo | bFracHi | bFracLo) != 0u;
-	    return mix(a, propagateFloat64NaN(a, b), bvec2(propagate, propagate));
-         }
-         add64(aFracHi, aFracLo, bFracHi, bFracLo, zFrac0, zFrac1);
-         if (aExp == 0)
-            return packFloat64(aSign, 0, zFrac0, zFrac1);
-         zFrac2 = 0u;
-         zFrac0 |= 0x00200000u;
-         zExp = aExp;
-         shift64ExtraRightJamming(
-            zFrac0, zFrac1, zFrac2, 1, zFrac0, zFrac1, zFrac2);
-         return roundAndPackFloat64(aSign, zExp, zFrac0, zFrac1, zFrac2);
       }
-      aFracHi |= 0x00100000u;
-      add64(aFracHi, aFracLo, bFracHi, bFracLo, zFrac0, zFrac1);
-      --zExp;
-      if (!(zFrac0 < 0x00200000u)) {
-         shift64ExtraRightJamming(zFrac0, zFrac1, zFrac2, 1, zFrac0, zFrac1, zFrac2);
-	 ++zExp;
+      if (!orig_exp_diff_is_zero) {
+         aFracHi |= 0x00100000u;
+         add64(aFracHi, aFracLo, bFracHi, bFracLo, zFrac0, zFrac1);
+         --zExp;
+         if (!(zFrac0 < 0x00200000u)) {
+            shift64ExtraRightJamming(zFrac0, zFrac1, zFrac2, 1, zFrac0, zFrac1, zFrac2);
+            ++zExp;
+         }
       }
       return roundAndPackFloat64(aSign, zExp, zFrac0, zFrac1, zFrac2);
 
