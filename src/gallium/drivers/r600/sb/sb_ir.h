@@ -252,7 +252,9 @@ public:
 
 		for (unsigned i = 0, c = std::min(data.size(), bs2.data.size()); i < c;
 				++i) {
-			data[i] |= bs2.data[i];
+			basetype ldata = bs2.data[i];
+			if (ldata != 0)
+				data[i] |= ldata;
 		}
 		return *this;
 	}
