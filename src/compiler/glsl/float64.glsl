@@ -770,9 +770,6 @@ fp64_to_uint(uvec2 a)
    int aExp = extractFloat64Exp(a);
    uint aSign = extractFloat64Sign(a);
 
-   if (aSign != 0u)
-      return 0u;
-
    if ((aExp == 0x7FF) && ((aFracHi | aFracLo) != 0u))
       return 0xFFFFFFFFu;
 
@@ -784,14 +781,14 @@ fp64_to_uint(uvec2 a)
       shift64RightJamming(aFracHi, aFracLo, shiftDist, aFracHi, aFracLo);
 
    if ((aFracHi & 0xFFFFF000u) != 0u)
-      return (aSign != 0u) ? 0u : ~0u;
+      return mix(~0u, 0u, (aSign != 0u));
 
    uint z = 0u;
    uint zero = 0u;
    shift64Right(aFracHi, aFracLo, 12, zero, z);
 
    if ((aSign != 0u) && (z != 0u))
-      return (aSign != 0u) ? 0u : ~0u;
+      return mix(~0u, 0u, (aSign != 0u));
 
    return z;
 }
