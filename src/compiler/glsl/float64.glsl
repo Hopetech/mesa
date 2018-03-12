@@ -1022,7 +1022,7 @@ fp32_to_fp64(float f)
  * 32-bit pieces which are stored at the locations pointed to by `z0Ptr',
  * `z1Ptr', and `z2Ptr'.
  */
-void
+/*void
 add96(uint a0, uint a1, uint a2,
       uint b0, uint b1, uint b2,
       inout uint z0Ptr,
@@ -1040,7 +1040,7 @@ add96(uint a0, uint a1, uint a2,
    z2Ptr = z2;
    z1Ptr = z1;
    z0Ptr = z0;
-}
+}*/
 
 /* Subtracts the 96-bit value formed by concatenating `b0', `b1', and `b2' from
  * the 96-bit value formed by concatenating `a0', `a1', and `a2'.  Subtraction
@@ -1048,7 +1048,7 @@ add96(uint a0, uint a1, uint a2,
  * into three 32-bit pieces which are stored at the locations pointed to by
  * `z0Ptr', `z1Ptr', and `z2Ptr'.
  */
-void
+/*void
 sub96(uint a0, uint a1, uint a2,
       uint b0, uint b1, uint b2,
       inout uint z0Ptr,
@@ -1066,7 +1066,7 @@ sub96(uint a0, uint a1, uint a2,
    z2Ptr = z2;
    z1Ptr = z1;
    z0Ptr = z0;
-}
+}*/
 
 /* Returns an approximation to the 32-bit integer quotient obtained by dividing
  * `b' into the 64-bit value formed by concatenating `a0' and `a1'.  The
