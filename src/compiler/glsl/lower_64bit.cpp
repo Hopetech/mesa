@@ -57,6 +57,9 @@ void extract_source(ir_factory &, ir_rvalue *val, ir_variable **extracted_src);
 ir_dereference_variable *compact_destination(ir_factory &,
                                              const glsl_type *type,
                                              ir_variable *result[4]);
+ir_dereference_variable *merge_destination(ir_factory &,
+                                           const glsl_type *type,
+                                           ir_variable *result[4]);
 
 ir_rvalue *lower_op_to_function_call(ir_instruction *base_ir,
                                      ir_expression *ir,
@@ -249,6 +252,24 @@ lower_64bit::extract_source(ir_factory &body,
       extracted_src[i] = extracted_src[0];
 }
 
+ir_dereference_variable *
+lower_64bit::merge_destination(ir_factory &body,
+                               const glsl_type *type,
+                               ir_variable *result[4])
+{
+   ir_variable *const merged_result =
+      body.make_temp(type, "merged_result");
+
+   for (unsigned i = 0; i < type->vector_elements; i++) {
+      body.emit(assign(merged_result,
+                       result[i],
+                       1U << i));
+   }
+
+   void *const mem_ctx = ralloc_parent(merged_result);
+   return new(mem_ctx) ir_dereference_variable(merged_result);
+}
+
 /**
  * Convert a series of uvec2 results into a single 64-bit integer vector
  */
@@ -328,7 +349,11 @@ lower_64bit::lower_op_to_function_call(ir_instruction *base_ir,
       body.emit(c);
    }
 
-   ir_rvalue *const rv = compact_destination(body, ir->type, dst);
+   ir_rvalue *rv;
+   if (ir->type->is_64bit())
+      rv = compact_destination(body, ir->type, dst);
+   else
+      rv = merge_destination(body, ir->type, dst);
 
    /* Move all of the nodes from instructions between base_ir and the
     * instruction before it.
