@@ -804,16 +804,12 @@ uint_to_fp64(uint a)
    uint aLow = 0u;
    int negCount = (- shiftDist) & 31;
 
-   if (shiftDist == 0) {
-      aHigh = 0u;
-      aLow = a;
-   } else if (shiftDist< 32) {
-      aHigh = (a >> negCount);
-      aLow = a << shiftDist;
-   } else {
-      aHigh = (shiftDist < 64) ? (a << shiftDist - 32) : 0u;
-      aLow = 0u;
-   }
+   aHigh = mix(0u, a<< shiftDist - 32, shiftDist < 64);
+   aLow = 0u;
+   aHigh = mix(aHigh, 0u, shiftDist == 0);
+   aLow = mix(aLow, a, shiftDist ==0);
+   aHigh = mix(aHigh, a >> negCount, shiftDist < 32);
+   aLow = mix(aLow, a << shiftDist, shiftDist < 32);
 
    return packFloat64(0u, 0x432 - shiftDist, aHigh, aLow);
 }
