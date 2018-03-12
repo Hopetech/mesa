@@ -59,7 +59,7 @@
 
 #include "util/hash_table.h"
 #include <algorithm>
-
+#include <vector>
 #define PROGRAM_ANY_CONST ((1 << PROGRAM_STATE_VAR) |    \
                            (1 << PROGRAM_CONSTANT) |     \
                            (1 << PROGRAM_UNIFORM))
@@ -4920,8 +4920,7 @@ glsl_to_tgsi_visitor::get_last_temp_write(int *last_writes)
 class per_level_info {
 
    struct per_level_range {
-      int32_t min_temp_idx;
-      int32_t max_temp_idx;
+      std::vector<uint32_t> *dirty;
    } *lvls;
 
    void *mem_ctx;
@@ -4939,11 +4938,11 @@ public:
                                                            NULL,
                                                            sizeof(struct per_level_range),
                                                            num_alloced_levels);
-      lvls[0].min_temp_idx = max_temps;
-      lvls[0].max_temp_idx = 0;
+      lvls[0].dirty = new(std::vector<uint32_t>);
    }
 
    ~per_level_info() {
+      delete(lvls[0].dirty);
       ralloc_free(lvls);
    }
 
@@ -4960,30 +4959,28 @@ public:
                                                               sizeof(struct per_level_range),
                                                               num_alloced_levels);
       }
-      lvls[level].min_temp_idx = max_temps;
-      lvls[level].max_temp_idx = 0;
+      lvls[level].dirty = new(std::vector<uint32_t>);
    }
 
    void pop_level(void) {
-      if (lvls[level - 1].min_temp_idx > lvls[level].min_temp_idx)
-         lvls[level - 1].min_temp_idx = lvls[level].min_temp_idx;
-      if (lvls[level - 1].max_temp_idx < lvls[level].max_temp_idx)
-         lvls[level - 1].max_temp_idx = lvls[level].max_temp_idx;
+
+      while (!lvls[level].dirty->empty()) {
+         uint32_t val = lvls[level].dirty->back();
+         lvls[level].dirty->pop_back();
+         lvls[level-1].dirty->push_back(val);
+      }
+      delete(lvls[level].dirty);
       level--;
    }
 
-   void get_level_range(int32_t *min, int32_t *max)
+   std::vector<uint32_t> *get_level_range()
    {
-      *min = lvls[level].min_temp_idx;
-      *max = lvls[level].max_temp_idx;
+      return lvls[level].dirty;
    }
 
    void update_level_range(int32_t idx)
    {
-      if (idx < lvls[level].min_temp_idx)
-         lvls[level].min_temp_idx = idx;
-      if ((idx + 1) > lvls[level].max_temp_idx)
-         lvls[level].max_temp_idx = idx + 1;
+      lvls[level].dirty->push_back(idx);
    }
 };
 
@@ -4995,7 +4992,6 @@ glsl_to_tgsi_visitor::copy_propagate(void)
                                                   this->next_temp * 4);
    int *acp_level = rzalloc_array(mem_ctx, int, this->next_temp * 4);
    class per_level_info lvl_info(mem_ctx, this->next_temp);
-   int min_lvl, max_lvl;
    int level;
 
    foreach_in_list(glsl_to_tgsi_instruction, inst, &this->instructions) {
@@ -5074,13 +5070,15 @@ glsl_to_tgsi_visitor::copy_propagate(void)
          break;
 
       case TGSI_OPCODE_ENDIF:
-      case TGSI_OPCODE_ELSE:
+      case TGSI_OPCODE_ELSE: {
          /* Clear all channels written inside the block from the ACP, but
           * leaving those that were not touched.
           */
-         lvl_info.get_level_range(&min_lvl, &max_lvl);
+         std::vector<uint32_t> *lvl_dirty = lvl_info.get_level_range();
          level = lvl_info.get_level();
-         for (int r = min_lvl; r < max_lvl; r++) {
+
+         for(std::vector<uint32_t>::iterator it = lvl_dirty->begin(); it != lvl_dirty->end(); it++) {
+            uint32_t r = *it;
             for (int c = 0; c < 4; c++) {
                if (!acp[4 * r + c])
                   continue;
@@ -5093,8 +5091,8 @@ glsl_to_tgsi_visitor::copy_propagate(void)
 
          if (inst->op != TGSI_OPCODE_ENDIF)
             lvl_info.push_level();
-
          break;
+      }
 
       default:
          /* Continuing the block, clear any written channels from
@@ -5111,8 +5109,9 @@ glsl_to_tgsi_visitor::copy_propagate(void)
                /* Any output might be written, so no copy propagation
                 * from outputs across this instruction.
                 */
-               lvl_info.get_level_range(&min_lvl, &max_lvl);
-               for (int r = min_lvl; r < max_lvl; r++) {
+               std::vector<uint32_t> *lvl_dirty = lvl_info.get_level_range();
+               for(std::vector<uint32_t>::iterator it = lvl_dirty->begin(); it != lvl_dirty->end(); it++) {
+                  uint32_t r = *it;
                   for (int c = 0; c < 4; c++) {
                      if (!acp[4 * r + c])
                         continue;
@@ -5132,8 +5131,9 @@ glsl_to_tgsi_visitor::copy_propagate(void)
                }
 
                /* Clear where it's used as src. */
-               lvl_info.get_level_range(&min_lvl, &max_lvl);
-               for (int r = min_lvl; r < max_lvl; r++) {
+               std::vector<uint32_t> *lvl_dirty = lvl_info.get_level_range();
+               for(std::vector<uint32_t>::iterator it = lvl_dirty->begin(); it != lvl_dirty->end(); it++) {
+                  uint32_t r = *it;
                   for (int c = 0; c < 4; c++) {
                      if (!acp[4 * r + c])
                         continue;
@@ -5218,7 +5218,6 @@ glsl_to_tgsi_visitor::eliminate_dead_code(void)
    int *write_level = rzalloc_array(mem_ctx, int, this->next_temp * 4);
    int level;
    int removed = 0;
-   int min_lvl, max_lvl;
    class per_level_info lvl_info(mem_ctx, this->next_temp);
 
    foreach_in_list(glsl_to_tgsi_instruction, inst, &this->instructions) {
@@ -5242,13 +5241,14 @@ glsl_to_tgsi_visitor::eliminate_dead_code(void)
          break;
 
       case TGSI_OPCODE_ENDIF:
-      case TGSI_OPCODE_ELSE:
+      case TGSI_OPCODE_ELSE: {
          /* Promote the recorded level of all channels written inside the
           * preceding if or else block to the level above the if/else block.
           */
-         lvl_info.get_level_range(&min_lvl, &max_lvl);
+         std::vector<uint32_t> *lvl_dirty = lvl_info.get_level_range();
          level = lvl_info.get_level();
-         for (int r = min_lvl; r < max_lvl; r++) {
+         for(std::vector<uint32_t>::iterator it = lvl_dirty->begin(); it != lvl_dirty->end(); it++) {
+            uint32_t r = *it;
             for (int c = 0; c < 4; c++) {
                if (!writes[4 * r + c])
                   continue;
@@ -5260,7 +5260,7 @@ glsl_to_tgsi_visitor::eliminate_dead_code(void)
          if (inst->op == TGSI_OPCODE_ENDIF)
             --level;
          break;
-
+      }
       case TGSI_OPCODE_IF:
       case TGSI_OPCODE_UIF:
          lvl_info.push_level();
