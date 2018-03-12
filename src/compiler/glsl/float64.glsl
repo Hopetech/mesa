@@ -1299,8 +1299,8 @@ ftrunc64(uvec2 a)
 
    int unbiasedExp = aExp - 1023;
    int fracBits = 52 - unbiasedExp;
-   uint maskLo = (fracBits >= 32) ? 0u : (~0u << fracBits);
-   uint maskHi = (fracBits < 33) ? ~0u : (~0u << (fracBits - 32));
+   uint maskLo = mix(~0u << fracBits, 0u, fracBits >= 32);
+   uint maskHi = mix(~0u << (fracBits - 32), ~0u, fracBits < 33);
    zLo = maskLo & a.x;
    zHi = maskHi & a.y;
 
