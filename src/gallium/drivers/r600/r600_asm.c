@@ -399,15 +399,10 @@ static const unsigned cycle_for_bank_swizzle_scl[][3] = {
 
 static void init_bank_swizzle(struct alu_bank_swizzle *bs)
 {
-	int i, cycle, component;
 	/* set up gpr use */
-	for (cycle = 0; cycle < NUM_OF_CYCLES; cycle++)
-		for (component = 0; component < NUM_OF_COMPONENTS; component++)
-			 bs->hw_gpr[cycle][component] = -1;
-	for (i = 0; i < 4; i++)
-		bs->hw_cfile_addr[i] = -1;
-	for (i = 0; i < 4; i++)
-		bs->hw_cfile_elem[i] = -1;
+	memset(bs->hw_gpr, 0xff, sizeof(int) * NUM_OF_CYCLES * NUM_OF_COMPONENTS);
+	memset(bs->hw_cfile_addr, 0xff, sizeof(int) * 4);
+	memset(bs->hw_cfile_elem, 0xff, sizeof(int) * 4);
 }
 
 static int reserve_gpr(struct alu_bank_swizzle *bs, unsigned sel, unsigned chan, unsigned cycle)
