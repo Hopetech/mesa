@@ -328,38 +328,18 @@ flt64(void *mem_ctx, builtin_available_predicate avail)
          /* ELSE INSTRUCTIONS */
          body.instructions = &f006B->else_instructions;
 
-         ir_variable *const r0073 = body.make_temp(glsl_type::bool_type, "conditional_tmp");
-         /* IF CONDITION */
-         ir_expression *const r0075 = nequal(r0069, body.constant(0u));
-         ir_if *f0074 = new(mem_ctx) ir_if(operand(r0075).val);
-         exec_list *const f0074_parent_instructions = body.instructions;
-
-            /* THEN INSTRUCTIONS */
-            body.instructions = &f0074->then_instructions;
-
-            ir_expression *const r0076 = less(swizzle_y(r0055), swizzle_y(r0054));
-            ir_expression *const r0077 = equal(swizzle_y(r0055), swizzle_y(r0054));
-            ir_expression *const r0078 = less(swizzle_x(r0055), swizzle_x(r0054));
-            ir_expression *const r0079 = logic_and(r0077, r0078);
-            body.emit(assign(r0073, logic_or(r0076, r0079), 0x01));
-
-
-            /* ELSE INSTRUCTIONS */
-            body.instructions = &f0074->else_instructions;
-
-            ir_expression *const r007A = less(swizzle_y(r0054), swizzle_y(r0055));
-            ir_expression *const r007B = equal(swizzle_y(r0054), swizzle_y(r0055));
-            ir_expression *const r007C = less(swizzle_x(r0054), swizzle_x(r0055));
-            ir_expression *const r007D = logic_and(r007B, r007C);
-            body.emit(assign(r0073, logic_or(r007A, r007D), 0x01));
-
-
-         body.instructions = f0074_parent_instructions;
-         body.emit(f0074);
-
-         /* END IF */
-
-         body.emit(assign(r0056, r0073, 0x01));
+         ir_expression *const r0073 = nequal(r0069, body.constant(0u));
+         ir_expression *const r0074 = less(swizzle_y(r0055), swizzle_y(r0054));
+         ir_expression *const r0075 = equal(swizzle_y(r0055), swizzle_y(r0054));
+         ir_expression *const r0076 = less(swizzle_x(r0055), swizzle_x(r0054));
+         ir_expression *const r0077 = logic_and(r0075, r0076);
+         ir_expression *const r0078 = logic_or(r0074, r0077);
+         ir_expression *const r0079 = less(swizzle_y(r0054), swizzle_y(r0055));
+         ir_expression *const r007A = equal(swizzle_y(r0054), swizzle_y(r0055));
+         ir_expression *const r007B = less(swizzle_x(r0054), swizzle_x(r0055));
+         ir_expression *const r007C = logic_and(r007A, r007B);
+         ir_expression *const r007D = logic_or(r0079, r007C);
+         body.emit(assign(r0056, expr(ir_triop_csel, r0073, r0078, r007D), 0x01));
 
 
       body.instructions = f006B_parent_instructions;

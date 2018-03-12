@@ -151,8 +151,7 @@ flt64(uvec2 a, uvec2 b)
    if (aSign != bSign)
       return (aSign != 0u) && ((((a.y | b.y)<<1) | a.x | b.x) != 0u);
 
-   return (aSign != 0u) ? lt64(b.y, b.x, a.y, a.x)
-      : lt64(a.y, a.x, b.y, b.x);
+   return mix(lt64(a.y, a.x, b.y, b.x), lt64(b.y, b.x, a.y, a.x), aSign != 0u);
 }
 
 /* Adds the 64-bit value formed by concatenating `a0' and `a1' to the 64-bit
