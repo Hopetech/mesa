@@ -867,7 +867,7 @@ int_to_fp64(int a)
    if (a==0)
       return packFloat64(0u, 0, 0u, 0u);
    uint zSign = uint(a < 0);
-   uint absA = a < 0 ? uint(-a) : uint(a);
+   uint absA = mix(uint(a), uint(-a), a < 0);
    int shiftCount = countLeadingZeros32(absA) - 11;
    if (0 <= shiftCount) {
       zFrac0 = absA << shiftCount;
