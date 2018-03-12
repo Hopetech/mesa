@@ -1075,7 +1075,7 @@ sub96(uint a0, uint a1, uint a2,
  * If the exact quotient q is larger than 32 bits, the maximum positive 32-bit
  * unsigned integer is returned.
  */
-uint
+/*uint
 estimateDiv64To32(uint a0, uint a1, uint b)
 {
    uint b0;
@@ -1089,7 +1089,7 @@ estimateDiv64To32(uint a0, uint a1, uint b)
    if (b <= a0)
       return 0xFFFFFFFFu;
    b0 = b>>16;
-   z = (b0<<16 <= a0) ? 0xFFFF0000u : (a0 / b0)<<16;
+   z = mix((a0 / b0)<<16, 0xFFFF0000u, (b0<<16 <= a0));
    mul32To64(b, z, term0, term1);
    sub64(a0, a1, term0, term1, rem0, rem1);
    while (int(rem0) < 0) {
@@ -1098,9 +1098,8 @@ estimateDiv64To32(uint a0, uint a1, uint b)
       add64(rem0, rem1, b0, b1, rem0, rem1);
    }
    rem0 = (rem0<<16) | (rem1>>16);
-   z |= (b0<<16 <= rem0) ? 0xFFFFu : rem0 / b0;
-   return z;
-}
+   return z |= mix(rem0 / b0, 0xFFFFu, (b0<<16 <= rem0));
+}*/
 
 /*uint
 sqrtOddAdjustments(int index)
