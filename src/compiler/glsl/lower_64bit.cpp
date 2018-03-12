@@ -355,7 +355,8 @@ lower_64bit_visitor::handle_rvalue(ir_rvalue **rvalue)
    switch (ir->operation) {
    case ir_unop_sign:
       if (lowering(SIGN64)) {
-         *rvalue = handle_op(ir, "__builtin_sign64", generate_ir::sign64);
+         if (ir->type->is_integer_64())
+            *rvalue = handle_op(ir, "__builtin_sign64", generate_ir::sign64);
       }
       break;
 
@@ -363,7 +364,7 @@ lower_64bit_visitor::handle_rvalue(ir_rvalue **rvalue)
       if (lowering(DIV64)) {
          if (ir->type->base_type == GLSL_TYPE_UINT64) {
             *rvalue = handle_op(ir, "__builtin_udiv64", generate_ir::udiv64);
-         } else {
+         } else if (ir->type->base_type == GLSL_TYPE_INT64) {
             *rvalue = handle_op(ir, "__builtin_idiv64", generate_ir::idiv64);
          }
       }
@@ -373,7 +374,7 @@ lower_64bit_visitor::handle_rvalue(ir_rvalue **rvalue)
       if (lowering(MOD64)) {
          if (ir->type->base_type == GLSL_TYPE_UINT64) {
             *rvalue = handle_op(ir, "__builtin_umod64", generate_ir::umod64);
-         } else {
+         } else if (ir->type->base_type == GLSL_TYPE_INT64) {
             *rvalue = handle_op(ir, "__builtin_imod64", generate_ir::imod64);
          }
       }
@@ -381,7 +382,8 @@ lower_64bit_visitor::handle_rvalue(ir_rvalue **rvalue)
 
    case ir_binop_mul:
       if (lowering(MUL64)) {
-         *rvalue = handle_op(ir, "__builtin_umul64", generate_ir::umul64);
+         if (ir->type->is_integer_64())
+            *rvalue = handle_op(ir, "__builtin_umul64", generate_ir::umul64);
       }
       break;
 
