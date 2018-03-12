@@ -832,14 +832,13 @@ fp64_to_int(uvec2 a)
 
    uint absZ = 0u;
    uint aFracExtra = 0u;
-   int z;
    int shiftCount = aExp - 0x413;
 
    if (0 <= shiftCount) {
       if (0x41E < aExp) {
          if ((aExp == 0x7FF) && bool(aFracHi | aFracLo))
             aSign = 0u;
-         return bool(aSign) ? 0x80000000 : 0x7FFFFFFF;
+         return mix(0x7FFFFFFF, 0x80000000, bool(aSign));
       }
       shortShift64Left(aFracHi | 0x00100000u, aFracLo, shiftCount, absZ, aFracExtra);
    } else {
@@ -851,12 +850,9 @@ fp64_to_int(uvec2 a)
       absZ = aFracHi >> (- shiftCount);
    }
 
-   z = (aSign != 0u) ? - int(absZ) : int(absZ);
-
-   if (bool(aSign ^ uint(z < 0)) && bool(z))
-      return bool(aSign) ? 0x80000000 : 0x7FFFFFFF;
-
-   return z;
+   int z = mix(int(absZ), -int(absZ), (aSign != 0u));
+   int nan = mix(0x7FFFFFFF, 0x80000000, bool(aSign));
+   return mix(z, nan, bool(aSign ^ uint(z < 0)) && bool(z));
 }
 
 /* Returns the result of converting the 32-bit two's complement integer `a'
