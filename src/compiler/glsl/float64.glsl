@@ -772,8 +772,7 @@ fp64_to_uint(uvec2 a)
    if ((aExp == 0x7FF) && ((aFracHi | aFracLo) != 0u))
       return 0xFFFFFFFFu;
 
-   if (aExp != 0)
-      aFracHi |= 0x00100000u;
+   aFracHi |= mix(0u, 0x00100000u, aExp != 0);
 
    int shiftDist = 0x427 - aExp;
    if (0 < shiftDist)
@@ -786,10 +785,9 @@ fp64_to_uint(uvec2 a)
    uint zero = 0u;
    shift64Right(aFracHi, aFracLo, 12, zero, z);
 
-   if ((aSign != 0u) && (z != 0u))
-      return mix(~0u, 0u, (aSign != 0u));
+   uint expt = mix(~0u, 0u, (aSign != 0u));
 
-   return z;
+   return mix(z, expt, (aSign != 0u) && (z != 0u));
 }
 
 uvec2
