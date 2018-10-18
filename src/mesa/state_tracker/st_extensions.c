@@ -748,6 +748,7 @@ void st_init_extensions(struct pipe_screen *screen,
       { o(ARB_transform_feedback_overflow_query), PIPE_CAP_QUERY_SO_OVERFLOW           },
 
       { o(KHR_blend_equation_advanced),      PIPE_CAP_TGSI_FS_FBFETCH                  },
+      { o(EXT_shader_framebuffer_fetch),     PIPE_CAP_TGSI_FS_FBFETCH                  },
 
       { o(EXT_blend_equation_separate),      PIPE_CAP_BLEND_EQUATION_SEPARATE          },
       { o(EXT_depth_bounds_test),            PIPE_CAP_DEPTH_BOUNDS_TEST                },
