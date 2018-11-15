@@ -123,6 +123,7 @@ LIBGLSL_FILES = \
 	glsl/lower_vector_insert.cpp \
 	glsl/lower_vertex_id.cpp \
 	glsl/lower_output_reads.cpp \
+	glsl/lower_inout.cpp \
 	glsl/lower_shared_reference.cpp \
 	glsl/lower_ubo_reference.cpp \
 	glsl/opt_algebraic.cpp \

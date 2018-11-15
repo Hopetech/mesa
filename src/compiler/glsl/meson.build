@@ -171,6 +171,7 @@ files_libglsl = files(
   'lower_vector_insert.cpp',
   'lower_vertex_id.cpp',
   'lower_output_reads.cpp',
+  'lower_inout.cpp',
   'lower_shared_reference.cpp',
   'lower_ubo_reference.cpp',
   'opt_algebraic.cpp',
