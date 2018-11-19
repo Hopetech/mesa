@@ -7090,6 +7090,9 @@ get_mesa_program_tgsi(struct gl_context *ctx,
    if (!pscreen->get_param(pscreen, PIPE_CAP_TGSI_CAN_READ_OUTPUTS))
       lower_output_reads(shader->Stage, shader->ir);
 
+   /* Split inout declaration in one in and one out */
+   lower_inout(shader->Stage, shader->ir);
+
    /* Emit intermediate IR for main(). */
    visit_exec_list(shader->ir, v);
 
