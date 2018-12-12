@@ -7091,7 +7091,12 @@ get_mesa_program_tgsi(struct gl_context *ctx,
       lower_output_reads(shader->Stage, shader->ir);
 
    /* Split inout declaration in one in and one out */
+   fprintf(stderr, "\nBEFORE\n");
+   _mesa_print_ir(stderr, shader->ir, NULL);
    lower_inout(shader->Stage, shader->ir);
+   fprintf(stderr, "\nAFTER\n");
+   _mesa_print_ir(stderr, shader->ir, NULL);
+
 
    /* Emit intermediate IR for main(). */
    visit_exec_list(shader->ir, v);
